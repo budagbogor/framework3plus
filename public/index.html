@@ -6,6 +6,7 @@
 <title>DevForge — Smart Framework Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://js.puter.com/v2/"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -1003,6 +1004,19 @@ const AI_PROVIDERS = {
       {id:'gpt-5-mini',          label:'GPT-5 Mini',                  provider:'openai',   free:false},
       {id:'glm-5',               label:'GLM-5',                       provider:'z.ai',     free:false},
       {id:'glm-5-code',          label:'GLM-5 Code',                  provider:'z.ai',     free:false},
+    ]
+  },
+  puter: {
+    name: 'Puter.js',
+    baseUrl: 'puter',
+    requiresKey: false,
+    keyPlaceholder: 'Tidak diperlukan API Key',
+    docsUrl: 'https://developer.puter.com/tutorials/free-unlimited-openrouter-api/',
+    models: [
+      {id:'openrouter:openrouter/free',                label:'Puter Auto-Free (REKOMENDASI) ✦', provider:'puter', free:true},
+      {id:'openrouter:meta-llama/llama-3.3-70b-instruct:free', label:'Llama 3.3 70B (GRATIS)',         provider:'meta', free:true},
+      {id:'openrouter:google/gemma-3-27b-it:free',      label:'Gemma 3 27B (GRATIS)',           provider:'google', free:true},
+      {id:'openrouter:qwen/qwen3.6-plus:free',         label:'Qwen 3.6 Plus (GRATIS)',         provider:'qwen', free:true}
     ]
   },
   openrouter: {
@@ -3686,6 +3700,23 @@ PENTING: Semua konten harus SPESIFIK ke project "${g.name}" — bukan template g
             response_format: {type: 'json_object'}
           };
 
+          // 1. Handle Puter.js Case (Keyless)
+          if (S.aiConfig.provider === 'puter') {
+              console.log('[AI] Using Puter.js for generation...');
+              const response = await puter.ai.chat(userPrompt, {
+                  model: currentModel,
+                  system_message: systemPrompt,
+                  json: true
+              });
+              // Normalize Puter response to match fetch-like structure
+              return {
+                  ok: true,
+                  status: 200,
+                  json: async () => ({ choices: [{ message: { content: response.toString() } }] })
+              };
+          }
+
+          // 2. Handle Proxy/Direct Fetch Case
           if (S.aiConfig.useProxy) {
             return await fetch('/api/ai-proxy', {
               method: 'POST',
@@ -3873,7 +3904,7 @@ function openAIPanel(){
       </div>
     </div>
 
-    <div class="ai-field">
+    <div class="ai-field" id="aiKeyField" style="${AI_PROVIDERS[prov]?.requiresKey===false?'display:none':''}">
       <label class="ai-label">API Key <a href="${AI_PROVIDERS[prov]?.docsUrl}" target="_blank" style="font-weight:400;text-transform:none;font-size:10px;color:var(--accent);margin-left:6px">→ Dapatkan key</a></label>
       <input class="ai-input" id="aiKeyInput" type="password" 
         placeholder="${AI_PROVIDERS[prov]?.keyPlaceholder}"
@@ -3881,7 +3912,7 @@ function openAIPanel(){
         oninput="S.aiConfig.apiKey=this.value;S.aiConfig.connected=false;updateAIStatus('idle')">
     </div>
 
-    <div class="ai-field ai-checkbox-row" style="margin-top:-10px;margin-bottom:15px">
+    <div class="ai-field ai-checkbox-row" id="aiProxyField" style="margin-top:-10px;margin-bottom:15px;${AI_PROVIDERS[prov]?.requiresKey===false?'display:none':''}">
       <div style="display:flex;flex-direction:column;gap:5px">
         <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;color:var(--text2)">
           <input type="checkbox" id="aiProxyCheck" ${S.aiConfig.useProxy?'checked':''} 
@@ -3915,7 +3946,13 @@ function switchAIProvider(prov){
   });
   const sel = document.getElementById('aiModelSel');
   if(sel) sel.innerHTML = renderModelOptions(prov);
-  // Update key placeholder
+  // Update key placeholder & visibility
+  const inpField = document.getElementById('aiKeyField');
+  const prxField = document.getElementById('aiProxyField');
+  const isKeyless = AI_PROVIDERS[prov]?.requiresKey === false;
+  if(inpField) inpField.style.display = isKeyless ? 'none' : 'block';
+  if(prxField) prxField.style.display = isKeyless ? 'none' : 'block';
+  
   const inp = document.getElementById('aiKeyInput');
   if(inp) inp.placeholder = AI_PROVIDERS[prov]?.keyPlaceholder || '';
   updateAIStatus('idle');
@@ -3960,6 +3997,18 @@ async function testAPIKey(){
           max_tokens: 15
       };
 
+      // 1. Handle Puter.js Case
+      if (S.aiConfig.provider === 'puter') {
+          console.log('[AI TEST] Using Puter.js...');
+          const response = await puter.ai.chat("Say OK", { model: modelId });
+          return {
+              ok: true,
+              status: 200,
+              json: async () => ({ id: 'puter-test', choices: [{ message: { content: response.toString() } }] })
+          };
+      }
+
+      // 2. Handle Fetch Case
       if (S.aiConfig.useProxy) {
           return await fetch(internalProxyUrl, {
               method: 'POST',
