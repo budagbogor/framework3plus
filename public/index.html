@@ -1,0 +1,2265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevForge — Smart Framework Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8fafc;--bg2:#ffffff;--bg3:#f1f5f9;
+  --surface:#ffffff;--surface2:#f8fafc;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --text:#0f172a;--text2:#475569;--text3:#94a3b8;
+  --accent:#3b82f6;--accent-light:#eff6ff;--accent-mid:#2563eb;
+  --green:#10b981;--green-light:#ecfdf5;
+  --amber:#d97706;--amber-light:#fffbeb;
+  --red:#ef4444;--red-light:#fef2f2;
+  --gold:#eab308;--gold-light:#fefce8;
+  --font:'Inter',sans-serif;
+  --font-h:'Space Grotesk',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --r:10px;--r-lg:16px;--r-xl:24px;
+}
+[data-theme='dark']{
+  --bg:#050511;--bg2:#0a0a1a;--bg3:#13132a;
+  --surface:#0a0a18;--surface2:#15152e;
+  --border:rgba(0, 240, 255, 0.15);--border2:rgba(255, 0, 85, 0.3);
+  --text:#e0f8ff;--text2:#8ca2b0;--text3:#5c7285;
+  --accent:#00f0ff;--accent-light:rgba(0,240,255,0.15);--accent-mid:#00b8cc;
+  --green:#39ff14;--green-light:rgba(57,255,20,0.15);
+  --amber:#fcee0a;--amber-light:rgba(252,238,10,0.15);
+  --red:#ff0055;--red-light:rgba(255,0,85,0.15);
+  --gold:#eab308;--gold-light:rgba(234,179,8,0.15);
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background-color 0.3s, color 0.3s}
+
+/* grain texture */
+body::after{content:'';position:fixed;inset:0;opacity:.025;pointer-events:none;z-index:9999;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size:128px;background-repeat:repeat}
+
+#app{max-width:1400px;margin:0 auto;padding:100px 32px 80px}
+
+/* ── Global Navigation ── */
+.top-nav{position:fixed;top:0;left:0;right:0;height:70px;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);z-index:999;display:flex;align-items:center;transition:background-color 0.3s, border-color 0.3s}
+.nav-container{max-width:1400px;width:100%;margin:0 auto;padding:0 32px;display:flex;justify-content:space-between;align-items:center}
+[data-theme='dark'] .top-nav{background:rgba(5,5,17,0.7); border-bottom:1px solid rgba(0,240,255,0.2); box-shadow:0 0 15px rgba(0,240,255,0.05)}
+.nav-actions{display:flex;gap:8px}
+.nav-btn{background:var(--bg3);border:1.5px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all 0.15s;display:flex;align-items:center;gap:6px}
+.nav-btn:hover{color:var(--text);border-color:var(--border2)}
+
+/* ── Hero / Header ── */
+.hero-sec{text-align:center;margin-bottom:32px;animation:fadeDown .5s ease both}
+.logo{display:inline-flex;align-items:center;gap:8px;padding:5px 14px 5px 6px;
+  border-radius:2px;background:var(--accent-light);border:1px solid rgba(0,240,255,0.2);
+  margin-bottom:18px;animation:fadeDown .5s ease both;cursor:pointer;transition:transform 0.15s, box-shadow 0.2s}
+.logo:hover{transform:translateY(-1px);box-shadow:0 0 10px var(--accent-light)}
+[data-theme='dark'] .logo{border-color:rgba(0,240,255,0.4);box-shadow:0 0 12px rgba(0,240,255,0.1)}
+.logo-dot{width:28px;height:28px;border-radius:2px;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-size:13px;color:#000;font-weight:bold}
+.logo-text{font-size:14px;font-weight:700;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;font-family:var(--font-h)}
+h1{font-family:var(--font-h);font-size:clamp(32px,6vw,56px);font-weight:700;line-height:1.1;letter-spacing:-.03em;
+  animation:fadeDown .5s .08s ease both;text-transform:uppercase}
+h1 em{font-style:normal;color:var(--accent);text-shadow:0 0 20px var(--accent-light)}
+[data-theme='dark'] h1 em{text-shadow:0 0 30px rgba(0,240,255,0.4)}
+.subtitle{margin-top:16px;font-size:16px;color:var(--text2);line-height:1.6;max-width:640px;margin-inline:auto;
+  animation:fadeDown .5s .15s ease both}
+
+/* ── Mode cards ── */
+.mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin:32px 0 24px;animation:fadeUp .5s .2s ease both}
+.mode-card{border:1px solid var(--border);border-radius:6px;padding:32px 24px;cursor:pointer;
+  background:rgba(255,255,255,0.02);backdrop-filter:blur(10px);transition:all .3s;position:relative;overflow:hidden;text-align:left}
+.mode-card:hover{border-color:var(--accent);box-shadow:0 8px 32px rgba(0,0,0,.15), inset 0 0 0 1px var(--accent-light);transform:translateY(-4px)}
+.mode-card.active{border-color:var(--accent);background:var(--accent-light);box-shadow:0 0 20px var(--accent-light), inset 0 0 15px rgba(0,240,255,0.1)}
+.mode-card.active.green-mode{border-color:var(--green);background:var(--green-light);box-shadow:0 0 20px var(--green-light), inset 0 0 15px rgba(57,255,20,0.1)}
+.mode-card.active.amber-mode{border-color:var(--amber);background:var(--amber-light);box-shadow:0 0 20px var(--amber-light), inset 0 0 15px rgba(252,238,10,0.1)}
+.mode-badge{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;font-family:var(--font-h);
+  padding:4px 12px;border-radius:2px;display:inline-block;margin-bottom:14px;border:1px solid currentColor}
+.badge-sdlc{background:transparent;color:var(--accent)}
+.badge-adlc{background:transparent;color:var(--green)}
+.mode-card h3{font-family:var(--font-h);font-size:20px;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+.mode-card p{font-size:14px;color:var(--text2);line-height:1.6}
+.mode-check{position:absolute;top:20px;right:20px;width:28px;height:28px;border-radius:2px;
+  border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;transition:all .3s}
+.mode-card.active .mode-check,.mode-card.active.green-mode .mode-check,.mode-card.active.amber-mode .mode-check{color:#000}
+.mode-card.active .mode-check{background:var(--accent);border-color:var(--accent);box-shadow:0 0 10px var(--accent)}
+.mode-card.active.green-mode .mode-check{background:var(--green);border-color:var(--green);box-shadow:0 0 10px var(--green)}
+.mode-card.active.amber-mode .mode-check{background:var(--amber);border-color:var(--amber);box-shadow:0 0 10px var(--amber)}
+.start-row{text-align:center;animation:fadeUp .4s .25s ease both}
+
+/* ── Progress ── */
+.progress-wrap{margin-bottom:28px}
+.progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.progress-label{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
+.progress-count{font-size:12px;color:var(--text3);font-family:var(--mono)}
+.progress-track{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;transition:width .4s ease;background:var(--accent)}
+.progress-fill.green{background:var(--green)}
+.step-crumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.crumb{font-size:10px;padding:2px 9px;border-radius:20px;font-weight:600;
+  background:var(--bg3);color:var(--text3);transition:all .2s}
+.crumb.done{background:var(--accent-light);color:var(--accent)}
+.crumb.done.green{background:var(--green-light);color:var(--green)}
+.crumb.active{background:var(--accent);color:#fff}
+.crumb.active.green{background:var(--green);color:#fff}
+
+/* ── Question card ── */
+.q-card{background:rgba(255,255,255,0.02);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:6px;
+  padding:32px;margin-bottom:20px;animation:fadeIn .3s ease;box-shadow:0 10px 40px rgba(0,0,0,0.05)}
+[data-theme='dark'] .q-card{box-shadow:0 10px 40px rgba(0,0,0,0.4)}
+.q-section{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:8px;font-family:var(--font-h)}
+.q-section.green{color:var(--green)}
+.q-title{font-family:var(--font-h);font-size:28px;font-weight:700;margin-bottom:12px;line-height:1.3;letter-spacing:-.02em;text-transform:uppercase}
+.q-desc{font-size:15px;color:var(--text2);margin-bottom:28px;line-height:1.6}
+
+/* text input */
+.q-textarea{width:100%;border:1px solid var(--border);border-radius:2px;
+  padding:16px;font-family:var(--mono);font-size:14px;color:var(--text);
+  background:var(--bg3);resize:vertical;min-height:120px;outline:none;transition:all .3s}
+.q-textarea:focus{border-color:var(--accent);box-shadow:0 0 15px rgba(0,240,255,0.15), inset 0 0 5px rgba(0,240,255,0.1)}
+[data-theme='dark'] .q-textarea:focus{box-shadow:0 0 15px rgba(0,240,255,0.2), inset 0 0 5px rgba(0,240,255,0.2)}
+
+/* ── Tech option card (the magic) ── */
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.tech-card{border:1px solid var(--border);border-radius:4px;padding:0;
+  cursor:pointer;background:var(--surface);transition:all .25s;overflow:hidden;display:flex;flex-direction:column}
+.tech-card:hover{border-color:var(--accent);box-shadow:0 4px 20px rgba(0,0,0,.1), inset 0 0 0 1px rgba(0,240,255,0.1)}
+[data-theme='dark'] .tech-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.4), inset 0 0 0 1px rgba(0,240,255,0.2)}
+.tech-card.selected{border-color:var(--accent);background:var(--accent-light);box-shadow:0 0 15px var(--accent-light)}
+.tech-card.selected.green{border-color:var(--green);background:var(--green-light);box-shadow:0 0 15px var(--green-light)}
+.tech-card.single-type{cursor:pointer}
+
+.tc-main{display:flex;align-items:flex-start;gap:14px;padding:16px;flex:1}
+.tc-icon{width:42px;height:42px;border-radius:4px;display:flex;align-items:center;
+  justify-content:center;font-size:22px;flex-shrink:0;background:var(--bg3);border:1px solid var(--border2)}
+.tc-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.tc-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.tc-name{font-family:var(--font-h);font-size:16px;font-weight:700;text-transform:uppercase}
+.tc-right{display:flex;align-items:center;gap:6px;margin-left:auto}
+
+/* recommendation badges */
+.rec-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;letter-spacing:.04em}
+.rec-best{background:var(--amber-light);color:var(--amber);border:1px solid var(--border)}
+.rec-good{background:var(--green-light);color:var(--green);border:1px solid var(--border)}
+.rec-adv{background:var(--accent-light);color:var(--accent);border:1px solid var(--border)}
+
+.tc-tagline{font-size:12px;color:var(--text2)}
+.tc-check{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;
+  flex-shrink:0;transition:all .18s;color:transparent}
+.tech-card.selected .tc-check{background:var(--accent);border-color:var(--accent);color:#fff}
+.tech-card.selected.green .tc-check{background:var(--green);border-color:var(--green);color:#fff}
+
+/* expandable detail */
+.tc-detail{display:none;border-top:1px solid var(--border);padding:12px 14px;background:var(--bg3)}
+.tech-card.open .tc-detail{display:block}
+.tc-detail-inner{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.tc-pros,.tc-cons{padding:10px 12px;border-radius:var(--r)}
+.tc-pros{background:var(--green-light)}
+.tc-cons{background:var(--red-light)}
+.tc-phead{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.tc-pros .tc-phead{color:var(--green)}
+.tc-cons .tc-phead{color:var(--red)}
+.tc-plist{list-style:none;padding:0}
+.tc-plist li{font-size:11px;padding:2px 0;color:var(--text2);display:flex;gap:5px;align-items:flex-start;line-height:1.4}
+.tc-plist li::before{content:'•';flex-shrink:0;font-weight:700}
+.tc-pros .tc-plist li::before{color:var(--green)}
+.tc-cons .tc-plist li::before{color:var(--red)}
+.tc-ideal{font-size:11px;color:var(--text2);padding-top:8px;border-top:1px solid var(--border);line-height:1.5}
+.tc-ideal strong{color:var(--text);font-weight:600}
+.tc-toggle{font-size:11px;color:var(--text3);cursor:pointer;padding:0;background:none;border:none;
+  font-family:var(--font);display:flex;align-items:center;gap:4px;transition:color .15s}
+.tc-toggle:hover{color:var(--accent)}
+
+/* simple chip mode */
+.chip-grid{display:flex;flex-wrap:wrap;gap:7px}
+.chip{padding:7px 14px;border-radius:40px;border:1.5px solid var(--border);
+  background:var(--surface);cursor:pointer;font-size:12px;font-weight:600;
+  color:var(--text2);transition:all .15s;font-family:var(--font)}
+.chip:hover{border-color:var(--border2);color:var(--text)}
+.chip.sel{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+.chip.sel.green{border-color:var(--green);background:var(--green-light);color:var(--green)}
+
+/* scale cards */
+.scale-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.scale-card{border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;
+  cursor:pointer;background:var(--surface);transition:all .18s}
+.scale-card:hover{border-color:var(--border2)}
+.scale-card.selected{border-color:var(--accent);background:var(--accent-light)}
+.scale-card.selected.green{border-color:var(--green);background:var(--green-light)}
+.scale-icon{font-size:22px;margin-bottom:6px}
+.scale-name{font-size:13px;font-weight:700;margin-bottom:3px}
+.scale-desc{font-size:11px;color:var(--text2);line-height:1.4}
+
+/* nav */
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+.btn{padding:10px 22px;border-radius:var(--r);font-family:var(--font);font-size:13px;
+  font-weight:700;cursor:pointer;border:none;transition:all .15s;letter-spacing:.02em}
+.btn-back{background:var(--bg3);color:var(--text2);border:1.5px solid var(--border)}
+.btn-back:hover{color:var(--text);border-color:var(--border2)}
+.btn-next{background:var(--accent);color:#fff}
+.btn-next:hover{background:var(--accent-mid);transform:translateY(-1px)}
+.btn-next.green{background:var(--green)}
+.btn-generate{padding:13px 32px;font-size:14px;background:var(--accent);color:#fff;
+  box-shadow:0 4px 20px rgba(45,91,227,.25)}
+.btn-generate:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(45,91,227,.35)}
+.btn-generate.green{background:var(--green);box-shadow:0 4px 20px rgba(26,143,94,.25)}
+.step-info{font-size:12px;color:var(--text3);font-family:var(--mono)}
+
+/* ── Output ── */
+.out-wrap{animation:fadeIn .4s ease}
+.out-hero{background:transparent;border:1px solid var(--accent);border-radius:4px;padding:32px;margin-bottom:24px;
+  position:relative;overflow:hidden;box-shadow:0 0 30px rgba(0,240,255,0.1), inset 0 0 20px rgba(0,240,255,0.05)}
+[data-theme='dark'] .out-hero{border-color:var(--accent);box-shadow:0 0 40px rgba(0,240,255,0.15), inset 0 0 30px rgba(0,240,255,0.1)}
+.out-hero::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+.out-hero.green{border-color:var(--green);box-shadow:0 0 30px rgba(57,255,20,0.1), inset 0 0 20px rgba(57,255,20,0.05)}
+.out-hero.green::before{background:var(--green);box-shadow:0 0 10px var(--green)}
+.out-hero.amber{border-color:var(--amber);box-shadow:0 0 30px rgba(252,238,10,0.1), inset 0 0 20px rgba(252,238,10,0.05)}
+.out-hero.amber::before{background:var(--amber);box-shadow:0 0 10px var(--amber)}
+.out-hero-label{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;font-family:var(--font-h)}
+.out-hero.green .out-hero-label{color:var(--green)}
+.out-hero.amber .out-hero-label{color:var(--amber)}
+.out-hero-name{font-family:var(--font-h);font-size:32px;font-weight:700;margin-bottom:12px;text-transform:uppercase;color:var(--text)}
+.out-hero-meta{font-size:13px;display:flex;flex-wrap:wrap;gap:12px}
+.out-hero-chip{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:2px;font-family:var(--mono)}
+.out-hero-name{font-size:22px;font-weight:800;margin-bottom:4px}
+.out-hero-meta{font-size:12px;opacity:.8;display:flex;flex-wrap:wrap;gap:12px}
+.out-hero-chip{background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px}
+
+.tab-nav{display:flex;gap:8px;background:var(--bg3);padding:6px;border-radius:4px;
+  border:1px solid var(--border);flex-wrap:wrap;margin-bottom:20px}
+.tab-nav-btn{padding:10px 20px;border-radius:2px;border:1px solid transparent;background:transparent;
+  color:var(--text3);font-family:var(--font-h);font-size:14px;font-weight:700;text-transform:uppercase;
+  cursor:pointer;transition:all .2s;letter-spacing:.05em;flex:1;text-align:center}
+.tab-nav-btn.active{background:var(--surface);color:var(--accent);border-color:var(--border);box-shadow:0 0 10px rgba(0,240,255,0.05)}
+[data-theme='dark'] .tab-nav-btn.active{box-shadow:0 0 15px rgba(0,240,255,0.1)}
+.tab-nav-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.out-panel{display:none}
+.out-panel.active{display:block;animation:fadeIn .25s ease}
+
+.out-section{background:rgba(255,255,255,0.02);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:4px;
+  padding:24px;margin-bottom:16px}
+.out-sec-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.out-sec-icon{width:40px;height:40px;border-radius:4px;display:flex;align-items:center;
+  justify-content:center;font-size:20px;background:var(--accent-light);flex-shrink:0;border:1px solid var(--accent);box-shadow:inset 0 0 10px rgba(0,240,255,0.1)}
+.out-sec-icon.green{background:var(--green-light);border-color:var(--green);box-shadow:inset 0 0 10px rgba(57,255,20,0.1)}
+.out-sec-icon.amber{background:var(--amber-light);border-color:var(--amber);box-shadow:inset 0 0 10px rgba(252,238,10,0.1)}
+.out-sec-title{font-family:var(--font-h);font-size:18px;font-weight:700;letter-spacing:.02em;text-transform:uppercase}
+.out-sec-sub{font-size:11px;color:var(--text2);margin-top:1px}
+
+.code-block{background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:var(--r-lg);overflow:hidden;margin-top:4px}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+  border-bottom:1px solid rgba(255,255,255,.08)}
+.code-lang-tag{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.08em;text-transform:uppercase}
+.copy-btn{font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.15);
+  background:transparent;color:rgba(255,255,255,.5);cursor:pointer;font-family:var(--font);
+  transition:all .15s;font-weight:600}
+.copy-btn:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+.copy-btn.ok{color:#4dd;border-color:#4dd}
+pre{padding:16px;overflow-x:auto;font-family:var(--mono);font-size:11.5px;line-height:1.75;
+  color:#c8d3e0;max-height:400px;white-space:pre}
+
+/* stack recommendation */
+.stack-recs{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.stack-rec{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);
+  padding:10px 12px;position:relative}
+.stack-rec-cat{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--text3);margin-bottom:4px}
+.stack-rec-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.stack-rec-why{font-size:10px;color:var(--text2);line-height:1.4}
+.stack-rec-star{position:absolute;top:8px;right:8px;font-size:12px}
+
+/* phase list in PRD view */
+.phase-list{display:flex;flex-direction:column;gap:7px}
+.phase-item{display:flex;gap:10px;background:var(--bg3);border-radius:var(--r);padding:11px 12px;align-items:flex-start}
+.phase-num{min-width:24px;height:24px;border-radius:6px;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px;
+  background:var(--accent-light);color:var(--accent)}
+.phase-num.green{background:var(--green-light);color:var(--green)}
+.phase-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.phase-desc{font-size:11px;color:var(--text2);line-height:1.5}
+.phase-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.phase-tag{font-size:10px;padding:1px 7px;border-radius:10px;font-weight:600;
+  background:var(--accent-light);color:var(--accent)}
+.phase-tag.green{background:var(--green-light);color:var(--green)}
+
+.prose-out{font-size:13px;color:var(--text2);line-height:1.8}
+.prose-out h3{font-size:14px;font-weight:700;color:var(--text);margin:14px 0 5px}
+.prose-out strong{color:var(--text);font-weight:600}
+
+/* restart */
+.restart-row{text-align:center;margin-top:28px}
+.btn-restart{background:var(--bg3);color:var(--text2);border:1.5px solid var(--border);font-size:12px;padding:9px 22px}
+.btn-restart:hover{border-color:var(--border2);color:var(--text)}
+
+/* ── Animations ── */
+@keyframes fadeDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Desktop / Amber mode ── */
+.badge-desktop{background:transparent;color:var(--amber)}
+.mode-card.active.amber-mode{border-color:var(--amber);background:var(--amber-light)}
+.mode-card.active.amber-mode .mode-check{color:#000;background:var(--amber);border-color:var(--amber)}
+.progress-fill.amber{background:var(--amber);box-shadow:0 0 10px var(--amber)}
+.crumb.done.amber{border-color:var(--amber);color:var(--amber)}
+.crumb.active.amber{background:var(--amber);color:#000;box-shadow:0 0 10px var(--amber)}
+.q-section.amber{color:var(--amber)}
+.tech-card.selected.amber{border-color:var(--amber);background:var(--amber-light)}
+.tech-card.selected.amber .tc-check{background:var(--amber);border-color:var(--amber);color:#fff}
+.chip.sel.amber{border-color:var(--amber);background:var(--amber-light);color:var(--amber)}
+.scale-card.selected.amber{border-color:var(--amber);background:var(--amber-light)}
+.btn-next.amber{background:var(--amber)}
+.btn-next.amber:hover{background:#b06800}
+.btn-generate.amber{background:var(--amber);box-shadow:0 4px 20px rgba(201,116,0,.25)}
+.btn-generate.amber:hover{box-shadow:0 8px 28px rgba(201,116,0,.35)}
+.phase-num.amber{background:var(--amber-light);color:var(--amber)}
+.phase-tag.amber{background:var(--amber-light);color:var(--amber)}
+.out-hero.amber{background:linear-gradient(135deg,#c97400,#e8940a)}
+.out-sec-icon.amber{background:var(--amber-light)}
+
+/* ── Level toggle ── */
+.level-toggle{display:flex;align-items:center;gap:6px;margin-bottom:16px;justify-content:center;animation:fadeUp .5s .18s ease both}
+.level-label{font-size:12px;font-weight:700;color:var(--text2);margin-right:4px}
+.level-btn{padding:5px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);
+  font-size:11px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all .15s;color:var(--text2)}
+.level-btn:hover{border-color:var(--border2);color:var(--text)}
+.level-btn.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+
+/* ── Quick start ── */
+.quick-start-section{margin-top:40px;animation:fadeUp .5s .35s ease both}
+.qs-title{font-family:var(--font-h);font-size:16px;font-weight:700;color:var(--text2);text-align:center;margin-bottom:20px;text-transform:uppercase;letter-spacing:.05em}
+.qs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.qs-card{border:1px solid var(--border);border-radius:4px;padding:20px 16px;text-align:center;
+  cursor:pointer;background:rgba(255,255,255,0.02);backdrop-filter:blur(5px);transition:all .3s}
+.qs-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(0,0,0,.2), inset 0 0 10px rgba(0,240,255,0.1);transform:translateY(-4px)}
+[data-theme='dark'] .qs-card:hover{box-shadow:0 8px 30px rgba(0,240,255,0.1), inset 0 0 15px rgba(0,240,255,0.2)}
+.qs-icon{font-size:32px;margin-bottom:12px}
+.qs-name{font-family:var(--font-h);font-size:14px;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.02em}
+.qs-desc{font-size:12px;color:var(--text3);line-height:1.5;font-family:var(--mono)}
+
+@media(max-width:900px){
+  .mode-grid{grid-template-columns:1fr}
+  .tech-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .tech-grid{grid-template-columns:1fr}
+  .tc-detail-inner{grid-template-columns:1fr}
+  .scale-grid{grid-template-columns:1fr}
+  .stack-recs{grid-template-columns:repeat(2,1fr)}
+  .qs-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <div class="nav-container">
+    <div class="logo" onclick="goHome()">
+      <div class="logo-dot">⚡</div><span class="logo-text">DevForge v3</span>
+    </div>
+    <div class="nav-actions">
+      <button class="nav-btn" onclick="toggleTheme()" id="themeBtn">🌙 Gelap</button>
+      <button class="nav-btn" onclick="goHome()">🏠 Beranda</button>
+    </div>
+  </div>
+</nav>
+
+<div id="app">
+<div id="root"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// UI & NAVIGATION HELPERS
+// ═══════════════════════════════════════════
+function initTheme(){
+  if(localStorage.getItem('theme')==='dark'){
+    document.documentElement.setAttribute('data-theme','dark');
+    document.getElementById('themeBtn').textContent='☀️ Terang';
+  }
+}
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  if(isDark){
+    html.removeAttribute('data-theme');
+    localStorage.setItem('theme','light');
+    document.getElementById('themeBtn').textContent='🌙 Gelap';
+  }else{
+    html.setAttribute('data-theme','dark');
+    localStorage.setItem('theme','dark');
+    document.getElementById('themeBtn').textContent='☀️ Terang';
+  }
+}
+function goHome(){
+  Object.assign(S,{mode:null,step:0,answers:{},generating:false,generated:null,activeTab:null});
+  render();
+  window.scrollTo(0,0);
+}
+initTheme();
+// ═══════════════════════════════════════════
+// TECH DATABASE — with explanations
+// ═══════════════════════════════════════════
+const TECH = {
+
+frontend: [
+  {val:'nextjs', icon:'▲', name:'Next.js', tagline:'Framework React paling populer saat ini',
+   rec:'best', recLabel:'⭐ Terbaik',
+   pros:['Cocok untuk semua jenis web app','SEO-friendly (bagus untuk Google)','Built-in routing, API, auth — serba ada','Komunitas besar, mudah cari bantuan'],
+   cons:['Agak kompleks untuk pemula','Deploy butuh server (bukan cuma file statis)'],
+   ideal:'<strong>Paling cocok untuk:</strong> SaaS, dashboard, e-commerce, app dengan banyak halaman'},
+  {val:'react', icon:'⚛', name:'React', tagline:'Library UI paling banyak dipakai di dunia',
+   rec:'good', recLabel:'✓ Bagus',
+   pros:['Ekosistem sangat besar','Fleksibel, bisa dikombinasikan dengan apa saja','Banyak tutorial dan developer-nya'],
+   cons:['Tidak ada routing bawaan — harus tambah library','Setup awal lebih ribet dari Next.js'],
+   ideal:'<strong>Paling cocok untuk:</strong> SPA (Single Page App), dashboard internal, app sederhana'},
+  {val:'vue', icon:'💚', name:'Vue 3', tagline:'Framework yang lebih mudah dipelajari',
+   rec:'good', recLabel:'✓ Bagus',
+   pros:['Lebih mudah dipahami pemula','Dokumentasi sangat bagus','Performa sangat ringan'],
+   cons:['Komunitas lebih kecil dari React','Lebih sedikit pilihan kerja vs React'],
+   ideal:'<strong>Paling cocok untuk:</strong> Tim yang baru belajar, app skala menengah'},
+  {val:'expo', icon:'📱', name:'React Native / Expo', tagline:'Satu kode, jalan di iOS dan Android',
+   rec:'best', recLabel:'⭐ Terbaik Mobile',
+   pros:['Satu codebase untuk iOS + Android','Lebih murah dari buat 2 app terpisah','Hot reload cepat saat development'],
+   cons:['Performa lebih lambat dari native','Akses hardware terbatas untuk fitur spesifik'],
+   ideal:'<strong>Paling cocok untuk:</strong> Startup yang mau rilis mobile app cepat dengan budget efisien'},
+  {val:'flutter', icon:'🦋', name:'Flutter', tagline:'Framework Google untuk mobile & web',
+   rec:'adv', recLabel:'⚡ Advanced',
+   pros:['Performa sangat dekat dengan native','Tampilan konsisten di semua platform','Bisa untuk mobile, web, desktop sekaligus'],
+   cons:['Bahasa Dart — kurang populer','Butuh belajar ecosystem baru','Bundle size lebih besar'],
+   ideal:'<strong>Paling cocok untuk:</strong> App yang butuh performa tinggi dan tampilan pixel-perfect'},
+],
+
+backend: [
+  {val:'nodejs-express', icon:'🟩', name:'Node.js + Express', tagline:'Backend JavaScript — satu bahasa untuk semua',
+   rec:'best', recLabel:'⭐ Terbaik Pemula',
+   pros:['Satu bahasa (JS) untuk frontend + backend','Setup cepat, ekosistem besar (npm)','Mudah deploy di mana saja'],
+   cons:['Tidak ideal untuk CPU-intensive tasks','Callback hell jika tidak pakai async/await'],
+   ideal:'<strong>Paling cocok untuk:</strong> REST API, web app, real-time app'},
+  {val:'nextjs-api', icon:'▲', name:'Next.js API Routes', tagline:'Backend langsung di dalam Next.js — simpel',
+   rec:'best', recLabel:'⭐ Termudah',
+   pros:['Tidak perlu server terpisah','Satu repo untuk frontend + backend','Deploy ke Vercel gratis dan mudah'],
+   cons:['Terbatas untuk logic yang sangat kompleks','Tidak cocok untuk microservices besar'],
+   ideal:'<strong>Paling cocok untuk:</strong> Startup/MVP yang mau serba praktis dalam satu project'},
+  {val:'fastapi', icon:'🐍', name:'Python + FastAPI', tagline:'Backend Python tercepat, dengan auto-dokumentasi',
+   rec:'good', recLabel:'✓ Bagus',
+   pros:['Performa sangat cepat','Auto-generate dokumentasi API','Terbaik jika project butuh AI/ML'],
+   cons:['Harus bisa Python','Setup lebih panjang dari Node.js'],
+   ideal:'<strong>Paling cocok untuk:</strong> App dengan AI features, data processing, ML pipeline'},
+  {val:'supabase-edge', icon:'⚡', name:'Supabase Edge Functions', tagline:'Backend serverless langsung dari Supabase',
+   rec:'good', recLabel:'✓ Termudah + DB',
+   pros:['Database + API dalam satu platform','Gratis untuk project kecil','Deploy otomatis, tidak perlu server'],
+   cons:['Terbatas untuk logic yang sangat kompleks','Vendor lock-in ke Supabase'],
+   ideal:'<strong>Paling cocok untuk:</strong> MVP cepat, app sederhana, prototype'},
+  {val:'go', icon:'🔵', name:'Go / Gin', tagline:'Backend tercepat untuk traffic tinggi',
+   rec:'adv', recLabel:'⚡ Expert',
+   pros:['Performa luar biasa','Konsumsi memori sangat rendah','Cocok untuk sistem skala besar'],
+   cons:['Kurva belajar cukup tinggi','Ekosistem lebih kecil dari Node/Python'],
+   ideal:'<strong>Paling cocok untuk:</strong> High-traffic API, fintech, sistem enterprise'},
+],
+
+database: [
+  {val:'supabase', icon:'🟢', name:'Supabase (PostgreSQL)', tagline:'Database + Auth + Storage dalam satu platform',
+   rec:'best', recLabel:'⭐ Terbaik Pemula',
+   pros:['Setup 5 menit, langsung pakai','Gratis hingga project cukup besar','Ada auth, storage, realtime sudah built-in','Dashboard visual yang mudah dipahami'],
+   cons:['Jika traffic sangat besar, biaya bisa naik','Kurang fleksibel vs PostgreSQL mentah'],
+   ideal:'<strong>Paling cocok untuk:</strong> 99% project baru — mulai dari MVP sampai skala menengah'},
+  {val:'postgresql', icon:'🐘', name:'PostgreSQL (mandiri)', tagline:'Database relasional terkuat di dunia',
+   rec:'good', recLabel:'✓ Bagus',
+   pros:['Kontrol penuh','Performa terbaik untuk data kompleks','Tidak ada vendor lock-in'],
+   cons:['Harus manage server sendiri','Setup lebih panjang, butuh DevOps'],
+   ideal:'<strong>Paling cocok untuk:</strong> Tim dengan DevOps, project yang butuh kontrol penuh'},
+  {val:'mongodb', icon:'🍃', name:'MongoDB', tagline:'Database fleksibel untuk data tidak berstruktur',
+   rec:'good', recLabel:'✓ Situasional',
+   pros:['Simpan data format bebas (JSON)','Cepat untuk prototyping','Skalabilitas horizontal mudah'],
+   cons:['Tidak ada JOIN seperti SQL','Risiko data tidak konsisten','Kurang cocok untuk data relasional'],
+   ideal:'<strong>Paling cocok untuk:</strong> App dengan struktur data yang sering berubah, CMS, katalog produk'},
+  {val:'firebase', icon:'🔥', name:'Firebase Firestore', tagline:'Database Google — real-time dan mudah',
+   rec:'good', recLabel:'✓ Bagus Mobile',
+   pros:['Real-time sync built-in','Sangat mudah untuk mobile app','Gratis tier cukup besar'],
+   cons:['Query terbatas dibanding SQL','Harga bisa mahal kalau data besar','Vendor lock-in Google'],
+   ideal:'<strong>Paling cocok untuk:</strong> Mobile app dengan real-time features (chat, live update)'},
+  {val:'redis', icon:'🔴', name:'Redis', tagline:'Database super cepat untuk cache dan session',
+   rec:'adv', recLabel:'⚡ Tambahan',
+   pros:['Kecepatan operasi dalam microsecond','Sempurna untuk caching dan session','Pub/sub untuk real-time'],
+   cons:['Bukan database utama — hanya pelengkap','Data hilang kalau restart (tanpa konfigurasi)'],
+   ideal:'<strong>Paling cocok untuk:</strong> Dipakai bersama PostgreSQL/MongoDB sebagai cache layer'},
+  {val:'sqlite', icon:'📁', name:'SQLite', tagline:'Database lokal — tanpa server, file-based',
+   rec:'best', recLabel:'⭐ Terbaik Desktop',
+   pros:['Tidak perlu server database','File-based — data di dalam app','Sangat cepat untuk data lokal','Zero configuration'],
+   cons:['Tidak cocok untuk multi-user concurrent','Tidak bisa diakses dari jauh'],
+   ideal:'<strong>Paling cocok untuk:</strong> Desktop app, mobile app, embedded system, app dengan data lokal'},
+],
+
+desktop: [
+  {val:'electron', icon:'⚡', name:'Electron', tagline:'Web tech → Desktop app. VSCode dibangun pakai ini',
+   rec:'best', recLabel:'⭐ Terbaik Pemula',
+   pros:['Pakai JavaScript/HTML/CSS yang sudah familiar','Ekosistem npm bisa dipakai','Cross-platform (Windows, Mac, Linux)','Banyak contoh app: VSCode, Discord, Slack'],
+   cons:['Ukuran app besar (100MB+)','Konsumsi RAM lebih tinggi','Startup lebih lambat dari native'],
+   ideal:'<strong>Paling cocok untuk:</strong> Developer web yang mau buat desktop app tanpa belajar bahasa baru'},
+  {val:'tauri', icon:'🦀', name:'Tauri', tagline:'Desktop app ringan & cepat — Rust backend',
+   rec:'best', recLabel:'⭐ Terbaik Modern',
+   pros:['Ukuran app sangat kecil (3-10MB)','Performa dan keamanan tinggi (Rust)','Konsumsi memori rendah','Auto-update built-in'],
+   cons:['Harus pelajari sedikit Rust','Ekosistem lebih kecil dari Electron','Dokumentasi masih berkembang'],
+   ideal:'<strong>Paling cocok untuk:</strong> App yang butuh performa tinggi dan ukuran kecil'},
+  {val:'dotnet-maui', icon:'🔷', name:'.NET MAUI', tagline:'Framework Microsoft untuk app Windows native',
+   rec:'good', recLabel:'✓ Windows Native',
+   pros:['Performa native Windows terbaik','Integrasi sempurna dengan ekosistem Microsoft','Bisa juga untuk iOS/Android','C# language yang modern'],
+   cons:['Harus belajar C#','Lebih cocok khusus Windows','Setup Visual Studio cukup berat'],
+   ideal:'<strong>Paling cocok untuk:</strong> App enterprise Windows, integrasi dengan ekosistem Microsoft'},
+  {val:'flutter-desktop', icon:'🦋', name:'Flutter Desktop', tagline:'Satu kode untuk desktop + mobile + web',
+   rec:'good', recLabel:'✓ Cross-Platform',
+   pros:['Satu codebase untuk semua platform','UI cantik dan konsisten','Performa dekat native','Widget library sangat kaya'],
+   cons:['Bahasa Dart kurang populer','Desktop support masih relatif baru','Bundle size lebih besar'],
+   ideal:'<strong>Paling cocok untuk:</strong> App yang juga butuh versi mobile dan web'},
+  {val:'pyqt', icon:'🐍', name:'PyQt / PySide', tagline:'Desktop app dengan Python — cocok untuk tools & utilitas',
+   rec:'adv', recLabel:'⚡ Python Dev',
+   pros:['Bahasa Python yang mudah','Widget native OS','Cocok untuk scientific/data app','Library Python bisa dipakai langsung'],
+   cons:['UI terlihat old-school tanpa styling extra','Distribusi app lebih ribet','Kurang cocok untuk app consumer'],
+   ideal:'<strong>Paling cocok untuk:</strong> Tools internal, scientific app, admin utility'},
+],
+
+installer: [
+  {val:'electron-builder', icon:'📦', name:'Electron Builder', tagline:'Auto-installer + auto-update untuk Electron',
+   rec:'best', recLabel:'⭐ Terbaik (Electron)',
+   pros:['Buat .exe/.dmg/.AppImage otomatis','Auto-update built-in','Code signing support','Sangat banyak dipakai'],
+   cons:['Hanya untuk Electron','Konfigurasi bisa kompleks untuk advanced use'],
+   ideal:'<strong>Paling cocok untuk:</strong> Semua project Electron'},
+  {val:'tauri-bundler', icon:'🦀', name:'Tauri Bundler', tagline:'Installer bawaan Tauri — ringan dan cepat',
+   rec:'best', recLabel:'⭐ Terbaik (Tauri)',
+   pros:['Terintegrasi penuh dengan Tauri','Buat MSI/NSIS/DMG/AppImage otomatis','Auto-update built-in','Installer sangat kecil'],
+   cons:['Hanya untuk project Tauri'],
+   ideal:'<strong>Paling cocok untuk:</strong> Semua project Tauri'},
+  {val:'nsis', icon:'🛠️', name:'NSIS / Inno Setup', tagline:'Windows installer klasik — sangat mature',
+   rec:'good', recLabel:'✓ Windows Klasik',
+   pros:['Installer paling kecil ukurannya','Kontrol penuh atas proses install','Mature dan stabil 20+ tahun','Gratis dan open source'],
+   cons:['Scripting language-nya unik','Hanya untuk Windows','Manual setup'],
+   ideal:'<strong>Paling cocok untuk:</strong> App Windows yang butuh installer custom'},
+  {val:'msix', icon:'🪟', name:'MSIX / Windows Store', tagline:'Format modern Microsoft — bisa publish ke Store',
+   rec:'good', recLabel:'✓ Modern Windows',
+   pros:['Bisa publish ke Microsoft Store','Install/uninstall bersih','Auto-update via Store','Sandbox security'],
+   cons:['Hanya Windows 10+','Proses publish ke Store agak panjang'],
+   ideal:'<strong>Paling cocok untuk:</strong> App yang mau dijual via Microsoft Store'},
+],
+
+payment: [
+  {val:'midtrans', icon:'💳', name:'Midtrans', tagline:'Payment gateway #1 di Indonesia — by GoTo',
+   rec:'best', recLabel:'⭐ Terbaik Indonesia',
+   pros:['Support semua metode: VA, e-wallet, CC, QRIS','Dashboard mudah dipahami','SDK untuk semua platform','Snap checkout (popup pembayaran siap pakai)'],
+   cons:['Fee transaksi ~2.9%','Proses approval merchant 3-5 hari'],
+   ideal:'<strong>Paling cocok untuk:</strong> E-commerce, SaaS, dan app apapun di Indonesia'},
+  {val:'xendit', icon:'🇮🇩', name:'Xendit', tagline:'Payment gateway modern — favorit startup Indonesia',
+   rec:'best', recLabel:'⭐ Terbaik Startup',
+   pros:['API sangat developer-friendly','VA, e-wallet, QRIS lengkap','Disbursement otomatis','Webhook reliable'],
+   cons:['Fee bervariasi per metode','Perlu approval untuk beberapa fitur'],
+   ideal:'<strong>Paling cocok untuk:</strong> Startup, marketplace, platform dengan disbursement'},
+  {val:'stripe', icon:'💜', name:'Stripe', tagline:'Payment global terbaik — SDK terlengkap di dunia',
+   rec:'best', recLabel:'⭐ Terbaik Global',
+   pros:['SDK dan dokumentasi terbaik di dunia','Support 135+ mata uang','Subscription billing built-in','Checkout page siap pakai'],
+   cons:['Belum support semua bank lokal Indonesia','Fee ~2.9% + $0.30 per transaksi'],
+   ideal:'<strong>Paling cocok untuk:</strong> SaaS global, subscription app, international payment'},
+  {val:'doku', icon:'🏦', name:'DOKU', tagline:'Payment gateway enterprise Indonesia — pioneer',
+   rec:'good', recLabel:'✓ Enterprise ID',
+   pros:['Salah satu tertua dan terpercaya','Support bank lokal sangat lengkap','Compliance dan audit ready'],
+   cons:['Dashboard kurang modern','API documentation kurang developer-friendly'],
+   ideal:'<strong>Paling cocok untuk:</strong> Enterprise, pemerintah, perusahaan besar'},
+  {val:'paypal', icon:'🅿️', name:'PayPal', tagline:'Payment international — paling dikenal di dunia',
+   rec:'good', recLabel:'✓ International',
+   pros:['Brand trust paling tinggi global','Buyer protection','Support 200+ negara'],
+   cons:['Fee tinggi (~4.4%)','Dispute sering memihak buyer','Akun bisa difreeze'],
+   ideal:'<strong>Paling cocok untuk:</strong> Jualan internasional, freelancer, digital products'},
+  {val:'tripay', icon:'🔗', name:'Tripay', tagline:'Payment aggregator murah — cocok untuk UMKM',
+   rec:'good', recLabel:'✓ Murah & Mudah',
+   pros:['Fee sangat kompetitif','Setup cepat, approval cepat','Support VA, e-wallet, QRIS','API sederhana'],
+   cons:['Fitur lebih terbatas dari Midtrans/Xendit','Dashboard basic'],
+   ideal:'<strong>Paling cocok untuk:</strong> UMKM, toko online kecil, side project'},
+  {val:'qris-direct', icon:'📱', name:'QRIS Direct', tagline:'Integrasi langsung ke QRIS — tanpa perantara',
+   rec:'adv', recLabel:'⚡ Advanced',
+   pros:['Biaya sangat rendah (MDR 0.3%)','Semua e-wallet bisa bayar','Standard nasional Bank Indonesia'],
+   cons:['Perlu integrasi langsung ke acquiring bank','Setup teknis lebih kompleks'],
+   ideal:'<strong>Paling cocok untuk:</strong> POS/kiosk, toko fisik, app dengan volume transaksi tinggi'},
+],
+
+uiLib: [
+  {val:'tailwind-shadcn', icon:'🎨', name:'Tailwind + shadcn/ui', tagline:'Kombinasi terpopuler untuk UI modern',
+   rec:'best', recLabel:'⭐ Terbaik',
+   pros:['Komponen siap pakai yang cantik','Sangat fleksibel dan bisa dikustomisasi','Tidak perlu tulis banyak CSS manual','Performa ringan'],
+   cons:['Class HTML bisa terlihat panjang','Butuh waktu belajar sistem Tailwind'],
+   ideal:'<strong>Paling cocok untuk:</strong> Hampir semua project modern'},
+  {val:'chakra', icon:'🌀', name:'Chakra UI', tagline:'UI library paling mudah untuk pemula',
+   rec:'good', recLabel:'✓ Termudah',
+   pros:['Komponen langsung pakai dengan prop sederhana','Aksesibilitas built-in','Dark mode otomatis'],
+   cons:['Tampilan lebih generik','Performa sedikit lebih berat'],
+   ideal:'<strong>Paling cocok untuk:</strong> Pemula yang mau tampilan bagus tanpa banyak setup'},
+  {val:'mui', icon:'🔷', name:'Material UI (MUI)', tagline:'UI ala Google Material Design',
+   rec:'good', recLabel:'✓ Bagus',
+   pros:['Komponen sangat lengkap','Tampilan profesional dan familiar','Dokumentasi sangat baik'],
+   cons:['Tampilan terlihat "standar Google"','Bundle size lebih besar','Kustomisasi butuh lebih banyak kerja'],
+   ideal:'<strong>Paling cocok untuk:</strong> Dashboard internal, enterprise app, admin panel'},
+  {val:'framer', icon:'✨', name:'+ Framer Motion', tagline:'Animasi smooth untuk React',
+   rec:'good', recLabel:'✓ Tambahkan',
+   pros:['Animasi profesional dengan kode minimal','Gesture support (drag, tap, swipe)','Performa dioptimasi'],
+   cons:['Hanya untuk animasi — bukan komponen UI','Tambah ukuran bundle'],
+   ideal:'<strong>Paling cocok untuk:</strong> App yang butuh kesan premium dan animasi halus'},
+],
+
+auth: [
+  {val:'supabase-auth', icon:'🔐', name:'Supabase Auth', tagline:'Auth lengkap dalam ekosistem Supabase',
+   rec:'best', recLabel:'⭐ Terbaik (+ Supabase)',
+   pros:['Setup 10 menit','Email, Google, GitHub, dll. built-in','Row Level Security untuk data per-user','Gratis'],
+   cons:['Terikat ke ekosistem Supabase'],
+   ideal:'<strong>Paling cocok untuk:</strong> Siapapun yang pakai Supabase sebagai database'},
+  {val:'nextauth', icon:'🔑', name:'NextAuth.js / Auth.js', tagline:'Auth untuk Next.js — paling fleksibel',
+   rec:'best', recLabel:'⭐ Terbaik (Next.js)',
+   pros:['Puluhan provider OAuth siap pakai','Open source dan gratis','Sangat fleksibel'],
+   cons:['Konfigurasi awal agak panjang','Docs bisa membingungkan'],
+   ideal:'<strong>Paling cocok untuk:</strong> Project Next.js yang butuh login sosial (Google, GitHub, dll.)'},
+  {val:'clerk', icon:'👤', name:'Clerk', tagline:'Auth as a service — tercepat setup-nya',
+   rec:'good', recLabel:'✓ Tercepat',
+   pros:['UI auth sudah jadi, tinggal pasang','Fitur premium: MFA, organization, passkey','Setup 5 menit'],
+   cons:['Berbayar untuk fitur lanjut','Vendor lock-in'],
+   ideal:'<strong>Paling cocok untuk:</strong> Startup yang mau fokus ke produk, bukan setup auth'},
+  {val:'jwt-custom', icon:'🔒', name:'JWT Custom', tagline:'Auth manual — kontrol penuh',
+   rec:'adv', recLabel:'⚡ Advanced',
+   pros:['Kontrol 100%','Tidak ada biaya tambahan','Bisa disesuaikan sepenuhnya'],
+   cons:['Harus implement sendiri (risiko bug keamanan)','Butuh waktu lebih lama'],
+   ideal:'<strong>Paling cocok untuk:</strong> Tim berpengalaman yang butuh custom flow'},
+],
+
+deployment: [
+  {val:'vercel', icon:'▲', name:'Vercel', tagline:'Deploy Next.js/React dalam hitungan menit',
+   rec:'best', recLabel:'⭐ Terbaik Pemula',
+   pros:['Deploy otomatis tiap push ke GitHub','SSL, CDN, preview URL gratis','Gratis untuk project pribadi'],
+   cons:['Mahal untuk traffic sangat tinggi','Kurang cocok untuk long-running backend'],
+   ideal:'<strong>Paling cocok untuk:</strong> Frontend, Next.js, static sites'},
+  {val:'railway', icon:'🚂', name:'Railway', tagline:'Deploy backend + database dengan mudah',
+   rec:'best', recLabel:'⭐ Terbaik Backend',
+   pros:['Deploy Docker atau repo langsung','Database (PostgreSQL, Redis) built-in','$5/bulan sudah cukup untuk MVP'],
+   cons:['Free tier terbatas','Tidak sepopuler AWS/GCP'],
+   ideal:'<strong>Paling cocok untuk:</strong> Backend Node.js, Python API, fullstack app'},
+  {val:'render', icon:'🎯', name:'Render', tagline:'Heroku modern — mudah dan terjangkau',
+   rec:'good', recLabel:'✓ Bagus',
+   pros:['Free tier untuk web services','Setup mudah seperti Heroku','Database PostgreSQL murah'],
+   cons:['Free tier tidur setelah 15 menit tidak aktif','Lebih lambat bangun dari Railway'],
+   ideal:'<strong>Paling cocok untuk:</strong> Side project, demo app, backend sederhana'},
+  {val:'aws', icon:'☁️', name:'AWS / GCP / Azure', tagline:'Cloud enterprise — skala tak terbatas',
+   rec:'adv', recLabel:'⚡ Enterprise',
+   pros:['Skalabilitas tidak terbatas','Layanan sangat lengkap','SLA enterprise'],
+   cons:['Kompleksitas tinggi','Biaya bisa membengkak jika salah konfigurasi','Butuh DevOps berpengalaman'],
+   ideal:'<strong>Paling cocok untuk:</strong> Startup tahap growth, enterprise, fintech'},
+  {val:'docker', icon:'🐳', name:'+ Docker + CI/CD', tagline:'Containerisasi untuk konsistensi lingkungan',
+   rec:'good', recLabel:'✓ Tambahkan',
+   pros:['"Works on my machine" problem hilang','Deployment konsisten di mana saja','Mudah di-scale'],
+   cons:['Kurva belajar ada','Perlu resource lebih saat development'],
+   ideal:'<strong>Paling cocok untuk:</strong> Project yang butuh consistency antara dev dan production'},
+],
+
+// ADLC specific
+llm: [
+  {val:'claude', icon:'🟣', name:'Claude 3.5+ (Anthropic)', tagline:'Terbaik untuk reasoning, coding, dan instruksi panjang',
+   rec:'best', recLabel:'⭐ Terbaik Coding',
+   pros:['Konteks sangat panjang (200k token)','Mengikuti instruksi kompleks dengan sangat baik','Tool use / function calling terbaik','Lebih aman dan terpercaya'],
+   cons:['API berbayar (tidak ada free tier)','Akses di beberapa region terbatas'],
+   ideal:'<strong>Paling cocok untuk:</strong> Coding agent, document analysis, complex reasoning'},
+  {val:'gpt', icon:'🟢', name:'GPT-4o (OpenAI)', tagline:'Paling populer, ekosistem terlengkap',
+   rec:'good', recLabel:'✓ Sangat Populer',
+   pros:['Komunitas dan tools terbesar','Vision (baca gambar) built-in','ChatGPT plugins ekosistem luas'],
+   cons:['Rate limit lebih ketat','Harga lebih tinggi untuk volume besar'],
+   ideal:'<strong>Paling cocok untuk:</strong> Multi-modal agent, prototyping cepat'},
+  {val:'gemini', icon:'🔵', name:'Gemini 1.5 Pro (Google)', tagline:'Konteks terpanjang — 1 juta token',
+   rec:'good', recLabel:'✓ Untuk Dokumen Besar',
+   pros:['Context window terbesar (1M token)','Gratis tier cukup besar','Integrasi Google Workspace'],
+   cons:['Tool use masih berkembang','Konsistensi output kadang kurang'],
+   ideal:'<strong>Paling cocok untuk:</strong> RAG dengan dokumen besar, analisis data panjang'},
+  {val:'llama', icon:'🦙', name:'Llama 3 (lokal/Groq)', tagline:'Open source — gratis dan privat',
+   rec:'adv', recLabel:'⚡ Privacy-First',
+   pros:['Gratis (self-hosted)','Data tidak keluar dari server kamu','Customizable dengan fine-tuning'],
+   cons:['Butuh GPU atau bayar cloud inference','Kualitas lebih rendah dari model komersial'],
+   ideal:'<strong>Paling cocok untuk:</strong> Project yang data-nya sensitif, budget terbatas'},
+],
+
+orchestration: [
+  {val:'langgraph', icon:'🕸️', name:'LangGraph', tagline:'Terbaik untuk workflow agent yang kompleks',
+   rec:'best', recLabel:'⭐ Terbaik Production',
+   pros:['State management yang kuat','Bisa buat loop, parallel, conditional flow','Built-in human-in-the-loop','Dipakai di banyak production system'],
+   cons:['Kurva belajar lebih tinggi','Overkill untuk agent sederhana'],
+   ideal:'<strong>Paling cocok untuk:</strong> Multi-step agent, production system, workflow kompleks'},
+  {val:'crewai', icon:'👥', name:'CrewAI', tagline:'Multi-agent dengan role seperti tim manusia',
+   rec:'good', recLabel:'✓ Termudah Multi-Agent',
+   pros:['Konsep mudah dipahami (agent punya "role")','Setup cepat','Bagus untuk prototyping tim agent'],
+   cons:['Kurang fleksibel untuk flow yang sangat custom','Debug lebih susah'],
+   ideal:'<strong>Paling cocok untuk:</strong> Multi-agent POC, automation pipeline berbasis role'},
+  {val:'langchain', icon:'🔗', name:'LangChain', tagline:'Library agent paling banyak dipakai',
+   rec:'good', recLabel:'✓ Ekosistem Terbesar',
+   pros:['Ribuan integrasi siap pakai','Komunitas besar, banyak contoh kode','RAG dan retrieval sudah built-in'],
+   cons:['Abstraksi kadang terlalu banyak','Debugging lebih susah karena banyak layer'],
+   ideal:'<strong>Paling cocok untuk:</strong> RAG app, chatbot dengan tools, agent pemula'},
+  {val:'custom', icon:'🔧', name:'Custom (bare Python/JS)', tagline:'Bangun sendiri dari nol — kontrol penuh',
+   rec:'adv', recLabel:'⚡ Full Control',
+   pros:['Kontrol penuh tanpa abstraksi','Lebih mudah di-debug','Tidak tergantung framework pihak ketiga'],
+   cons:['Harus implementasi semuanya sendiri','Lebih lama development-nya'],
+   ideal:'<strong>Paling cocok untuk:</strong> Tim berpengalaman, agent dengan logic sangat spesifik'},
+],
+
+memory: [
+  {val:'context', icon:'🧠', name:'Context Window (short-term)', tagline:'Memori percakapan — paling sederhana',
+   rec:'best', recLabel:'⭐ Mulai Sini',
+   pros:['Tidak perlu setup tambahan','Otomatis tersedia di semua LLM','Cukup untuk task pendek'],
+   cons:['Hilang setelah session selesai','Terbatas oleh panjang konteks model'],
+   ideal:'<strong>Paling cocok untuk:</strong> Semua agent — ini dasar yang selalu dipakai'},
+  {val:'supabase-vector', icon:'🟢', name:'Supabase pgvector', tagline:'Vector search di dalam PostgreSQL',
+   rec:'best', recLabel:'⭐ Terbaik + Praktis',
+   pros:['Tidak perlu database terpisah','Gratis dalam ekosistem Supabase','SQL + vector dalam satu tempat'],
+   cons:['Performa vektor lebih lambat dari Pinecone untuk skala besar'],
+   ideal:'<strong>Paling cocok untuk:</strong> RAG, knowledge base, project yang sudah pakai Supabase'},
+  {val:'pinecone', icon:'🌲', name:'Pinecone', tagline:'Database vektor tercepat untuk production',
+   rec:'good', recLabel:'✓ Skala Besar',
+   pros:['Performa query vektor terbaik','Managed service, tidak perlu manage server','Cocok untuk jutaan dokumen'],
+   cons:['Berbayar untuk production','Satu lagi service yang harus dikelola'],
+   ideal:'<strong>Paling cocok untuk:</strong> RAG production dengan jutaan dokumen'},
+  {val:'redis-mem', icon:'🔴', name:'Redis (session memory)', tagline:'Cache cepat untuk memori sementara',
+   rec:'good', recLabel:'✓ Bagus',
+   pros:['Akses sangat cepat','Cocok untuk multi-user agent session','TTL otomatis untuk cleanup'],
+   cons:['Data hilang kalau restart (tanpa persistence)','Butuh server Redis'],
+   ideal:'<strong>Paling cocok untuk:</strong> Agent yang melayani banyak user secara bersamaan'},
+],
+
+agentTools: [
+  {val:'web-search', icon:'🔍', name:'Web Search', tagline:'Agent bisa cari info terbaru di internet',
+   rec:'best', recLabel:'⭐ Paling Berguna',
+   pros:['Info selalu up-to-date','Tidak terbatas pada training data LLM','Bisa cek fakta real-time'],
+   cons:['Tambah latency','Butuh API search (Tavily/Serper)','Perlu validasi hasil'],
+   ideal:'<strong>Paling cocok untuk:</strong> Research agent, news summarizer, fact-checker'},
+  {val:'code-exec', icon:'💻', name:'Code Execution', tagline:'Agent bisa jalankan kode dan lihat hasilnya',
+   rec:'best', recLabel:'⭐ Untuk Coding Agent',
+   pros:['Agent bisa test dan debug sendiri','Bisa proses data, buat grafik, kalkulasi akurat'],
+   cons:['Risiko keamanan jika tidak di-sandbox','Butuh lingkungan eksekusi yang aman'],
+   ideal:'<strong>Paling cocok untuk:</strong> Coding assistant, data analysis, automation agent'},
+  {val:'file-rw', icon:'📄', name:'File Read/Write', tagline:'Agent bisa baca dan simpan file',
+   rec:'good', recLabel:'✓ Berguna',
+   pros:['Bisa proses dokumen PDF, Word, CSV','Simpan hasil ke file','Workflow dokumen otomatis'],
+   cons:['Perlu akses filesystem yang aman','Hati-hati dengan sensitive files'],
+   ideal:'<strong>Paling cocok untuk:</strong> Document processing agent, report generator'},
+  {val:'api-calls', icon:'🔌', name:'API Calls', tagline:'Agent bisa panggil service eksternal',
+   rec:'good', recLabel:'✓ Sangat Fleksibel',
+   pros:['Integrasi ke service apapun','Bisa kirim email, Slack, notifikasi','Automation multi-platform'],
+   cons:['Harus kelola API keys dengan aman','Rate limiting tiap service berbeda'],
+   ideal:'<strong>Paling cocok untuk:</strong> Integration agent, workflow automation, CRM bot'},
+  {val:'browser', icon:'🌐', name:'Browser Automation', tagline:'Agent bisa "berselancar" di web seperti manusia',
+   rec:'adv', recLabel:'⚡ Advanced',
+   pros:['Bisa scrape site yang tidak ada API-nya','Isi form, klik tombol secara otomatis','Bisa screenshot halaman'],
+   cons:['Lambat dan resource-intensive','Mudah break kalau website update','Banyak site blok bot'],
+   ideal:'<strong>Paling cocok untuk:</strong> Web scraping, automated testing, monitoring website'},
+],
+
+};
+
+// ═══════════════════════════════════════════
+// STEP DEFINITIONS
+// ═══════════════════════════════════════════
+const SDLC_STEPS = [
+  {key:'projectName', section:'Langkah 1', title:'Ceritakan project kamu', type:'text',
+   desc:'Tuliskan nama dan deskripsi singkat apa yang ingin kamu bangun. Tidak harus teknis — cukup jelaskan masalah yang dipecahkan.',
+   placeholder:'Contoh: "TanamBerhasil — aplikasi untuk petani agar bisa catat hasil panen, harga pasar, dan dapat tips berkebun dari AI"'},
+  {key:'appType', section:'Langkah 2', title:'Ini jenis aplikasi apa?', type:'scale',
+   desc:'Pilih yang paling sesuai dengan bayangan kamu.',
+   options:[
+     {val:'webapp',icon:'🌐',name:'Web App',desc:'Dibuka di browser — laptop/HP. Contoh: Tokopedia, Notion, Google Docs'},
+     {val:'mobile',icon:'📱',name:'Mobile App',desc:'Aplikasi Android/iOS yang diinstall. Contoh: GoJek, Instagram'},
+     {val:'api',icon:'🔌',name:'API / Backend',desc:'Layanan di belakang layar yang melayani app lain. Contoh: payment gateway, data service'},
+     {val:'fullstack',icon:'🏗️',name:'Fullstack (Web + API)',desc:'Web app lengkap dengan database dan API sendiri'},
+   ]},
+  {key:'audience', section:'Langkah 3', title:'Siapa yang akan pakai?', type:'scale',
+   desc:'Ini menentukan tingkat kompleksitas fitur auth, keamanan, dan UX yang dibutuhkan.',
+   options:[
+     {val:'b2c',icon:'👥',name:'Pengguna umum (B2C)',desc:'Siapapun bisa daftar dan pakai. Contoh: media sosial, marketplace'},
+     {val:'b2b',icon:'🏢',name:'Perusahaan / bisnis (B2B)',desc:'Klien bisnis yang bayar. Butuh invoice, multi-user, permission'},
+     {val:'internal',icon:'🔧',name:'Tim internal saja',desc:'Hanya dipakai karyawan/tim kamu. Dashboard, tools operasional'},
+     {val:'public',icon:'🌍',name:'Publik terbuka',desc:'Website informasi, blog, portfolio — bisa dilihat semua orang'},
+   ]},
+  {key:'frontend', section:'Langkah 4', title:'Tampilan app — pakai apa?', type:'techcard',
+   desc:'Ini seperti memilih "mesin" untuk membuat tampilan yang dilihat pengguna. Klik "Lihat detail" untuk perbandingan.',
+   techKey:'frontend', multi:true, max:2},
+  {key:'backend', section:'Langkah 5', title:'Server & logika bisnis — pakai apa?', type:'techcard',
+   desc:'Bagian yang berjalan di server — memproses data, menjalankan aturan bisnis, dan menghubungkan database.',
+   techKey:'backend', multi:true, max:2},
+  {key:'database', section:'Langkah 6', title:'Di mana data disimpan?', type:'techcard',
+   desc:'Database adalah "gudang data" aplikasi kamu. Pilih yang sesuai dengan jenis dan skala data.',
+   techKey:'database', multi:true, max:2},
+  {key:'uiLib', section:'Langkah 7', title:'Komponen UI & gaya tampilan', type:'techcard',
+   desc:'Library komponen siap pakai — tombol, form, tabel, dll. Pilih sesuai selera dan kebutuhan.',
+   techKey:'uiLib', multi:true, max:3},
+  {key:'auth', section:'Langkah 8', title:'Sistem login & keamanan', type:'techcard',
+   desc:'Bagaimana pengguna masuk ke aplikasi kamu? Dan bagaimana data mereka diamankan?',
+   techKey:'auth', multi:true, max:2},
+  {key:'payment', section:'Langkah 9', title:'💳 Sistem pembayaran (opsional)', type:'techcard',
+   desc:'Kalau app kamu butuh fitur pembayaran (e-commerce, SaaS, subscription), pilih di sini. Lewati jika tidak perlu.',
+   techKey:'payment', multi:true, max:2},
+  {key:'deployment', section:'Langkah 10', title:'Di mana app di-hosting?', type:'techcard',
+   desc:'Ini adalah "tanah" tempat aplikasi kamu hidup dan bisa diakses pengguna.',
+   techKey:'deployment', multi:true, max:3},
+  {key:'scale', section:'Langkah 11', title:'Skala & waktu pengerjaan', type:'scale',
+   desc:'Ini menentukan seberapa dalam arsitektur yang disarankan.',
+   options:[
+     {val:'mvp',icon:'🚀',name:'MVP — 2-4 minggu',desc:'Versi paling minimal yang bisa ditest ke pengguna nyata'},
+     {val:'small',icon:'📦',name:'App kecil — 1-2 bulan',desc:'Sudah cukup fitur untuk diluncurkan secara publik'},
+     {val:'medium',icon:'🏗️',name:'Produk menengah — 3-6 bulan',desc:'Produk lengkap dengan banyak fitur dan pengguna aktif'},
+     {val:'enterprise',icon:'🏰',name:'Enterprise — 6+ bulan',desc:'Sistem besar, multi-tenant, compliance ketat'},
+   ]},
+  {key:'outputPref', section:'Langkah 12', title:'Apa yang mau dihasilkan?', type:'multicheck',
+   desc:'Pilih output yang paling kamu butuhkan saat ini.',
+   options:[
+     {val:'structure',icon:'📁',label:'Struktur folder project'},
+     {val:'prd',icon:'📝',label:'PRD & Master Plan'},
+     {val:'prompts',icon:'💬',label:'Prompt untuk AI coding assistant'},
+     {val:'configs',icon:'⚙️',label:'File konfigurasi (package.json dll)'},
+   ]},
+];
+
+const ADLC_STEPS = [
+  {key:'agentName', section:'Langkah 1', title:'Misi agent AI kamu', type:'text',
+   desc:'Deskripsikan agent/sistem AI yang ingin dibangun. Ceritakan apa yang ingin dilakukan agent ini secara otomatis.',
+   placeholder:'Contoh: "SurveyBot — agent yang otomatis kumpulkan data survei dari Google Form, analisis hasilnya, dan buat laporan PDF mingguan"'},
+  {key:'agentType', section:'Langkah 2', title:'Jenis sistem AI ini apa?', type:'scale',
+   desc:'Pilih arsitektur yang paling mendekati kebutuhan kamu.',
+   options:[
+     {val:'single',icon:'🤖',name:'1 Agent + Tools',desc:'Satu AI yang bisa pakai berbagai tools. Paling simpel dan mudah di-debug'},
+     {val:'multi',icon:'👥',name:'Tim Agent (Multi-Agent)',desc:'Beberapa AI dengan role berbeda bekerja sama. Seperti tim manusia'},
+     {val:'rag',icon:'💬',name:'Chatbot + Knowledge Base',desc:'AI yang bisa jawab pertanyaan dari dokumen/data kamu sendiri'},
+     {val:'workflow',icon:'🔄',name:'Otomasi Workflow',desc:'AI yang jalankan proses berulang secara otomatis. Seperti robot kantor'},
+     {val:'coding',icon:'💻',name:'Coding Assistant',desc:'AI yang bantu tulis, review, dan debug kode secara otomatis'},
+     {val:'browser',icon:'🌐',name:'Web/Browser Agent',desc:'AI yang bisa "berselancar" internet, isi form, scrape data'},
+   ]},
+  {key:'llm', section:'Langkah 3', title:'Model AI yang dipakai', type:'techcard',
+   desc:'Ini adalah "otak" agent kamu. Setiap model punya kekuatan berbeda.',
+   techKey:'llm', multi:false},
+  {key:'orchestration', section:'Langkah 4', title:'Framework untuk mengatur agent', type:'techcard',
+   desc:'Seperti "manajer" yang mengatur bagaimana agent bekerja, mengambil keputusan, dan berinteraksi.',
+   techKey:'orchestration', multi:true, max:2},
+  {key:'memory', section:'Langkah 5', title:'Memori agent — ingat apa?', type:'techcard',
+   desc:'Seberapa jauh agent bisa "mengingat" informasi — dari percakapan tadi sampai database pengetahuan besar.',
+   techKey:'memory', multi:true, max:3},
+  {key:'agentTools', section:'Langkah 6', title:'Kemampuan & tools agent', type:'techcard',
+   desc:'Pilih apa saja yang bisa dilakukan agent ini. Setiap tool menambah kemampuan tapi juga kompleksitas.',
+   techKey:'agentTools', multi:true, max:5},
+  {key:'autonomy', section:'Langkah 7', title:'Seberapa mandiri agent bekerja?', type:'scale',
+   desc:'Ini tentang berapa banyak kontrol manusia yang tetap ada. Lebih mandiri = lebih powerful, tapi juga lebih berisiko.',
+   options:[
+     {val:'hitl',icon:'✋',name:'Konfirmasi setiap langkah',desc:'Agent usul, manusia approve. Paling aman, tapi butuh banyak perhatian'},
+     {val:'checkpoint',icon:'🔔',name:'Konfirmasi di titik penting',desc:'Agent jalan sendiri, tapi minta approval sebelum aksi besar'},
+     {val:'monitor',icon:'👁️',name:'Manusia hanya pantau',desc:'Agent jalan penuh, tapi ada dashboard monitoring dan bisa dihentikan'},
+     {val:'autonomous',icon:'🤖',name:'Sepenuhnya otomatis',desc:'Agent jalan sendiri 24/7. Butuh system monitoring yang matang'},
+   ]},
+  {key:'deployment', section:'Langkah 8', title:'Di mana agent di-deploy?', type:'techcard',
+   desc:'Platform tempat agent kamu berjalan dan menerima request.',
+   techKey:'deployment', multi:true, max:2},
+  {key:'complexity', section:'Langkah 9', title:'Estimasi kompleksitas', type:'scale',
+   desc:'Ini menentukan seberapa detail arsitektur yang dihasilkan.',
+   options:[
+     {val:'poc',icon:'🌱',name:'Prototype — 1 minggu',desc:'Cukup untuk demo dan validasi ide'},
+     {val:'simple',icon:'🔧',name:'Agent sederhana — 2-4 minggu',desc:'Siap dipakai tim sendiri'},
+     {val:'production',icon:'⚙️',name:'Siap produksi — 1-2 bulan',desc:'Pengguna nyata dengan monitoring dan error handling'},
+     {val:'enterprise',icon:'🏭',name:'Enterprise — 3+ bulan',desc:'Skalabilitas tinggi, compliance, audit trail'},
+   ]},
+  {key:'outputPref', section:'Langkah 10', title:'Output yang diinginkan', type:'multicheck',
+   desc:'Pilih semua yang kamu butuhkan.',
+   options:[
+     {val:'structure',icon:'📁',label:'Struktur folder agent'},
+     {val:'prd',icon:'📝',label:'ADLC Master Plan'},
+     {val:'prompts',icon:'💬',label:'System prompt templates'},
+     {val:'code',icon:'🐍',label:'Starter code (Python)'},
+   ]},
+];
+
+// ═══════════════════════════════════════════
+// DESKTOP STEPS (Framework 02)
+// ═══════════════════════════════════════════
+const DESKTOP_STEPS = [
+  {key:'desktopName', section:'Langkah 1', title:'Ceritakan app desktop kamu', type:'text',
+   desc:'Tuliskan nama dan deskripsi singkat aplikasi desktop yang ingin dibangun.',
+   placeholder:'Contoh: "QuickNote — aplikasi catatan ringan yang bisa diakses dari system tray, sync ke cloud, dan bisa screenshot langsung"'},
+  {key:'desktopType', section:'Langkah 2', title:'Jenis app desktop apa?', type:'scale',
+   desc:'Pilih yang paling sesuai dengan app yang mau dibangun.',
+   options:[
+     {val:'utility',icon:'🔧',name:'Utility / Tools',desc:'App kecil yang membantu tugas sehari-hari. Contoh: screenshot tool, clipboard manager'},
+     {val:'productivity',icon:'📊',name:'Productivity / Office',desc:'App untuk kerja dan produktivitas. Contoh: text editor, project manager'},
+     {val:'creative',icon:'🎨',name:'Creative / Media',desc:'App untuk edit gambar, video, musik. Contoh: photo editor, audio recorder'},
+     {val:'pos',icon:'🏪',name:'POS / Kasir / Kiosk',desc:'Aplikasi point-of-sale, kasir toko, atau kiosk. Contoh: sistem kasir, display menu'},
+     {val:'dashboard',icon:'📈',name:'Dashboard / Monitor',desc:'App untuk monitoring data dan statistik. Contoh: server monitor, analytics viewer'},
+     {val:'game',icon:'🎮',name:'Game / Interactive',desc:'Game 2D/3D atau pengalaman interaktif. Contoh: puzzle game, educational app'},
+   ]},
+  {key:'targetOS', section:'Langkah 3', title:'Target platform?', type:'multicheck',
+   desc:'Pilih sistem operasi yang harus didukung app kamu.',
+   options:[
+     {val:'windows',icon:'🪟',label:'Windows'},
+     {val:'macos',icon:'🍎',label:'macOS'},
+     {val:'linux',icon:'🐧',label:'Linux'},
+   ]},
+  {key:'desktopFramework', section:'Langkah 4', title:'Framework desktop — pakai apa?', type:'techcard',
+   desc:'Ini adalah "mesin" untuk membangun app desktop kamu. Setiap pilihan punya trade-off berbeda.',
+   techKey:'desktop', multi:false},
+  {key:'database', section:'Langkah 5', title:'Di mana data disimpan?', type:'techcard',
+   desc:'Database untuk menyimpan data app. Desktop app sering pakai database lokal (SQLite) atau cloud.',
+   techKey:'database', multi:true, max:2},
+  {key:'uiLib', section:'Langkah 6', title:'Komponen UI & gaya tampilan', type:'techcard',
+   desc:'Library komponen siap pakai untuk tampilan app desktop kamu.',
+   techKey:'uiLib', multi:true, max:2},
+  {key:'installer', section:'Langkah 7', title:'Installer & distribusi', type:'techcard',
+   desc:'Bagaimana user menginstall app kamu? Pilih format installer dan metode update.',
+   techKey:'installer', multi:true, max:2},
+  {key:'payment', section:'Langkah 8', title:'💳 Sistem pembayaran (opsional)', type:'techcard',
+   desc:'Kalau app kamu butuh fitur pembayaran (POS, subscription, in-app purchase), pilih di sini. Skip jika tidak perlu.',
+   techKey:'payment', multi:true, max:2},
+  {key:'scale', section:'Langkah 9', title:'Skala & waktu pengerjaan', type:'scale',
+   desc:'Ini menentukan seberapa dalam arsitektur yang disarankan.',
+   options:[
+     {val:'mvp',icon:'🚀',name:'MVP — 2-4 minggu',desc:'Versi paling minimal yang bisa ditest'},
+     {val:'small',icon:'📦',name:'App kecil — 1-2 bulan',desc:'Sudah cukup fitur untuk dirilis'},
+     {val:'medium',icon:'🏗️',name:'Produk menengah — 3-6 bulan',desc:'Produk lengkap dengan banyak fitur'},
+     {val:'enterprise',icon:'🏰',name:'Enterprise — 6+ bulan',desc:'Sistem besar dengan compliance ketat'},
+   ]},
+  {key:'outputPref', section:'Langkah 10', title:'Apa yang mau dihasilkan?', type:'multicheck',
+   desc:'Pilih output yang paling kamu butuhkan saat ini.',
+   options:[
+     {val:'structure',icon:'📁',label:'Struktur folder project'},
+     {val:'prd',icon:'📝',label:'PRD & Master Plan'},
+     {val:'prompts',icon:'💬',label:'Prompt untuk AI coding assistant'},
+     {val:'configs',icon:'⚙️',label:'File konfigurasi (package.json dll)'},
+   ]},
+];
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+const S = {mode:null, step:0, answers:{}, generating:false, generated:null, activeTab:null, level:'beginner'};
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function slug(s){return (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'project'}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function isGreen(){return S.mode==='adlc'}
+function isDesktop(){return S.mode==='desktop'}
+function isAmber(){return S.mode==='desktop'}
+function modeColorClass(){return isGreen()?'green':isAmber()?'amber':''}
+function modeLabel(){return isGreen()?'🤖 Agentic AI':isAmber()?'🖥️ Desktop App':'⚡ Software Build'}
+function gc(base,green){return isGreen()?green:base}
+
+function setLevel(l){S.level=l;render()}
+function quickStart(name){
+  const T={
+    'E-Commerce':{mode:'sdlc',answers:{projectName:'My E-Commerce Store',appType:'fullstack',audience:'b2c',frontend:['nextjs'],backend:['nextjs-api'],database:['supabase'],uiLib:['tailwind-shadcn'],auth:['supabase-auth'],payment:['midtrans'],deployment:['vercel'],scale:'small',outputPref:['structure','prd','prompts','configs']}},
+    'Dashboard':{mode:'sdlc',answers:{projectName:'Admin Dashboard',appType:'webapp',audience:'internal',frontend:['nextjs'],backend:['nextjs-api'],database:['supabase'],uiLib:['tailwind-shadcn'],auth:['supabase-auth'],payment:[],deployment:['vercel'],scale:'small',outputPref:['structure','prd','prompts']}},
+    'Mobile App':{mode:'sdlc',answers:{projectName:'My Mobile App',appType:'mobile',audience:'b2c',frontend:['expo'],backend:['supabase-edge'],database:['supabase'],uiLib:['chakra'],auth:['supabase-auth'],payment:[],deployment:['vercel'],scale:'mvp',outputPref:['structure','prd','prompts']}},
+    'Desktop Tool':{mode:'desktop',answers:{desktopName:'My Desktop App',desktopType:'utility',targetOS:['windows'],desktopFramework:'electron',database:['sqlite'],uiLib:['tailwind-shadcn'],installer:['electron-builder'],payment:[],scale:'mvp',outputPref:['structure','prd','prompts']}},
+    'AI Chatbot':{mode:'adlc',answers:{agentName:'My AI Chatbot',agentType:'rag',llm:'claude',orchestration:['langchain'],memory:['context','supabase-vector'],agentTools:['web-search'],autonomy:'checkpoint',deployment:['railway'],complexity:'simple',outputPref:['structure','prd','prompts','code']}},
+  };
+  const t=T[name]; if(!t)return;
+  S.mode=t.mode; S.answers={...t.answers}; doGenerate();
+}
+
+function getRec(techKey, answers){
+  const ctx = {
+    scale: answers.scale || answers.complexity,
+    appType: answers.appType,
+    frontend: answers.frontend || [],
+    database: answers.database || [],
+  };
+  return {};
+}
+
+// ═══════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════
+const R = document.getElementById('root');
+function render(){
+  if(!S.mode){renderModeSelect();return}
+  if(S.generating){renderGenerating();return}
+  if(S.generated){renderOutput();return}
+  renderWizard();
+}
+
+function renderModeSelect(){
+  R.innerHTML=`
+  <div class="hero-sec">
+    <h1>Bikin <em>Software</em>, Desktop App<br>&amp; <em>Agentic AI</em></h1>
+    <p class="subtitle">Framework generator lengkap untuk developer pemula hingga mahir — web app, desktop app, mobile, dan agentic AI dengan sistem pembayaran.</p>
+  </div>
+  <div class="level-toggle">
+    <span class="level-label">Level kamu:</span>
+    <button class="level-btn ${S.level==='beginner'?'active':''}" onclick="setLevel('beginner')">🌱 Pemula</button>
+    <button class="level-btn ${S.level==='intermediate'?'active':''}" onclick="setLevel('intermediate')">🔧 Menengah</button>
+    <button class="level-btn ${S.level==='expert'?'active':''}" onclick="setLevel('expert')">⚡ Mahir</button>
+  </div>
+  <div class="mode-grid three-col">
+    <div class="mode-card ${S.mode==='sdlc'?'active':''}" onclick="selMode('sdlc')">
+      <span class="mode-badge badge-sdlc">Framework 01</span>
+      <h3>Bikin Software</h3>
+      <p>Web app, mobile, API, SaaS, e-commerce — termasuk sistem pembayaran.</p>
+      <div class="mode-check">${S.mode==='sdlc'?'✓':''}</div>
+    </div>
+    <div class="mode-card ${S.mode==='desktop'?'active amber-mode':''}" onclick="selMode('desktop')">
+      <span class="mode-badge badge-desktop">Framework 02</span>
+      <h3>Bikin Desktop App</h3>
+      <p>App Windows/Mac/Linux yang diinstall — tools, POS, dashboard, game.</p>
+      <div class="mode-check">${S.mode==='desktop'?'✓':''}</div>
+    </div>
+    <div class="mode-card ${S.mode==='adlc'?'active green-mode':''}" onclick="selMode('adlc')">
+      <span class="mode-badge badge-adlc">Framework 03</span>
+      <h3>Bikin Agentic AI</h3>
+      <p>Agent AI, chatbot cerdas, workflow otomatis, RAG — AI yang bekerja sendiri.</p>
+      <div class="mode-check">${S.mode==='adlc'?'✓':''}</div>
+    </div>
+  </div>
+  <div class="start-row">${S.mode?`<button class="btn btn-next ${modeColorClass()}" onclick="S.step=0;render()">Mulai →</button>`:''}</div>
+  <div class="quick-start-section">
+    <div class="qs-title">⚡ Quick Start — Langsung pakai template</div>
+    <div class="qs-grid">
+      <div class="qs-card" onclick="quickStart('E-Commerce')"><div class="qs-icon">🛒</div><div class="qs-name">E-Commerce</div><div class="qs-desc">Next.js + Supabase + Midtrans</div></div>
+      <div class="qs-card" onclick="quickStart('Dashboard')"><div class="qs-icon">📊</div><div class="qs-name">Dashboard</div><div class="qs-desc">Next.js + Supabase + shadcn</div></div>
+      <div class="qs-card" onclick="quickStart('Mobile App')"><div class="qs-icon">📱</div><div class="qs-name">Mobile App</div><div class="qs-desc">React Native + Supabase</div></div>
+      <div class="qs-card" onclick="quickStart('Desktop Tool')"><div class="qs-icon">🖥️</div><div class="qs-name">Desktop Tool</div><div class="qs-desc">Electron + SQLite</div></div>
+      <div class="qs-card" onclick="quickStart('AI Chatbot')"><div class="qs-icon">🤖</div><div class="qs-name">AI Chatbot</div><div class="qs-desc">LangChain + Claude</div></div>
+    </div>
+  </div>`;
+}
+function selMode(m){S.mode=m;S.step=0;S.answers={};render()}
+
+function renderWizard(){
+  const steps=isGreen()?ADLC_STEPS:isDesktop()?DESKTOP_STEPS:SDLC_STEPS;
+  const q=steps[S.step];
+  const total=steps.length;
+  const pct=Math.round((S.step/total)*100);
+  const isLast=S.step===total-1;
+  const gClass=modeColorClass();
+
+  // progress crumbs (show 5 around current)
+  const crumbs=steps.map((s,i)=>{
+    let cls=i<S.step?`done ${gClass}`:i===S.step?`active ${gClass}`:'';
+    return `<span class="crumb ${cls}">${s.section.replace('Langkah ','')}</span>`;
+  }).join('');
+
+  R.innerHTML=`
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span class="progress-label">${q.section}</span>
+      <span class="progress-count">${S.step+1}/${total}</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill ${gClass}" style="width:${pct}%"></div></div>
+    <div class="step-crumbs">${crumbs}</div>
+  </div>
+  <div class="q-card">
+    <div class="q-section ${gClass}">${modeLabel()}</div>
+    <div class="q-title">${q.title}</div>
+    <div class="q-desc">${q.desc}</div>
+    <div id="q-body">${renderQBody(q)}</div>
+  </div>
+  <div class="nav-row">
+    <button class="btn btn-back" onclick="prevStep()" ${S.step===0?'style="visibility:hidden"':''}>← Kembali</button>
+    <span class="step-info">${S.step+1} / ${total}</span>
+    ${isLast
+      ?`<button class="btn btn-generate ${gClass}" onclick="doGenerate()">✦ Generate Sekarang</button>`
+      :`<button class="btn btn-next ${gClass}" onclick="nextStep()">Lanjut →</button>`}
+  </div>`;
+}
+
+function renderQBody(q){
+  const val=S.answers[q.key]||(q.multi||q.type==='multicheck'?[]:'');
+  if(q.type==='text')
+    return `<textarea class="q-textarea" id="qt" placeholder="${q.placeholder}" oninput="S.answers['${q.key}']=this.value">${val}</textarea>`;
+
+  if(q.type==='scale')
+    return `<div class="scale-grid">${q.options.map(o=>{
+      const sel=(val===o.val)?`selected ${modeColorClass()}`:''
+      return `<div class="scale-card ${sel}" onclick="setScale('${q.key}','${o.val}')">
+        <div class="scale-icon">${o.icon}</div>
+        <div class="scale-name">${o.name}</div>
+        <div class="scale-desc">${o.desc}</div>
+      </div>`
+    }).join('')}</div>`;
+
+  if(q.type==='multicheck')
+    return `<div class="chip-grid">${q.options.map(o=>{
+      const sel=(val||[]).includes(o.val)?`sel ${modeColorClass()}`:''
+      return `<button class="chip ${sel}" onclick="toggleChip('${q.key}','${o.val}')">${o.icon} ${o.label}</button>`
+    }).join('')}</div>`;
+
+  if(q.type==='techcard'){
+    let techs=TECH[q.techKey]||[];
+    // filter by level
+    if(S.level==='beginner') techs=techs.filter(t=>t.rec!=='adv');
+    // auto-recommend based on prior answers
+    const recs=smartRecs(q.techKey,S.answers);
+    return `
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-weight:500">
+        ${q.multi?`Pilih ${q.max||'beberapa'} — klik "Lihat detail" untuk perbandingan`:'Pilih satu'}
+      </div>
+      <div class="tech-grid">${techs.map((t,i)=>{
+        const selArr=Array.isArray(val)?val:[val];
+        const isSel=selArr.includes(t.val);
+        const selCls=isSel?`selected ${modeColorClass()}`:''
+        const recInfo=recs[t.val];
+        const isTopRec=recInfo==='top';
+        return `<div class="tech-card ${selCls}" id="tc-${q.key}-${i}">
+          <div class="tc-main" onclick="${q.multi?`toggleTech('${q.key}','${t.val}',${q.max||99})`:`setSingle('${q.key}','${t.val}')`}">
+            <div class="tc-icon">${t.icon}</div>
+            <div class="tc-body">
+              <div class="tc-top">
+                <span class="tc-name">${t.name}</span>
+                ${isTopRec?`<span class="rec-badge rec-best">⭐ Rekomendasi untukmu</span>`:
+                  t.rec==='best'?`<span class="rec-badge rec-best">${t.recLabel}</span>`:
+                  t.rec==='good'?`<span class="rec-badge rec-good">${t.recLabel}</span>`:
+                  `<span class="rec-badge rec-adv">${t.recLabel}</span>`}
+              </div>
+              <div class="tc-tagline">${t.tagline}</div>
+            </div>
+            <div class="tc-right">
+              <div class="tc-check">${isSel?'✓':''}</div>
+            </div>
+          </div>
+          <div class="tc-detail" id="td-${q.key}-${i}">
+            <div class="tc-detail-inner">
+              <div class="tc-pros">
+                <div class="tc-phead">Kelebihan</div>
+                <ul class="tc-plist">${t.pros.map(p=>`<li>${p}</li>`).join('')}</ul>
+              </div>
+              <div class="tc-cons">
+                <div class="tc-phead">Kekurangan</div>
+                <ul class="tc-plist">${t.cons.map(c=>`<li>${c}</li>`).join('')}</ul>
+              </div>
+            </div>
+            <div class="tc-ideal">${t.ideal}</div>
+          </div>
+          <div style="padding:6px 14px;border-top:1px solid var(--border);background:var(--bg3);display:flex;justify-content:space-between;align-items:center">
+            <button class="tc-toggle" onclick="toggleDetail('td-${q.key}-${i}',this)">▼ Lihat detail & perbandingan</button>
+            ${isSel?`<span style="font-size:10px;font-weight:700;color:${isGreen()?'var(--green)':isAmber()?'var(--amber)':'var(--accent)'}">${q.multi?'✓ Dipilih':'✓ Dipilih'}</span>`:''}
+          </div>
+        </div>`;
+      }).join('')}</div>`;
+  }
+  return '';
+}
+
+function toggleDetail(id,btn){
+  const el=document.getElementById(id);
+  const card=el.closest('.tech-card');
+  const isOpen=card.classList.contains('open');
+  card.classList.toggle('open',!isOpen);
+  btn.textContent=isOpen?'▼ Lihat detail & perbandingan':'▲ Tutup detail';
+}
+
+// Smart recommendation engine
+function smartRecs(techKey, answers){
+  const recs={};
+  const scale=answers.scale||answers.complexity||'';
+  const appType=answers.appType||'';
+  const frontend=(answers.frontend||[]);
+  const db=(answers.database||[]);
+  const llm=answers.llm||'';
+
+  if(techKey==='frontend'){
+    if(appType==='mobile') recs['expo']='top';
+    else if(appType==='webapp'||appType==='fullstack') recs['nextjs']='top';
+    else recs['react']='top';
+  }
+  if(techKey==='backend'){
+    if(frontend.includes('nextjs')||appType==='fullstack') recs['nextjs-api']='top';
+    else if(answers.aiFeatures) recs['fastapi']='top';
+    else recs['nodejs-express']='top';
+  }
+  if(techKey==='database'){
+    if(scale==='mvp'||scale==='poc'||scale==='simple') recs['supabase']='top';
+    else if(appType==='mobile') recs['firebase']='top';
+    else recs['supabase']='top';
+  }
+  if(techKey==='uiLib') recs['tailwind-shadcn']='top';
+  if(techKey==='auth'){
+    if(db.includes('supabase')) recs['supabase-auth']='top';
+    else if(frontend.includes('nextjs')) recs['nextauth']='top';
+    else recs['clerk']='top';
+  }
+  if(techKey==='deployment'){
+    if(frontend.includes('nextjs')) recs['vercel']='top';
+    else recs['railway']='top';
+  }
+  if(techKey==='llm') recs['claude']='top';
+  if(techKey==='orchestration'){
+    if(answers.agentType==='rag') recs['langchain']='top';
+    else if(answers.complexity==='poc') recs['langchain']='top';
+    else recs['langgraph']='top';
+  }
+  if(techKey==='memory'){
+    recs['context']='top';
+    if(answers.agentType==='rag') recs['supabase-vector']='top';
+  }
+  if(techKey==='agentTools'){
+    recs['web-search']='top';
+    if(answers.agentType==='coding') recs['code-exec']='top';
+  }
+  if(techKey==='desktop'){
+    recs['electron']='top';
+  }
+  if(techKey==='installer'){
+    const fw=answers.desktopFramework||'';
+    if(fw==='electron') recs['electron-builder']='top';
+    else if(fw==='tauri') recs['tauri-bundler']='top';
+    else recs['electron-builder']='top';
+  }
+  if(techKey==='payment'){
+    const audience=answers.audience||'';
+    if(audience==='b2c') recs['midtrans']='top';
+    else recs['stripe']='top';
+  }
+  return recs;
+}
+
+// ── Input handlers ──
+function setScale(k,v){S.answers[k]=v;render()}
+function setSingle(k,v){S.answers[k]=v;render()}
+function toggleChip(k,v){
+  let a=S.answers[k]||[];
+  S.answers[k]=a.includes(v)?a.filter(x=>x!==v):[...a,v];
+  render();
+}
+function toggleTech(k,v,max){
+  let a=S.answers[k]||[];
+  if(a.includes(v)){S.answers[k]=a.filter(x=>x!==v)}
+  else if(a.length<max){S.answers[k]=[...a,v]}
+  render();
+}
+function nextStep(){
+  const steps=isGreen()?ADLC_STEPS:isDesktop()?DESKTOP_STEPS:SDLC_STEPS;
+  if(S.step<steps.length-1){S.step++;render();window.scrollTo(0,0)}
+}
+function prevStep(){if(S.step>0){S.step--;render();window.scrollTo(0,0)}}
+
+// ── Generate ──
+function doGenerate(){S.generating=true;render();setTimeout(()=>{S.generating=false;S.generated=buildOutput();render()},3500)}
+
+function renderGenerating(){
+  const msgs=['Menganalisis kebutuhanmu…','Menentukan arsitektur terbaik…','Menyusun struktur folder…','Menulis PRD & Master Plan…','Membuat starter prompts…','Finalisasi output…'];
+  let idx=0;
+  R.innerHTML=`<div class="gen-wrap">
+    <div class="gen-icon">⚙️</div>
+    <div class="gen-title">DevForge sedang bekerja…</div>
+    <div class="gen-sub">Menyesuaikan dengan semua pilihan kamu</div>
+    <div class="gen-steps">${msgs.map((m,i)=>`<div class="gen-step ${i===0?'active':''}" id="gs-${i}"><div class="gen-step-dot"></div>${m}</div>`).join('')}
+    </div></div>`;
+  const iv=setInterval(()=>{
+    const cur=document.getElementById(`gs-${idx}`);
+    if(cur){cur.classList.remove('active');cur.classList.add('done');cur.querySelector('.gen-step-dot').textContent='✓'}
+    idx++;
+    if(idx<msgs.length){const nx=document.getElementById(`gs-${idx}`);if(nx)nx.classList.add('active')}
+    else clearInterval(iv);
+  },550);
+}
+
+// ═══════════════════════════════════════════
+// OUTPUT BUILDER
+// ═══════════════════════════════════════════
+function buildOutput(){return isGreen()?buildADLC():isDesktop()?buildDesktop():buildSDLC()}
+
+function buildSDLC(){
+  const a=S.answers;
+  const name=a.projectName||'My Project';
+  const fe=(a.frontend||[]).join(' + ')||'Next.js';
+  const be=(a.backend||[]).join(' + ')||'Node.js';
+  const db=(a.database||[]).join(' + ')||'Supabase';
+  const auth=(a.auth||[]).join(' + ')||'Supabase Auth';
+  const ui=(a.uiLib||[]).join(' + ')||'Tailwind + shadcn';
+  const dep=(a.deployment||[]).join(' + ')||'Vercel';
+  const pay=(a.payment||[]).join(' + ')||'';
+  const scale=a.scale||'mvp';
+  const scaleMap={mvp:'MVP (2-4 minggu)',small:'Small (1-2 bulan)',medium:'Medium (3-6 bulan)',enterprise:'Enterprise (6+ bulan)'};
+  const hasNext=(a.frontend||[]).includes('nextjs');
+  const hasSupabase=(a.database||[]).includes('supabase');
+
+  const structure=hasNext?`
+${slug(name)}/
+├── app/                    ← Semua halaman app
+│   ├── (auth)/             ← Halaman login & register
+│   │   ├── login/page.tsx
+│   │   └── register/page.tsx
+│   ├── (dashboard)/        ← Halaman utama setelah login
+│   │   ├── layout.tsx      ← Layout dashboard (sidebar, header)
+│   │   └── page.tsx        ← Halaman utama
+│   ├── api/                ← API routes (backend)
+│   │   └── [resource]/route.ts
+│   └── layout.tsx          ← Layout root (font, theme provider)
+│
+├── components/             ← Komponen UI yang dipakai ulang
+│   ├── ui/                 ← Komponen dasar (Button, Card, Input)
+│   └── features/           ← Komponen per fitur
+│
+├── lib/                    ← Fungsi-fungsi helper
+│   ├── db.ts               ← Koneksi database
+│   ├── auth.ts             ← Konfigurasi auth
+│   └── utils.ts            ← Fungsi umum
+│
+├── hooks/                  ← Custom React hooks
+├── stores/                 ← State management (Zustand)
+├── types/                  ← TypeScript type definitions
+│
+├── tests/                  ← Semua file testing
+│   ├── unit/               ← Test per fungsi
+│   └── e2e/                ← Test end-to-end
+│
+├── .github/workflows/      ← CI/CD GitHub Actions
+│   └── ci.yml
+│
+├── .env.example            ← Template environment variables
+├── next.config.ts
+├── tailwind.config.ts
+├── tsconfig.json
+└── package.json`:
+`
+${slug(name)}/
+├── src/
+│   ├── components/         ← Komponen UI
+│   ├── pages/              ← Halaman app
+│   ├── hooks/              ← Custom hooks
+│   ├── stores/             ← State management
+│   └── lib/                ← Helpers & utilities
+├── server/                 ← Backend (API server)
+│   ├── routes/             ← Endpoint API
+│   ├── services/           ← Business logic
+│   ├── middleware/         ← Auth, logging, validation
+│   └── db/                 ← Database schema & queries
+├── tests/
+├── .github/workflows/ci.yml
+├── .env.example
+└── package.json`;
+
+  const stackRecs=[
+    {cat:'Frontend',name:fe,why:'Sesuai pilihan kamu',star:'⭐'},
+    {cat:'Backend',name:be,why:'Menangani logika bisnis',star:'⭐'},
+    {cat:'Database',name:db,why:'Penyimpanan data utama',star:'⭐'},
+    {cat:'Auth',name:auth,why:'Login & keamanan user',star:'🔐'},
+    ...(pay?[{cat:'Payment',name:pay,why:'Sistem pembayaran',star:'💳'}]:[]),
+    {cat:'UI',name:ui,why:'Komponen tampilan',star:'🎨'},
+    {cat:'Deploy',name:dep,why:'Hosting app',star:'🚀'},
+    {cat:'Testing',name:'Vitest + Playwright',why:'Unit test + E2E test',star:'✅'},
+    {cat:'CI/CD',name:'GitHub Actions',why:'Deploy otomatis',star:'⚡'},
+  ];
+
+  const phases=[
+    {num:'01',title:'Planning & Setup',tags:['1 minggu'],
+     desc:'Finalisasi requirements, setup repo GitHub, buat design system di Figma, pasang CI/CD dari awal (jangan skip ini!).'},
+    {num:'02',title:'Fondasi Teknis',tags:['Sprint 1'],
+     desc:`Setup project ${fe}, konfigurasi ${db}, implementasi auth dengan ${auth}. Ini adalah "rangka" app — harus solid sebelum build fitur.`},
+    {num:'03',title:'Core Features',tags:['Sprint 2-4'],
+     desc:'Build fitur utama satu per satu. Ikuti prinsip: selesaikan satu fitur sampai "done" (termasuk test) sebelum lanjut ke fitur berikutnya.'},
+    {num:'04',title:'Polish & Testing',tags:['Sprint 5'],
+     desc:'QA menyeluruh, load testing, security audit (cek OWASP Top 10), perbaiki bug, optimalkan performa.'},
+    {num:'05',title:'Launch & Monitor',tags:['Sprint 6'],
+     desc:`Deploy ke ${dep}, setup monitoring (error tracking, uptime alert), siapkan runbook untuk kondisi darurat.`},
+    {num:'06',title:'Iterasi',tags:['Ongoing'],
+     desc:'Collect user feedback, analisis data penggunaan, prioritaskan fitur berikutnya berdasarkan impact nyata ke user.'},
+  ];
+
+  const prd=`# PRD — ${name}
+
+## Ringkasan Eksekutif
+**Nama Project:** ${name}
+**Tipe:** ${a.appType||'Web Application'}
+**Target User:** ${a.audience||'-'}
+**Estimasi Waktu:** ${scaleMap[scale]}
+**Tech Stack:** ${fe} + ${be} + ${db}
+
+---
+
+## Pernyataan Masalah
+> *[Isi: Masalah apa yang dipecahkan? Siapa yang mengalaminya? Seberapa sering?]*
+
+Contoh format:
+"[Segmen user] kesulitan [melakukan X] karena [alasan Y], sehingga mereka terpaksa [workaround Z yang tidak efisien]."
+
+---
+
+## Goals & Metrik Sukses
+
+| Goal | Metrik | Target 30 hari | Target 90 hari |
+|------|--------|----------------|----------------|
+| Adopsi user | Pengguna aktif (DAU) | 100 | 1.000 |
+| Engagement | Retention D7 | > 40% | > 50% |
+| Performa | Waktu load halaman | < 2 detik | < 1.5 detik |
+| Reliability | Uptime | 99% | 99.9% |
+
+---
+
+## User Persona
+
+### Persona Utama: [Nama]
+- **Pekerjaan/Role:** ...
+- **Pain points utama:** ...
+- **Apa yang diharapkan dari app ini:** ...
+- **Device yang dipakai:** ...
+
+---
+
+## Fitur (Prioritas)
+
+### Must Have (MVP)
+- [ ] Sistem auth — daftar, login, lupa password
+- [ ] [Fitur inti 1]
+- [ ] [Fitur inti 2]
+- [ ] [Fitur inti 3]
+
+### Should Have (v1.1)
+- [ ] [Fitur penting tapi bukan blocker launch]
+- [ ] Notifikasi email
+- [ ] Analytics dashboard sederhana
+
+### Nice to Have (v2.0)
+- [ ] Mobile app
+- [ ] Integrasi dengan service lain
+- [ ] Advanced reporting
+
+---
+
+## Arsitektur Teknis
+
+\`\`\`
+Frontend: ${fe}
+Backend:  ${be}
+Database: ${db}
+Auth:     ${auth}
+UI:       ${ui}
+Deploy:   ${dep}
+\`\`\`
+
+### Alasan Pemilihan Stack
+- **${(a.frontend||['Next.js'])[0]}** dipilih karena: mudah di-deploy, SEO-friendly, ekosistem besar
+- **${(a.database||['Supabase'])[0]}** dipilih karena: all-in-one (DB + auth + storage), gratis untuk MVP
+- **${(a.deployment||['Vercel'])[0]}** dipilih karena: deploy otomatis dari GitHub, gratis untuk project awal
+
+---
+
+## Non-Functional Requirements
+- **Performa:** Halaman core < 2 detik di koneksi 4G
+- **Keamanan:** HTTPS wajib, sanitasi input semua form, tidak simpan password plaintext
+- **Aksesibilitas:** Bisa dipakai dengan keyboard, alt-text untuk gambar
+- **Responsif:** Tampil baik di mobile (320px) sampai desktop (1440px)
+
+---
+
+## Rencana Pengerjaan
+
+| Fase | Kegiatan | Estimasi |
+|------|----------|----------|
+| Fase 1 | Planning, setup repo, design system | 1 minggu |
+| Fase 2 | Fondasi teknis + auth | 1-2 minggu |
+| Fase 3 | Core features | ${scale==='mvp'?'1-2 minggu':'2-4 minggu'} |
+| Fase 4 | Testing & polish | 1 minggu |
+| Fase 5 | Launch | 2-3 hari |
+
+---
+
+## Definition of Done (per fitur)
+- [ ] Unit test ditulis dan passing
+- [ ] Kode di-review (atau self-review dengan checklist)
+- [ ] Tidak ada console.error di browser
+- [ ] Tampil baik di mobile dan desktop
+- [ ] Edge cases (data kosong, error state) sudah ditangani`;
+
+  const prompts=`# Starter Prompts untuk AI Coding Assistant
+
+Gunakan prompt-prompt ini dengan Claude, ChatGPT, atau Cursor untuk mulai coding lebih cepat.
+
+---
+
+## Prompt 1: Setup Project Awal
+
+\`\`\`
+Saya sedang membangun: ${name}
+
+Tech stack yang dipilih:
+- Frontend: ${fe}
+- Backend: ${be}  
+- Database: ${db}
+- Auth: ${auth}
+- UI: ${ui}
+- Deploy: ${dep}
+
+Tolong buatkan:
+1. Struktur folder yang scalable (sesuai best practice 2025)
+2. package.json dengan semua dependencies yang dibutuhkan
+3. File .env.example dengan semua variable yang diperlukan
+4. Konfigurasi TypeScript (tsconfig.json)
+5. Setup ESLint + Prettier
+
+Prioritaskan kesederhanaan — ini project ${scaleMap[scale]}.
+\`\`\`
+
+---
+
+## Prompt 2: Setup Database & Auth
+
+\`\`\`
+Lanjutkan project ${name}.
+
+Tugas: Setup ${db} + ${auth}
+
+Yang dibutuhkan:
+1. Schema database untuk:
+   - Users table (id, email, nama, created_at)
+   - [Tambahkan tabel lain sesuai fitur]
+2. Konfigurasi ${auth} dengan email + password
+3. Middleware untuk protected routes
+4. Utility functions: getUser(), requireAuth()
+
+Catatan: Ikuti security best practices — 
+jangan hardcode credentials, gunakan environment variables.
+\`\`\`
+
+---
+
+## Prompt 3: Komponen UI Utama
+
+\`\`\`
+Bangun komponen UI untuk ${name} menggunakan ${ui}:
+
+1. Layout utama:
+   - Sidebar (navigasi)
+   - Header (user avatar, notif)
+   - Main content area
+
+2. Komponen reusable:
+   - Button (primary, secondary, danger variants)
+   - Input + Form dengan validasi
+   - Card component
+   - Loading skeleton
+
+3. Halaman:
+   - Login page
+   - Dashboard/home page (kosong dulu, nanti diisi)
+
+Gunakan TypeScript. Ikuti accessibility best practices.
+\`\`\`
+
+---
+
+## Prompt 4: Fitur Core Pertama
+
+\`\`\`
+Implementasikan fitur pertama untuk ${name}:
+[Jelaskan fitur spesifik yang ingin dibangun]
+
+Requirements:
+- Input validation dengan Zod
+- Error handling yang user-friendly
+- Loading state saat proses berjalan
+- Success/error feedback ke user
+- Responsive di mobile
+
+Gunakan pattern: Component → Hook → Service → API Route → Database
+\`\`\`
+
+---
+
+## Prompt 5: Setup CI/CD
+
+\`\`\`
+Buat GitHub Actions workflow untuk ${name}:
+
+CI (setiap PR):
+1. Install dependencies
+2. TypeScript check
+3. ESLint check
+4. Unit tests (Vitest)
+5. Build check
+
+CD (merge ke main):
+1. Build production
+2. Deploy ke ${(a.deployment||['Vercel'])[0]}
+
+Tambahkan environment secrets yang dibutuhkan.
+\`\`\``;
+
+  return {name,mode:'sdlc',structure,stackRecs,phases,prd,prompts,scale:scaleMap[scale],fe,be,db,pay};
+}
+
+function buildDesktop(){
+  const a=S.answers;
+  const name=a.desktopName||'My Desktop App';
+  const fw=a.desktopFramework||'electron';
+  const db=(a.database||[]).join(' + ')||'SQLite';
+  const ui=(a.uiLib||[]).join(' + ')||'Tailwind';
+  const inst=(a.installer||[]).join(' + ')||'Electron Builder';
+  const pay=(a.payment||[]).join(' + ')||'';
+  const targetOS=(a.targetOS||['windows']).join(', ');
+  const scale=a.scale||'mvp';
+  const scaleMap={mvp:'MVP (2-4 minggu)',small:'Small (1-2 bulan)',medium:'Medium (3-6 bulan)',enterprise:'Enterprise (6+ bulan)'};
+  const fwName={electron:'Electron',tauri:'Tauri','dotnet-maui':'.NET MAUI','flutter-desktop':'Flutter Desktop',pyqt:'PyQt'}[fw]||'Electron';
+  const isElectron=fw==='electron';
+  const isTauri=fw==='tauri';
+
+  const structure=isElectron?`
+${slug(name)}/
+├── src/
+│   ├── main/                    ← Proses utama (Node.js)
+│   │   ├── main.ts             ← Entry point Electron
+│   │   ├── preload.ts          ← Bridge ke renderer
+│   │   └── ipc/               ← Inter-process communication
+│   ├── renderer/               ← UI (React/Vue/HTML)
+│   │   ├── components/        ← Komponen UI
+│   │   ├── pages/             ← Halaman app
+│   │   └── App.tsx            ← Root component
+│   └── shared/                 ← Kode yang dipakai bersama
+│       ├── types.ts
+│       └── constants.ts
+│
+├── resources/                   ← Icon, assets untuk installer
+│   ├── icon.ico               ← Icon app Windows
+│   ├── icon.icns              ← Icon app macOS
+│   └── icon.png
+│
+├── electron-builder.yml        ← Konfigurasi installer
+├── package.json
+├── tsconfig.json
+└── vite.config.ts`:isTauri?`
+${slug(name)}/
+├── src/                        ← Frontend (web)
+│   ├── components/
+│   ├── pages/
+│   └── App.tsx
+├── src-tauri/                  ← Backend (Rust)
+│   ├── src/
+│   │   ├── main.rs            ← Entry point
+│   │   ├── commands.rs        ← API commands
+│   │   └── lib.rs
+│   ├── Cargo.toml
+│   ├── tauri.conf.json        ← Konfigurasi Tauri
+│   └── icons/                 ← Icon untuk semua platform
+├── package.json
+├── tsconfig.json
+└── vite.config.ts`:`
+${slug(name)}/
+├── src/
+│   ├── components/            ← Komponen UI
+│   ├── pages/                 ← Halaman app
+│   ├── services/              ← Business logic
+│   └── utils/                 ← Helpers
+├── assets/                     ← Icon, gambar, dll
+├── tests/
+└── package.json`;
+
+  const stackRecs=[
+    {cat:'Framework',name:fwName,why:'Engine utama desktop app',star:'⭐'},
+    {cat:'Database',name:db,why:'Penyimpanan data',star:'💾'},
+    {cat:'UI',name:ui,why:'Komponen tampilan',star:'🎨'},
+    {cat:'Installer',name:inst,why:'Distribusi ke user',star:'📦'},
+    ...(pay?[{cat:'Payment',name:pay,why:'Sistem pembayaran',star:'💳'}]:[]),
+    {cat:'Target OS',name:targetOS,why:'Platform target',star:'🖥️'},
+    {cat:'Testing',name:'Vitest + Spectron',why:'Unit + E2E test',star:'✅'},
+  ];
+
+  const phases=[
+    {num:'01',title:'Planning & Setup',tags:['1 minggu'],desc:'Finalisasi requirements, setup repo, siapkan design system dan icon app.'},
+    {num:'02',title:'Fondasi Teknis',tags:['Sprint 1'],desc:`Setup ${fwName} project, konfigurasi ${db}, implementasi layout utama.`},
+    {num:'03',title:'Core Features',tags:['Sprint 2-3'],desc:'Build fitur utama satu per satu. Test di semua target OS.'},
+    {num:'04',title:'Installer & Polish',tags:['Sprint 4'],desc:`Konfigurasi ${inst}, buat installer untuk ${targetOS}. Test install/uninstall.`},
+    {num:'05',title:'Release',tags:['Sprint 5'],desc:'Final testing, code signing, distribusi ke user atau publish ke store.'},
+  ];
+
+  const prd=`# PRD Desktop App — ${name}\n\n## Ringkasan\n**Nama:** ${name}\n**Tipe:** ${a.desktopType||'Utility'} (Desktop App)\n**Target OS:** ${targetOS}\n**Framework:** ${fwName}\n**Estimasi:** ${scaleMap[scale]}\n\n---\n\n## Tech Stack\n\\\`\\\`\\\`\nFramework: ${fwName}\nDatabase:  ${db}\nUI:        ${ui}\nInstaller: ${inst}${pay?'\nPayment:   '+pay:''}\n\\\`\\\`\\\`\n\n---\n\n## Fitur (Prioritas)\n\n### Must Have (MVP)\n- [ ] Window utama dengan layout dasar\n- [ ] [Fitur inti 1]\n- [ ] [Fitur inti 2]\n- [ ] Penyimpanan data lokal\n- [ ] System tray integration\n\n### Should Have (v1.1)\n- [ ] Auto-update\n- [ ] Keyboard shortcuts\n- [ ] Settings/preferences\n\n### Nice to Have (v2.0)\n- [ ] Cloud sync\n- [ ] Plugin system\n- [ ] Multi-window support`;
+
+  const prompts=`# Starter Prompts — Desktop App\n\n## Prompt 1: Setup Project\n\n\\\`\\\`\\\`\nSaya mau bangun desktop app: ${name}\n\nTech stack:\n- Framework: ${fwName}\n- Database: ${db}\n- UI: ${ui}\n- Target OS: ${targetOS}\n\nTolong buatkan:\n1. Struktur folder project ${fwName}\n2. package.json / Cargo.toml dengan dependencies\n3. Konfigurasi window utama (ukuran, title, icon)\n4. Setup hot-reload untuk development\n5. Konfigurasi ${inst} untuk distribusi\n\\\`\\\`\\\`\n\n---\n\n## Prompt 2: Build UI Utama\n\n\\\`\\\`\\\`\nBangun UI untuk ${name} menggunakan ${ui}:\n\n1. Layout utama (sidebar + content area)\n2. Title bar custom (jika frameless window)\n3. System tray menu\n4. Settings page\n5. Keyboard shortcuts\n\\\`\\\`\\\`\n\n---\n\n## Prompt 3: Build Installer\n\n\\\`\\\`\\\`\nKonfigurasi ${inst} untuk ${name}:\n\n- Target: ${targetOS}\n- Auto-update mechanism\n- Code signing (jika diperlukan)\n- Buat script npm: "build:win", "build:mac", "build:linux"\n\\\`\\\`\\\``;
+
+  return {name,mode:'desktop',structure,stackRecs,phases,prd,prompts,scale:scaleMap[scale],fw:fwName,db,targetOS,pay};
+}
+
+function buildADLC(){
+  const a=S.answers;
+  const name=a.agentName||'My AI Agent';
+  const llm=a.llm||'claude';
+  const orch=(a.orchestration||[]).join(' + ')||'LangGraph';
+  const mem=(a.memory||[]).join(', ')||'Context Window';
+  const tools=(a.agentTools||[]).join(', ')||'Web Search';
+  const dep=(a.deployment||[]).join(' + ')||'Railway';
+  const complexity=a.complexity||'simple';
+  const complexMap={poc:'Prototype (1 minggu)',simple:'Simple (2-4 minggu)',production:'Production (1-2 bulan)',enterprise:'Enterprise (3+ bulan)'};
+  const llmModel={claude:'claude-sonnet-4-5',gpt:'gpt-4o',gemini:'gemini-1.5-pro',llama:'meta-llama/llama-3.1-70b',mistral:'mistral-large-latest','multi-llm':'[router]'}[llm]||'claude-sonnet-4-5';
+  const hasLangGraph=(a.orchestration||[]).includes('langgraph');
+  const hasCrewAI=(a.orchestration||[]).includes('crewai');
+
+  const structure=`
+${slug(name)}/
+│
+├── agents/                     ← Kode agent utama
+│   ├── __init__.py
+│   ├── main_agent.py           ← Agent utama / supervisor
+│   ${a.agentType==='multi'?`├── research_agent.py       ← Sub-agent riset
+│   ├── writer_agent.py         ← Sub-agent menulis
+│   └── review_agent.py         ← Sub-agent review`:
+`└── tools/
+│       ├── search.py           ← Tool: cari di internet
+│       ├── code_runner.py      ← Tool: jalankan kode
+│       └── file_handler.py     ← Tool: baca/tulis file`}
+│
+├── memory/                     ← Sistem memori agent
+│   ├── short_term.py           ← Memori percakapan saat ini
+│   └── long_term.py            ← Database pengetahuan (vector)
+│
+├── prompts/                    ← Semua prompt template
+│   ├── system_prompt.py        ← "Kepribadian" dan aturan agent
+│   ├── task_prompts.py         ← Prompt untuk jenis task tertentu
+│   └── eval_prompts.py         ← Prompt untuk self-evaluation
+│
+├── schemas/                    ← Struktur data
+│   ├── inputs.py               ← Format input yang valid
+│   └── outputs.py              ← Format output yang dihasilkan
+│
+├── safety/                     ← Keamanan & kontrol
+│   ├── guardrails.py           ← Aturan yang tidak boleh dilanggar
+│   ├── rate_limiter.py         ← Batas kecepatan eksekusi
+│   └── audit_log.py            ← Catat semua aksi agent
+│
+├── api/                        ← Endpoint untuk dipanggil
+│   └── main.py                 ← FastAPI server
+│
+├── tests/                      ← Testing agent
+│   ├── test_agent.py
+│   └── eval_cases/             ← Test case evaluasi
+│
+├── .env.example                ← Template API keys
+├── requirements.txt            ← Python packages
+├── Dockerfile
+└── README.md`;
+
+  const starterCode=`# ${name} — Starter Agent
+# Gunakan prompt ini di Claude Code atau paste ke file main_agent.py
+
+import anthropic
+import json
+from typing import Any
+
+# ── Setup client ──
+client = anthropic.Anthropic()  # Butuh ANTHROPIC_API_KEY di .env
+
+# ── System prompt: "kepribadian" agent ──
+SYSTEM_PROMPT = """
+Kamu adalah ${name}.
+
+## Misi Kamu
+[Jelaskan dengan jelas apa yang agent ini lakukan]
+
+## Yang Boleh Kamu Lakukan
+${(a.agentTools||['web search']).map(t=>`- ${t}`).join('\n')}
+
+## Yang TIDAK Boleh Kamu Lakukan
+- Jangan lakukan aksi destruktif (hapus data, kirim email massal) tanpa konfirmasi
+- Jangan bagikan informasi sensitif/private
+- Jika tidak yakin, tanya dulu jangan asumsi
+- Berhenti dan minta bantuan jika ada error 3x berturut-turut
+
+## Format Output
+Selalu akhiri respons dengan JSON:
+{
+  "task_complete": true/false,
+  "result": "...",
+  "confidence": "high/medium/low",
+  "next_action": "..."
+}
+"""
+
+# ── Definisi tools ──
+tools = [
+    {
+        "name": "web_search",
+        "description": "Cari informasi terbaru di internet",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Kata kunci pencarian"
+                }
+            },
+            "required": ["query"]
+        }
+    },
+    # Tambah tools lain sesuai kebutuhan
+]
+
+# ── Audit log: catat semua aksi ──
+audit_log = []
+
+def log_action(action: str, details: Any):
+    """Catat setiap aksi agent untuk debugging dan monitoring"""
+    entry = {"action": action, "details": details}
+    audit_log.append(entry)
+    print(f"[AUDIT] {action}: {json.dumps(details, ensure_ascii=False)[:100]}")
+
+# ── Eksekusi tool ──
+def execute_tool(name: str, inputs: dict) -> str:
+    """
+    Implementasi eksekusi tool.
+    Ganti bagian ini dengan logic nyata.
+    """
+    log_action("tool_call", {"tool": name, "inputs": inputs})
+
+    if name == "web_search":
+        # TODO: Ganti dengan Tavily API atau Serper API
+        return f"[Hasil pencarian untuk: {inputs.get('query', '')}]"
+
+    return f"Tool '{name}' belum diimplementasikan"
+
+# ── Loop utama agent ──
+class Agent:
+    def __init__(self):
+        self.conversation = []
+        self.max_iterations = 10
+
+    def run(self, task: str) -> str:
+        """
+        Jalankan agent dengan task tertentu.
+        Agent akan bekerja sampai selesai atau max_iterations tercapai.
+        """
+        print(f"\\n🤖 Memulai task: {task[:100]}...\\n")
+        self.conversation.append({"role": "user", "content": task})
+
+        for i in range(self.max_iterations):
+            log_action("iteration_start", {"step": i + 1})
+
+            # Panggil LLM
+            response = client.messages.create(
+                model="${llmModel}",
+                max_tokens=4096,
+                system=SYSTEM_PROMPT,
+                tools=tools,
+                messages=self.conversation
+            )
+
+            # Selesai?
+            if response.stop_reason == "end_turn":
+                result = self._get_text(response)
+                log_action("task_complete", {"result": result[:100]})
+                return result
+
+            # Ada tool yang dipanggil?
+            if response.stop_reason == "tool_use":
+                tool_results = []
+                for block in response.content:
+                    if block.type == "tool_use":
+                        result = execute_tool(block.name, block.input)
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": block.id,
+                            "content": result
+                        })
+
+                # Update conversation
+                self.conversation.append({
+                    "role": "assistant",
+                    "content": response.content
+                })
+                self.conversation.append({
+                    "role": "user",
+                    "content": tool_results
+                })
+
+        return "⚠️ Maksimum iterasi tercapai. Cek audit log."
+
+    def _get_text(self, response) -> str:
+        for block in response.content:
+            if hasattr(block, 'text'):
+                return block.text
+        return ""
+
+# ── Jalankan ──
+if __name__ == "__main__":
+    agent = Agent()
+    result = agent.run(
+        "Masukkan task kamu di sini"
+    )
+    print("\\n=== HASIL ===")
+    print(result)
+    print(f"\\n=== AUDIT LOG ({len(audit_log)} aksi) ===")
+    for entry in audit_log:
+        print(f"  - {entry['action']}")`;
+
+  const masterPlan=`# ADLC Master Plan — ${name}
+
+## Ringkasan
+**Nama Agent:** ${name}
+**Tipe:** ${a.agentType||'Single Agent'}
+**Model AI:** ${llmModel}
+**Orchestration:** ${orch}
+**Estimasi:** ${complexMap[complexity]}
+
+---
+
+## Misi & Batasan Agent
+
+### Misi (isi bagian ini!)
+> Agent ini ada untuk: [APA yang dilakukan]
+> Bagi pengguna: [SIAPA yang terbantu]
+> Sukses jika: [BAGAIMANA mengukurnya]
+
+### Batasan Keras (WAJIB dipatuhi agent)
+1. ❌ Tidak boleh melakukan aksi destruktif tanpa konfirmasi manusia
+2. ❌ Tidak boleh bagikan data private pengguna
+3. ❌ Tidak boleh melebihi budget token/biaya yang ditetapkan
+4. ❌ Harus berhenti dan eskalasi jika error 3x berturut-turut
+5. ✅ Selalu log setiap aksi di audit trail
+
+---
+
+## Ukuran Sukses
+
+| KPI | Target | Cara Ukur |
+|-----|--------|-----------|
+| Task completion rate | > 85% | Automated eval |
+| Akurasi output | > 90% | LLM-as-judge |
+| Rata-rata biaya per task | < $0.10 | Token tracking |
+| Waktu respon (P95) | < 30 detik | APM monitoring |
+| Halusinasi | < 5% | Manual sampling |
+
+---
+
+## Arsitektur
+
+### 5 Lapisan Sistem
+\`\`\`
+Layer 1 — Foundation  : ${llmModel} (otak utama)
+Layer 2 — Memory      : ${mem}
+Layer 3 — Tools       : ${tools}
+Layer 4 — Orchestration: ${orch}
+Layer 5 — Observability: Audit log + monitoring
+\`\`\`
+
+### Kontrol Manusia
+Level: **${a.autonomy==='hitl'?'Konfirmasi setiap langkah':a.autonomy==='checkpoint'?'Konfirmasi di titik kritis':a.autonomy==='monitor'?'Monitor saja':a.autonomy==='autonomous'?'Fully autonomous':'Belum ditentukan'}**
+
+${a.autonomy==='hitl'?'→ Agent akan selalu minta persetujuan sebelum bertindak. Paling aman.':
+  a.autonomy==='checkpoint'?'→ Agent jalan sendiri, tapi pause dan minta approval sebelum aksi high-stakes.':
+  a.autonomy==='monitor'?'→ Agent jalan penuh. Manusia pantau via dashboard. Ada tombol stop darurat.':
+  '→ Fully autonomous. Wajib ada monitoring ketat dan kill-switch yang berfungsi.'}
+
+---
+
+## Fase Pengembangan
+
+### Fase 1: Definisi & Validasi (Minggu 1)
+- [ ] Tulis mission statement yang jelas
+- [ ] Definisikan semua hard constraints
+- [ ] Buat 20+ test cases representatif
+- [ ] Validasi bahwa task bisa diselesaikan LLM secara manual dulu
+
+### Fase 2: Build Skills & Tools (Minggu 1-2)
+- [ ] Implementasi setiap tool dengan error handling
+- [ ] Tulis system prompt v1
+- [ ] Test setiap tool secara terpisah
+- [ ] Setup audit logging
+
+### Fase 3: Orchestration (Minggu 2-3)
+- [ ] Implement agent loop dengan ${orch}
+- [ ] Test end-to-end dengan task sederhana
+- [ ] Tambahkan human-in-the-loop di titik kritis
+- [ ] Debug dan optimalkan prompt
+
+### Fase 4: Evaluasi (Minggu 3)
+- [ ] Jalankan semua 20+ test cases
+- [ ] Setup LLM-as-judge untuk auto-eval
+- [ ] Ukur: completion rate, akurasi, biaya, latency
+- [ ] Iterasi prompt berdasarkan temuan
+
+### Fase 5: Deploy & Monitor (Minggu 4)
+- [ ] Deploy ke ${dep}
+- [ ] Setup alerting (error spike, cost overrun)
+- [ ] Buat runbook untuk kondisi darurat
+- [ ] Dokumentasi cara pakai
+
+---
+
+## Keamanan & Observability
+
+### Yang WAJIB Ada Sebelum Production
+- [ ] Audit log: setiap tool call dicatat dengan timestamp
+- [ ] Cost guard: hard limit biaya per run ($X)
+- [ ] Rate limiter: maks N request per user per jam
+- [ ] Kill switch: endpoint POST /stop yang hentikan agent
+- [ ] Sandbox: code execution dijalankan di environment terisolasi
+
+---
+
+## Evaluasi Berkala
+
+Lakukan setiap 2 minggu:
+1. Sample 20 run acak — review manual
+2. Cek apakah ada "prompt drift" (output berubah tanpa sebab)
+3. Review biaya — apakah masih dalam budget?
+4. Update system prompt jika ada pola kegagalan`;
+
+  const sysPrompts=`# System Prompt Templates — ${name}
+
+---
+
+## Template 1: System Prompt Utama
+
+Paste ini sebagai system prompt agent kamu.
+Isi bagian dalam [kurung kotak].
+
+\`\`\`
+Kamu adalah ${name}.
+
+## Siapa Kamu
+[Jelaskan: nama, peran, siapa yang menggunakanmu]
+Contoh: "Kamu adalah asisten riset untuk tim marketing PT XYZ.
+Tugasmu adalah mencari data kompetitor, merangkum berita industri,
+dan membuat laporan mingguan."
+
+## Kemampuan yang Kamu Miliki
+${(a.agentTools||['pencarian web']).map(t=>`- Bisa ${t}`).join('\n')}
+
+## Cara Kamu Bekerja
+1. Baca task dengan teliti — pahami apa yang diminta
+2. Rencanakan langkah-langkah sebelum mulai
+3. Kerjakan satu langkah, periksa hasilnya
+4. Lanjut ke langkah berikutnya
+5. Buat summary hasil di akhir
+
+## Yang Tidak Boleh Kamu Lakukan
+- Jangan berasumsi jika ada yang tidak jelas — tanya dulu
+- Jangan lakukan aksi yang tidak bisa di-undo tanpa konfirmasi
+- Jangan bagikan informasi yang ditandai sebagai rahasia
+- Jangan terus jika sudah gagal 3 kali — eskalasi ke manusia
+
+## Format Respons
+Selalu akhiri dengan:
+STATUS: [SELESAI / BUTUH INPUT / GAGAL]
+RINGKASAN: [Apa yang sudah dilakukan]
+HASIL: [Output utama]
+LANGKAH SELANJUTNYA: [Jika ada]
+\`\`\`
+
+---
+
+## Template 2: Prompt untuk Mulai Task Baru
+
+\`\`\`
+Task baru: {deskripsi_task}
+
+Konteks tambahan:
+- Deadline: {deadline}
+- Format output yang diinginkan: {format}
+- Batasan khusus: {batasan}
+
+Sebelum mulai, konfirmasi pemahaman kamu dengan menjawab:
+1. Apa yang akan kamu lakukan?
+2. Tools apa yang akan dipakai?
+3. Berapa lama estimasinya?
+4. Apakah ada risiko atau ketidakpastian?
+\`\`\`
+
+---
+
+## Template 3: Self-Evaluation (LLM menilai dirinya sendiri)
+
+Gunakan ini untuk mengecek kualitas output agent secara otomatis.
+
+\`\`\`
+Kamu adalah penilai kualitas AI yang objektif.
+
+Task asli yang diberikan:
+{task_asli}
+
+Respons yang dihasilkan agent:
+{respons_agent}
+
+Nilai respons ini dari 1-5 untuk setiap dimensi:
+
+1. KELENGKAPAN: Apakah semua bagian task terjawab?
+   [1=tidak sama sekali, 5=semua terjawab lengkap]
+
+2. AKURASI: Seberapa akurat informasi yang diberikan?
+   [1=banyak salah, 5=semuanya benar dan terverifikasi]
+
+3. EFISIENSI: Apakah agent mengambil jalur tercepat ke jawaban?
+   [1=sangat muter-muter, 5=langsung ke inti]
+
+4. KEAMANAN: Apakah agent mematuhi semua batasan?
+   [1=melanggar batasan, 5=mematuhi semua aturan]
+
+Output HANYA dalam format JSON:
+{
+  "kelengkapan": N,
+  "akurasi": N,
+  "efisiensi": N,
+  "keamanan": N,
+  "total": N,
+  "komentar": "penjelasan singkat",
+  "perlu_perbaikan": ["item1", "item2"]
+}
+\`\`\`
+
+---
+
+## Template 4: Debugging Agent yang Bermasalah
+
+Jika agent sering gagal, gunakan prompt ini untuk diagnosa:
+
+\`\`\`
+Review percakapan agent berikut dan identifikasi masalahnya:
+
+[PASTE percakapan di sini]
+
+Analisis:
+1. Di mana agent mulai salah jalur?
+2. Apakah system prompt tidak cukup jelas?
+3. Apakah ada tool yang dipanggil dengan parameter salah?
+4. Apa perbaikan konkret yang bisa dilakukan?
+
+Format output:
+MASALAH_UTAMA: [1 kalimat]
+AKAR_MASALAH: [penjelasan]
+SOLUSI: [langkah konkret]
+PERUBAHAN_PROMPT: [bagian prompt yang perlu diubah]
+\`\`\``;
+
+  return{name,mode:'adlc',structure,starterCode,masterPlan,sysPrompts,complexity:complexMap[complexity],llm,orch,tools};
+}
+
+// ═══════════════════════════════════════════
+// RENDER OUTPUT
+// ═══════════════════════════════════════════
+function renderOutput(){
+  const g=S.generated;
+  const isA=g.mode==='adlc';
+  const isD=g.mode==='desktop';
+  const tabs=isA?['structure','code','plan','prompts']:['structure','stack','prd','prompts'];
+  const labels=isA?['Struktur Folder','Starter Code','Master Plan','System Prompts']:['Struktur Folder','Tech Stack','PRD','AI Prompts'];
+  const at=S.activeTab||tabs[0];
+  const gClass=isA?'green':isD?'amber':'';
+
+  const heroMeta=isA
+    ?[g.llm||'Claude',g.orch,g.complexity]
+    :isD?[g.fw,g.db,g.targetOS,g.scale]
+    :[g.fe,g.db,g.scale];
+
+  const heroLabel=isA?'Agentic AI — Generated':isD?'Desktop App — Generated':'Software — Generated';
+
+  let panel='';
+  if(at==='structure'){
+    panel=`<div class="out-section">
+      <div class="out-sec-head"><div class="out-sec-icon ${gClass}">📁</div><div>
+        <div class="out-sec-title">Struktur Folder Project</div>
+        <div class="out-sec-sub">Komentar menjelaskan fungsi setiap folder</div>
+      </div></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang-tag">Directory Tree</span>
+        <button class="copy-btn" onclick="cpCode('sc1',this)">Salin</button></div>
+        <pre id="sc1">${esc(g.structure.trim())}</pre></div>
+    </div>`;
+  } else if(at==='stack'&&!isA){
+    const phaseNumClass=isD?'amber':'';
+    const phaseTagClass=isD?'amber':'';
+    panel=`<div class="out-section">
+      <div class="out-sec-head"><div class="out-sec-icon ${gClass}">⚙️</div><div>
+        <div class="out-sec-title">Rekomendasi Tech Stack</div>
+        <div class="out-sec-sub">Dipilih otomatis berdasarkan jawaban kamu</div>
+      </div></div>
+      <div class="stack-recs">${(g.stackRecs||[]).map(s=>`
+        <div class="stack-rec">
+          <div class="stack-rec-star">${s.star}</div>
+          <div class="stack-rec-cat">${s.cat}</div>
+          <div class="stack-rec-name">${s.name}</div>
+          <div class="stack-rec-why">${s.why}</div>
+        </div>`).join('')}</div>
+    </div>
+    <div class="out-section" style="margin-top:10px">
+      <div class="out-sec-head"><div class="out-sec-icon ${gClass}">📋</div><div>
+        <div class="out-sec-title">Fase Pengerjaan</div>
+        <div class="out-sec-sub">Urutan yang disarankan</div>
+      </div></div>
+      <div class="phase-list">${(g.phases||[]).map(p=>`
+        <div class="phase-item">
+          <div class="phase-num ${phaseNumClass}">${p.num}</div>
+          <div><div class="phase-title">${p.title}</div>
+            <div class="phase-desc">${p.desc}</div>
+            <div class="phase-tags">${p.tags.map(t=>`<span class="phase-tag ${phaseTagClass}">${t}</span>`).join('')}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  } else if(at==='code'&&isA){
+    panel=`<div class="out-section">
+      <div class="out-sec-head"><div class="out-sec-icon green">🐍</div><div>
+        <div class="out-sec-title">Starter Code — Python Agent</div>
+        <div class="out-sec-sub">Siap dijalankan, tinggal isi bagian TODO</div>
+      </div></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang-tag">Python</span>
+        <button class="copy-btn" onclick="cpCode('sc2',this)">Salin</button></div>
+        <pre id="sc2">${esc(g.starterCode.trim())}</pre></div>
+    </div>`;
+  } else if(at==='plan'&&isA){
+    panel=`<div class="out-section">
+      <div class="out-sec-head"><div class="out-sec-icon green">📝</div><div>
+        <div class="out-sec-title">ADLC Master Plan</div>
+        <div class="out-sec-sub">Roadmap lengkap — tinggal isi bagian kosong</div>
+      </div></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang-tag">Markdown</span>
+        <button class="copy-btn" onclick="cpCode('sc3',this)">Salin</button></div>
+        <pre id="sc3">${esc(g.masterPlan.trim())}</pre></div>
+    </div>`;
+  } else if(at==='prd'&&!isA){
+    panel=`<div class="out-section">
+      <div class="out-sec-head"><div class="out-sec-icon ${gClass}">📝</div><div>
+        <div class="out-sec-title">${isD?'PRD — Desktop App':'PRD — Product Requirements Document'}</div>
+        <div class="out-sec-sub">Tinggal isi bagian dalam [kurung kotak]</div>
+      </div></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang-tag">Markdown</span>
+        <button class="copy-btn" onclick="cpCode('sc4',this)">Salin</button></div>
+        <pre id="sc4">${esc(g.prd.trim())}</pre></div>
+    </div>`;
+  } else if(at==='prompts'){
+    const content=isA?g.sysPrompts:g.prompts;
+    panel=`<div class="out-section">
+      <div class="out-sec-head"><div class="out-sec-icon ${gClass}">💬</div><div>
+        <div class="out-sec-title">${isA?'System Prompt Templates':isD?'Starter Prompts Desktop App':'Starter Prompts untuk AI Coding'}</div>
+        <div class="out-sec-sub">${isA?'4 template siap pakai — copy & paste ke project kamu':'Prompt siap pakai — gunakan dengan Claude Code, Cursor, atau ChatGPT'}</div>
+      </div></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang-tag">Prompts</span>
+        <button class="copy-btn" onclick="cpCode('sc5',this)">Salin</button></div>
+        <pre id="sc5">${esc(content.trim())}</pre></div>
+    </div>`;
+  }
+
+  R.innerHTML=`
+  <div class="out-wrap">
+    <div class="out-hero ${gClass}">
+      <div class="out-hero-label">${heroLabel} ✦</div>
+      <div class="out-hero-name">${g.name}</div>
+      <div class="out-hero-meta">${heroMeta.filter(Boolean).map(m=>`<span class="out-hero-chip">${m}</span>`).join('')}</div>
+    </div>
+    <div class="tab-nav">${tabs.map((t,i)=>`<button class="tab-nav-btn ${at===t?'active':''}" onclick="setTab('${t}')">${labels[i]}</button>`).join('')}</div>
+    <div id="out-panel">${panel}</div>
+    <div class="restart-row">
+      <button class="btn btn-restart" onclick="restart()">← Buat Project Baru</button>
+    </div>
+  </div>`;
+}
+
+function setTab(t){S.activeTab=t;render();window.scrollTo(0,0)}
+function restart(){Object.assign(S,{mode:null,step:0,answers:{},generating:false,generated:null,activeTab:null});render();window.scrollTo(0,0)}
+
+function cpCode(id,btn){
+  const el=document.getElementById(id);
+  if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(()=>{
+    btn.textContent='Tersalin ✓';btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='Salin';btn.classList.remove('ok')},2000);
+  });
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "name": "devforge-studio",
+  "version": "2.0.0",
+  "description": "Smart framework generator for Software (SDLC) and Agentic AI (ADLC) projects",
+  "main": "public/index.html",
+  "scripts": {
+    "start": "python3 -m http.server 3000 --directory public",
+    "dev": "npx serve public -p 3000",
+    "serve": "npx serve public -p 3000",
+    "deploy:gh-pages": "gh-pages -d public",
+    "deploy:netlify": "netlify deploy --prod --dir public",
+    "open": "open public/index.html"
+  },
+  "keywords": [
+    "sdlc",
+    "adlc",
+    "framework",
+    "generator",
+    "project-template",
+    "agentic-ai",
+    "software-development",
+    "prd",
+    "starter-kit"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.0",
+    "gh-pages": "^6.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/devforge-studio.git"
+  },
+  "homepage": "https://YOUR_USERNAME.github.io/devforge-studio"
+}
