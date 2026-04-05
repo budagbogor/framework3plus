@@ -1011,6 +1011,7 @@ const AI_PROVIDERS = {
     keyPlaceholder: 'sk-or-v1-xxxxxxxxxxxxxxxx',
     docsUrl: 'https://openrouter.ai/keys',
     models: [
+      {id:'openrouter/free',                             label:'OpenRouter Auto-Free (REKOMENDASI) ✦',  provider:'openrouter', free:true},
       {id:'google/gemma-3-27b-it:free',                  label:'Gemma 3 27B (GRATIS) — Terbaik ✦',     provider:'google',     free:true},
       {id:'qwen/qwen3.6-plus:free',                     label:'Qwen 3.6 Plus (GRATIS) — Cerdas ✦',     provider:'qwen',       free:true},
       {id:'qwen/qwen3-coder:free',                      label:'Qwen 3 Coder (GRATIS) — Spesialis ✦',   provider:'qwen',       free:true},
@@ -3666,6 +3667,7 @@ PENTING: Semua konten harus SPESIFIK ke project "${g.name}" — bukan template g
 
       // Powerfull Auto-Switch & Retry Logic for OpenRouter Free (Updated 2026)
       const freeFallbacks = [
+        'openrouter/free',
         'google/gemma-3-27b-it:free',
         'qwen/qwen3.6-plus:free',
         'qwen/qwen3-coder:free',
@@ -3944,6 +3946,7 @@ async function testAPIKey(){
   const internalProxyUrl = '/api/ai-proxy';
 
   const freeFallbacks = [
+    'openrouter/free',
     'google/gemma-3-27b-it:free',
     'qwen/qwen3.6-plus:free',
     'qwen/qwen3-coder:free',
