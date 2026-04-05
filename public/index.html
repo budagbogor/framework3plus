@@ -56,6 +56,22 @@ body::after{content:'';position:fixed;inset:0;opacity:.025;pointer-events:none;z
 .nav-btn.ai-active{background:var(--accent);color:#fff;border-color:var(--accent)}
 .nav-btn.ai-connected{background:var(--green-light);color:var(--green);border-color:var(--green)}
 
+/* ── Mobile Hamburger ── */
+.nav-hamburger{display:none;width:32px;height:32px;flex-direction:column;justify-content:center;gap:5px;cursor:pointer;z-index:1001}
+.nav-hamburger span{display:block;width:100%;height:2px;background:var(--text);border-radius:2px;transition:all 0.3s}
+.nav-hamburger.active span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-hamburger.active span:nth-child(2){opacity:0}
+.nav-hamburger.active span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* ── Mobile Dropdown Menu ── */
+.nav-mobile-menu{position:fixed;top:70px;left:0;right:0;background:rgba(var(--bg2),0.95);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);transform:translateY(-100%);opacity:0;visibility:hidden;
+  transition:all 0.4s cubic-bezier(0.16, 1, 0.3, 1);z-index:998;padding:24px;display:flex;flex-direction:column;gap:12px}
+.nav-mobile-menu.active{transform:translateY(0);opacity:1;visibility:visible}
+.nav-mobile-item{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:14px;border-radius:12px;
+  font-size:14px;font-weight:700;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.2s}
+.nav-mobile-item:hover{background:var(--accent-light);color:var(--accent);border-color:var(--accent)}
+
 /* ── AI Settings Modal ── */
 .ai-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);z-index:2000;
   display:flex;align-items:center;justify-content:center;animation:fadeIn .2s ease}
@@ -442,6 +458,10 @@ pre{padding:16px;overflow-x:auto;font-family:var(--mono);font-size:11.5px;line-h
   .tech-grid{grid-template-columns:1fr 1fr}
 }
 @media(max-width:600px){
+  .nav-container{padding:0 20px}
+  .nav-actions{display:none}
+  .nav-hamburger{display:flex}
+  .logo-text{font-size:12px}
   .tech-grid{grid-template-columns:1fr}
   .tc-detail-inner{grid-template-columns:1fr}
   .scale-grid{grid-template-columns:1fr}
@@ -463,8 +483,19 @@ pre{padding:16px;overflow-x:auto;font-family:var(--mono);font-size:11.5px;line-h
       <button class="nav-btn" onclick="toggleTheme()" id="themeBtn">🌙 Gelap</button>
       <button class="nav-btn" onclick="goHome()">🏠 Beranda</button>
     </div>
+    
+    <div class="nav-hamburger" id="hamburgerBtn" onclick="toggleMobileMenu()">
+      <span></span><span></span><span></span>
+    </div>
   </div>
 </nav>
+
+<div class="nav-mobile-menu" id="mobileNav">
+  <div class="nav-mobile-item" onclick="openGuidePanel(); closeMobileMenu();">📖 Panduan Lengkap</div>
+  <div class="nav-mobile-item" onclick="openAIPanel(); closeMobileMenu();">🤖 AI Settings</div>
+  <div class="nav-mobile-item" onclick="toggleTheme(); closeMobileMenu();">🌓 Ganti Tema</div>
+  <div class="nav-mobile-item" onclick="goHome(); closeMobileMenu();">🏠 Beranda</div>
+</div>
 
 <div id="app">
 <div id="root"></div>
@@ -4204,6 +4235,25 @@ function closeGuidePanel(){
   const el = document.getElementById('gdOverlay');
   if(el){ el.style.animation='fadeIn .2s ease reverse'; setTimeout(()=>el.remove(),200); }
 }
+
+function toggleMobileMenu(){
+  document.getElementById('mobileNav')?.classList.toggle('active');
+  document.getElementById('hamburgerBtn')?.classList.toggle('active');
+}
+
+function closeMobileMenu(){
+  document.getElementById('mobileNav')?.classList.remove('active');
+  document.getElementById('hamburgerBtn')?.classList.remove('active');
+}
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', (e) => {
+  const nav = document.getElementById('mobileNav');
+  const hmb = document.getElementById('hamburgerBtn');
+  if(nav?.classList.contains('active') && !nav.contains(e.target) && !hmb.contains(e.target)){
+    closeMobileMenu();
+  }
+});
 
 render();
 </script>
