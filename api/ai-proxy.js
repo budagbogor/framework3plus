@@ -33,15 +33,26 @@ export default async function handler(req, res) {
       body: JSON.stringify(payload)
     });
 
+    // 3. Handle non-JSON responses (security/errors)
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await response.text();
+      console.warn(`[Proxy] Provider returned non-JSON (${response.status}):`, text.substring(0, 200));
+      return res.status(response.status).json({ 
+        error: `Provider AI (${provider}) mengembalikan respon non-JSON (Status: ${response.status}).`,
+        message: text.substring(0, 200) || 'Respon kosong atau bukan JSON.'
+      });
+    }
+
     const data = await response.json();
 
-    // 3. Return the response back to the frontend
+    // 4. Return the response back to the frontend
     return res.status(response.status).json(data);
 
   } catch (error) {
     console.error('[Proxy Error]', error);
     return res.status(500).json({ 
-      error: 'Terjadi kesalahan pada Proxy Serverless.',
+      error: 'Terjadi kesalahan sistem pada Proxy Serverless.',
       message: error.message 
     });
   }
