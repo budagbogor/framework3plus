@@ -96,7 +96,18 @@ devforge-studio/
 
 ## 📊 Framework yang Dihasilkan
 
-### Framework 1 — SDLC Master (9 Fase)
+### Framework 1 — Website Mastery (7 Fase)
+| Fase | Aktivitas |
+|------|-----------|
+| 01 Identitas | Nama, tujuan, dan deskripsi target audiens |
+| 02 Tipe Web | Pemilihan struktur (Landing Page, Blog, Docs, dll) |
+| 03 Web Builder | Pemilihan engine (Astro, Next.js, 11ty) |
+| 04 Content Mgmt | Integrasi CMS (Markdown, Sanity, Contentful) |
+| 05 UX Features | Animasi (Framer), Forms (Formspree), SEO |
+| 06 Deployment | Hosting (Vercel, Netlify, Cloudflare Pages) |
+| 07 Output | Penyesuaian output (Penuh, Parsial, Prompt Only) |
+
+### Framework 2 — SDLC Master (9 Fase)
 | Fase | Aktivitas |
 |------|-----------|
 | 01 Planning | Scope, goals, risk register |
@@ -109,7 +120,7 @@ devforge-studio/
 | 08 Evaluation | KPI review, tech debt |
 | 09 Maintenance | SLA, hotfix, refactoring |
 
-### Framework 2 — ADLC Agentic (9 Fase)
+### Framework 3 — ADLC Agentic (9 Fase)
 | Fase | Aktivitas |
 |------|-----------|
 | 01 Goal Definition | Mission, outcomes, constraints |
