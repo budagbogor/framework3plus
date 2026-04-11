@@ -468,7 +468,50 @@ pre{padding:16px;overflow-x:auto;font-family:var(--mono);font-size:11.5px;line-h
   .stack-recs{grid-template-columns:repeat(2,1fr)}
   .qs-grid{grid-template-columns:1fr 1fr}
 }
+/* ── Builder Panel UI ── */
+.builder-grid { display: grid; grid-template-columns: 280px 1fr; gap: 20px; height: 600px; margin-top: 10px; }
+.builder-sidebar { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+.builder-main { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+.builder-head { padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg3); display: flex; justify-content: space-between; align-items: center; }
+.builder-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--text2); }
+
+/* File Explorer */
+.file-tree { padding: 10px; overflow-y: auto; flex: 1; font-family: var(--mono); font-size: 12px; }
+.file-item { padding: 6px 10px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all .15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-item:hover { background: var(--accent-light); color: var(--accent); }
+.file-item.active { background: var(--accent); color: #fff; }
+.file-icon { font-size: 14px; width: 16px; text-align: center; }
+
+/* Terminal */
+.terminal-header { background: #161b22; padding: 8px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.term-dot { width: 10px; height: 10px; border-radius: 50%; }
+.term-dots { display: flex; gap: 6px; }
+.term-body { flex: 1; padding: 16px; font-family: var(--mono); font-size: 12px; color: #c9d1d9; overflow-y: auto; line-height: 1.6; }
+.term-line { margin-bottom: 4px; display: flex; gap: 10px; }
+.term-ts { color: #8b949e; flex-shrink: 0; }
+.term-msg { word-break: break-all; }
+.term-msg.info { color: #58a6ff; }
+.term-msg.success { color: #3fb950; }
+.term-msg.warn { color: #d29922; }
+.term-msg.error { color: #f85149; }
+.term-msg.agent { color: #a5d6ff; font-weight: bold; }
+
+/* Builder Empty State */
+.builder-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; color: var(--text3); }
+.builder-empty-icon { font-size: 48px; margin-bottom: 20px; opacity: 0.5; }
+.builder-empty-btn { margin-top: 20px; padding: 12px 32px; font-size: 15px; }
+
+/* Pulse animation for active build */
+@keyframes agent-pulse { 0% { box-shadow: 0 0 0 0 rgba(53,98,122,0.4); } 70% { box-shadow: 0 0 0 10px rgba(53,98,122,0); } 100% { box-shadow: 0 0 0 0 rgba(53,98,122,0); } }
+.agent-active-glow { animation: agent-pulse 2s infinite; border-radius: 50%; }
+
+@media(max-width:900px){
+  .builder-grid { grid-template-columns: 1fr; height: auto; }
+  .builder-sidebar { height: 200px; }
+  .builder-main { height: 400px; }
+}
 </style>
+
 </head>
 <body>
 
@@ -1015,6 +1058,7 @@ const ADLC_STEPS = [
 // STATE
 // ═══════════════════════════════════════════
 const S = {mode:null, step:0, answers:{}, generating:false, generated:null, activeTab:null, level:'beginner',
+  building: false, buildLogs: [], virtualWorkspace: {}, activeFile: null,
   aiConfig: (() => {
     try { return JSON.parse(localStorage.getItem('devforge_ai') || '{}'); } catch(e){ return {}; }
   })()
@@ -2444,8 +2488,8 @@ function renderOutput(){
   const isA=g.mode==='adlc';
   const isD=g.mode==='desktop';
   const isW=g.mode==='website';
-  const tabs=isA?['structure','code','plan','prompts']:['structure','stack','prd','prompts'];
-  const labels=isA?['Struktur Folder','Starter Code','Master Plan','System Prompts']:['Struktur Folder','Tech Stack','PRD','AI Prompts'];
+  const tabs=isA?['builder','structure','code','plan','prompts']:['builder','structure','stack','prd','prompts'];
+  const labels=isA?['🚀 Live Builder','Struktur Folder','Starter Code','Master Plan','System Prompts']:['🚀 Live Builder','Struktur Folder','Tech Stack','PRD','AI Prompts'];
   const at=S.activeTab||tabs[0];
   const gClass=isA?'green':isW?'pink':isD?'amber':'';
 
@@ -2457,7 +2501,9 @@ function renderOutput(){
   const heroLabel=isA?'Agentic AI — Generated':isW?'Website — Generated':isD?'Desktop App — Generated':'Software — Generated';
 
   let panel='';
-  if(at==='structure'){
+  if(at==='builder'){
+    panel = renderBuilderPanel();
+  } else if(at==='structure'){
     panel=`<div class="out-section">
       <div class="out-sec-head"><div class="out-sec-icon ${gClass}">📁</div><div>
         <div class="out-sec-title">Struktur Folder Project</div>
@@ -3936,7 +3982,233 @@ File tambahan yang tersedia:
 
 
 function setTab(t){S.activeTab=t;render();window.scrollTo(0,0)}
-function restart(){Object.assign(S,{mode:null,step:0,answers:{},generating:false,generated:null,activeTab:null});render();window.scrollTo(0,0)}
+
+function renderBuilderPanel(){
+    const logs = S.buildLogs.slice(-20).map(l => `
+        <div class="term-line">
+            <span class="term-ts">[${l.time}]</span>
+            <span class="term-msg ${l.type}">${l.msg}</span>
+        </div>
+    `).join('');
+
+    const files = Object.keys(S.virtualWorkspace).map(path => `
+        <div class="file-item ${S.activeFile===path?'active':''}" onclick="viewVirtualFile('${path}')">
+            <span class="file-icon">${path.endsWith('/')?'📁':'📄'}</span>
+            ${path}
+        </div>
+    `).join('');
+
+    if(!S.building && Object.keys(S.virtualWorkspace).length === 0){
+        return `
+            <div class="builder-empty">
+                <div class="builder-empty-icon">🏗️</div>
+                <div class="q-title" style="font-size: 22px">Siap Membangun Aplikasi Nyata?</div>
+                <div class="q-desc" style="max-width: 500px">AI akan mengambil alih peran sebagai <strong>Professional Developer</strong>. Ia akan merancang arsitektur, menulis file kode asli, dan menyiapkan segala kebutuhan teknis secara mandiri.</div>
+                <button class="btn btn-generate ${modeColorClass()} builder-empty-btn" onclick="startAutonomousBuild()">🚀 Mulai Pembangunan Otonom</button>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="builder-grid">
+            <div class="builder-sidebar">
+                <div class="builder-head">
+                    <span class="builder-title">File Explorer</span>
+                    ${!S.building ? `<button class="nav-btn" onclick="downloadVirtualProject()" style="padding: 2px 8px; font-size: 10px; background: var(--green-light); color: var(--green)">📥 Download All</button>` : ''}
+                </div>
+                <div class="file-tree">${files || '<div style="opacity:0.5; font-size:11px; padding:10px">Menunggu file pertama...</div>'}</div>
+            </div>
+            <div class="builder-main">
+                <div class="terminal-header">
+                    <div class="term-dots"><div class="term-dot" style="background:#ff5f56"></div><div class="term-dot" style="background:#ffbd2e"></div><div class="term-dot" style="background:#27c93f"></div></div>
+                    <span style="font-family:var(--mono); font-size:11px; opacity:0.6">Agent Console — ${S.building ? 'Building in progress...' : 'Build Finished'}</span>
+                    ${S.building ? `<div class="agent-active-glow" style="width:8px; height:8px; background:var(--accent); margin-left:auto"></div>` : ''}
+                </div>
+                <div class="term-body" id="buildTerminal">${logs}</div>
+                ${S.activeFile ? `
+                <div class="code-block" style="border:none; border-top:1px solid rgba(255,255,255,0.1); border-radius:0; flex:1; display:flex; flex-direction:column">
+                    <div class="code-header">
+                        <span class="code-lang-tag">${S.activeFile}</span>
+                        <button class="copy-btn" onclick="cpCode('activeCodeCont',this)">Salin Kode</button>
+                    </div>
+                    <pre style="flex:1; max-height:none" id="activeCodeCont">${esc(S.virtualWorkspace[S.activeFile])}</pre>
+                </div>` : ''}
+            </div>
+        </div>
+    `;
+}
+
+async function startAutonomousBuild(){
+    if(!S.aiConfig.enabled || !S.aiConfig.connected){
+        alert("⚠️ AI Settings belum aktif. Silakan hubungkan AI (Puter.js atau OpenRouter) di menu AI Settings terlebih dahulu.");
+        openAIPanel();
+        return;
+    }
+    
+    S.building = true;
+    S.buildLogs = [];
+    S.virtualWorkspace = {};
+    S.activeFile = null;
+    S.activeTab = 'builder';
+    addBuildLog("System initialized. Agentic AI Developer mode: ON.", "info");
+    addBuildLog("World Class architecture standards: APPLIED.", "info");
+    render();
+
+    try {
+        await runAutonomousLoop();
+    } catch(err) {
+        addBuildLog(`CRITICAL ERROR: ${err.message}`, "error");
+        S.building = false;
+        render();
+    }
+}
+
+function addBuildLog(msg, type='info'){
+    const time = new Date().toLocaleTimeString();
+    S.buildLogs.push({time, msg, type});
+    render();
+    const term = document.getElementById('buildTerminal');
+    if(term) term.scrollTop = term.scrollHeight;
+}
+
+function viewVirtualFile(p){
+    S.activeFile = p;
+    render();
+}
+
+async function runAutonomousLoop(){
+    const g = S.generated;
+    const desc = S.answers.projectName + ": " + (S.answers.projectName || '');
+    
+    addBuildLog("Analisis Masterplan dan Phase Files...", "agent");
+    
+    // 1. Initial Planning Phase
+    const systemPrompt = `Kamu adalah SENIOR PROFESSIONAL DEVELOPER AGENT.
+Tugas kamu adalah membangun (coding) aplikasi nyata berdasarkan instruksi.
+Kamu bekerja secara otonom 100%. Kamu yang menentukan arsitektur terbaik, struktur folder terbaik, dan kode berkualitas dunia (World Class).
+Kamu harus menghasilkan isi file kode asli (bukan placeholder).
+
+FORMAT RESPONS:
+Selalu berikan respons dalam JSON valid:
+{
+  "logs": ["pesan log aktivitas kamu"],
+  "files": [
+    {"path": "folder/namafile.ext", "content": "isi kode lengkap file tersebut"}
+  ],
+  "finished": boolean (true jika seluruh project sudah selesai dibangun)
+}`;
+
+    const initialPrompt = `Project: ${g.name}
+Konteks: Ini adalah project ${S.mode === 'website' ? 'Website' : 'Software/Fullstack'}.
+Deskripsi: ${S.answers.projectName}
+Tech Stack: ${g.fe} | ${g.db} | ${g.scale}
+
+MULAI PEMBANGUNAN FASE 1 & 2:
+Buat struktur dasar project (package.json, config, folder src, dsb) dan komponen inti.
+Hasilkan setidaknya 5-10 file awal yang fungsional.`;
+
+    await processBuildStep(systemPrompt, initialPrompt);
+    
+    // 2. Iterative Building (Phase 3 & 4)
+    if (S.building) {
+        addBuildLog("Melanjutkan ke integrasi fitur bisnis dan UI...", "agent");
+        const nextPrompt = `Lanjutkan pembangunan project ${g.name}.
+Fokus pada: Implementasi Halaman UI Utama, Logika Bisnis (CRUD), dan Integrasi Database/API.
+Pastikan semua file saling terhubung dengan benar.`;
+        await processBuildStep(systemPrompt, nextPrompt);
+    }
+
+    // 3. Finalization (Phase 5)
+    if (S.building) {
+        addBuildLog("Finalisasi: Menyiapkan Deployment, Git Config, dan README pro.", "agent");
+        const finalPrompt = `Lanjutkan pembangunan project ${g.name}.
+Fokus pada: README.md profesional, .gitignore, .env.example, dan optimasi akhir.
+Set finished ke true jika semua sudah lengkap.`;
+        await processBuildStep(systemPrompt, finalPrompt);
+    }
+
+    S.building = false;
+    addBuildLog("PEMBANGUNAN SELESAI. Project siap diunduh.", "success");
+    render();
+}
+
+async function processBuildStep(system, user){
+    const prov = AI_PROVIDERS[S.aiConfig.provider];
+    const body = {
+        model: S.aiConfig.model,
+        messages: [{role:'system', content:system}, {role:'user', content:user}],
+        response_format: {type: 'json_object'}
+    };
+
+    let res;
+    if (S.aiConfig.provider === 'puter') {
+        const combined = `${system}\n\n${user}`;
+        const resp = await puter.ai.chat(combined, {model: S.aiConfig.model});
+        res = { ok: true, json: async () => {
+            let content = resp.toString();
+            try { return JSON.parse(content); } catch(e) {
+                const match = content.match(/\{[\s\S]*\}/);
+                return JSON.parse(match ? match[0] : '{}');
+            }
+        }};
+    } else {
+        const url = S.aiConfig.useProxy ? '/api/ai-proxy' : `${prov.baseUrl}/chat/completions`;
+        const headers = { 'Content-Type': 'application/json' };
+        if(!S.aiConfig.useProxy) headers['Authorization'] = `Bearer ${S.aiConfig.apiKey}`;
+        
+        const fetchBody = S.aiConfig.useProxy ? {
+            provider: S.aiConfig.provider,
+            apiUrl: `${prov.baseUrl}/chat/completions`,
+            apiKey: S.aiConfig.apiKey,
+            payload: body
+        } : body;
+
+        res = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(fetchBody)
+        });
+    }
+
+    if(res.ok){
+        const data = await res.json();
+        const result = data.choices ? JSON.parse(data.choices[0].message.content) : data;
+        
+        (result.logs || []).forEach(l => addBuildLog(l, "info"));
+        (result.files || []).forEach(f => {
+            S.virtualWorkspace[f.path] = f.content;
+            addBuildLog(`File created: ${f.path}`, "success");
+            if(!S.activeFile) S.activeFile = f.path;
+        });
+        
+        if(result.finished) S.building = false;
+    } else {
+        throw new Error("Gagal berkomunikasi dengan AI.");
+    }
+}
+
+async function downloadVirtualProject(){
+    const zip = new JSZip();
+    const folder = zip.folder(slug(S.generated.name));
+    
+    // Add virtual source files
+    for(const [path, content] of Object.entries(S.virtualWorkspace)){
+        folder.file(path, content);
+    }
+    
+    // Add existing MD files from original generate
+    // (We would need to store them in S.generated_md_files, but for now we'll just download the workspace)
+    
+    const blob = await zip.generateAsync({type:'blob'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `SOURCE-${slug(S.generated.name)}.zip`;
+    link.click();
+}
+
+function setTab(t){S.activeTab=t;render();window.scrollTo(0,0)}
+
+function restart(){Object.assign(S,{mode:null,step:0,answers:{},generating:false,generated:null,activeTab:null, building:false, buildLogs:[], virtualWorkspace:{}, activeFile:null});render();window.scrollTo(0,0)}
 
 function cpCode(id,btn){
   const el=document.getElementById(id);
@@ -4312,8 +4584,240 @@ document.addEventListener('click', (e) => {
   }
 });
 
+
+function renderBuilderPanel(){
+    const logs = (S.buildLogs || []).slice(-20).map(l => `
+        <div class="term-line">
+            <span class="term-ts">[${l.time}]</span>
+            <span class="term-msg ${l.type}">${l.msg}</span>
+        </div>
+    `).join('');
+
+    const files = Object.keys(S.virtualWorkspace || {}).map(path => `
+        <div class="file-item ${S.activeFile===path?'active':''}" onclick="viewVirtualFile('${path}')">
+            <span class="file-icon">${path.endsWith('/')?'📁':'📄'}</span>
+            ${path}
+        </div>
+    `).join('');
+
+    const gClass = (S.mode === 'website') ? 'pink' : (S.mode === 'adlc') ? 'green' : (S.mode === 'desktop') ? 'amber' : '';
+
+    if(!S.building && Object.keys(S.virtualWorkspace || {}).length === 0){
+        return `
+            <div class="builder-empty">
+                <div class="builder-empty-icon">🏗️</div>
+                <div class="q-title" style="font-size: 22px">Siap Membangun Aplikasi Nyata?</div>
+                <div class="q-desc" style="max-width: 500px">AI akan mengambil alih peran sebagai <strong>Professional Developer</strong>. Ia akan merancang arsitektur, menulis file kode asli, dan menyiapkan segala kebutuhan teknis secara mandiri.</div>
+                <button class="btn btn-generate ${gClass} builder-empty-btn" onclick="startAutonomousBuild()">🚀 Mulai Pembangunan Otonom</button>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="builder-grid">
+            <div class="builder-sidebar">
+                <div class="builder-head">
+                    <span class="builder-title">File Explorer</span>
+                    ${!S.building ? `<button class="nav-btn" onclick="downloadVirtualProject()" style="padding: 2px 8px; font-size: 10px; background: var(--green-light); color: var(--green)">📥 Download All</button>` : ''}
+                </div>
+                <div class="file-tree">${files || '<div style="opacity:0.5; font-size:11px; padding:10px">Menunggu file pertama...</div>'}</div>
+            </div>
+            <div class="builder-main">
+                <div class="terminal-header" style="background: #161b22; padding: 12px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <div class="term-dots" style="display: flex; gap: 6px;"><div class="term-dot" style="width: 10px; height: 10px; border-radius: 50%; background:#ff5f56"></div><div class="term-dot" style="width: 10px; height: 10px; border-radius: 50%; background:#ffbd2e"></div><div class="term-dot" style="width: 10px; height: 10px; border-radius: 50%; background:#27c93f"></div></div>
+                    <span style="font-family:var(--mono); font-size:11px; opacity:0.6; color: #fff; margin-left: 10px">Agent Console — ${S.building ? 'Building in progress...' : 'Build Finished'}</span>
+                    ${S.building ? `<div class="agent-active-glow" style="width:8px; height:8px; background:var(--accent); margin-left:auto; border-radius:50%"></div>` : ''}
+                </div>
+                <div class="term-body" id="buildTerminal" style="flex:1; padding: 16px; font-family: var(--mono); font-size: 12px; color: #c9d1d9; overflow-y: auto; line-height: 1.6; background: #0d1117;">${logs}</div>
+                ${S.activeFile ? `
+                <div class="code-block" style="border:none; border-top:1px solid rgba(255,255,255,0.1); border-radius:0; flex:1; display:flex; flex-direction:column; min-height:0; background: #0d1117;">
+                    <div class="code-header" style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid rgba(255,255,255,.08)">
+                        <span class="code-lang-tag" style="font-size:10px; font-weight:700; color:rgba(255,255,255,.4); letter-spacing:.08em; text-transform:uppercase">${S.activeFile}</span>
+                        <button class="copy-btn" onclick="cpCode('activeCodeCont',this)">Salin Kode</button>
+                    </div>
+                    <pre style="flex:1; max-height:none; overflow:auto; padding: 20px; font-size: 13px; color: #e6edf3;" id="activeCodeCont">${esc(S.virtualWorkspace[S.activeFile])}</pre>
+                </div>` : ''}
+            </div>
+        </div>
+    `;
+}
+
+async function startAutonomousBuild(){
+    if(!S.aiConfig.enabled || !S.aiConfig.connected){
+        alert("⚠️ AI Settings belum aktif. Silakan hubungkan AI (Puter.js atau OpenRouter) di menu AI Settings terlebih dahulu.");
+        openAIPanel();
+        return;
+    }
+    
+    S.building = true;
+    S.buildLogs = [];
+    S.virtualWorkspace = {};
+    S.activeFile = null;
+    S.activeTab = 'builder';
+    addBuildLog("System initialized. Agentic AI Developer mode: ON.", "info");
+    addBuildLog("World Class architecture standards: APPLIED.", "info");
+    render();
+
+    try {
+        await runAutonomousLoop();
+    } catch(err) {
+        addBuildLog(`CRITICAL ERROR: ${err.message}`, "error");
+        S.building = false;
+        render();
+    }
+}
+
+function addBuildLog(msg, type='info'){
+    const time = new Date().toLocaleTimeString();
+    S.buildLogs.push({time, msg, type});
+    render();
+    const term = document.getElementById('buildTerminal');
+    if(term) term.scrollTop = term.scrollHeight;
+}
+
+function viewVirtualFile(p){
+    S.activeFile = p;
+    render();
+}
+
+async function runAutonomousLoop(){
+    const g = S.generated;
+    
+    addBuildLog("Analisis Masterplan dan Phase Files...", "agent");
+    
+    const systemPrompt = `Kamu adalah SENIOR PROFESSIONAL DEVELOPER AGENT.
+Tugas kamu adalah membangun (coding) aplikasi nyata berdasarkan instruksi.
+Kamu bekerja secara otonom 100%. Kamu yang menentukan arsitektur terbaik, struktur folder terbaik, dan kode berkualitas dunia (World Class).
+Kamu harus menghasilkan isi file kode asli (bukan placeholder).
+
+PENTING: Semua import dan keterhubungan file harus benar. Gunakan best practice modern 2024/2025.
+
+FORMAT RESPONS:
+Selalu berikan respons dalam JSON valid:
+{
+  "logs": ["pesan log aktivitas kamu"],
+  "files": [
+    {"path": "folder/namafile.ext", "content": "isi kode lengkap file tersebut"}
+  ],
+  "finished": boolean (true jika seluruh project sudah selesai dibangun)
+}`;
+
+    const initialPrompt = `Project: ${g.name}
+Konteks: Ini adalah project ${S.mode === 'website' ? 'Website' : 'Software/Fullstack'}.
+Deskripsi: ${S.answers.projectName}
+Tech Stack: ${g.fe || g.fw || ''} | ${g.be || ''} | ${g.db || ''} | ${g.scale || ''}
+
+MULAI PEMBANGUNAN FASE 1 & 2:
+Buat struktur dasar project (package.json, config, folder src, dsb) dan komponen inti.
+Hasilkan setidaknya 5-10 file awal yang fungsional. Pastikan README.md disertakan.`;
+
+    await processBuildStep(systemPrompt, initialPrompt);
+    
+    if (S.building) {
+        addBuildLog("Tugas utama Fase 1 selesai. Melanjutkan ke fitur bisnis...", "agent");
+        const nextPrompt = `Lanjutkan pembangunan project ${g.name}.
+Fokus pada: Implementasi Halaman UI Utama, Logika Bisnis (CRUD), dan Integrasi Database/API.
+Pastikan semua file saling terhubung dengan benar.`;
+        await processBuildStep(systemPrompt, nextPrompt);
+    }
+
+    if (S.building) {
+        addBuildLog("Hampir selesai. Menyiapkan konfigurasi akhir...", "agent");
+        const finalPrompt = `Lanjutkan pembangunan project ${g.name}.
+Fokus pada: .gitignore, .env.example, dan perapian kode akhir.
+Set finished ke true jika semua sudah lengkap.`;
+        await processBuildStep(systemPrompt, finalPrompt);
+    }
+
+    S.building = false;
+    addBuildLog("PEMBANGUNAN SELESAI. Project siap diunduh.", "success");
+    render();
+}
+
+async function processBuildStep(system, user){
+    const prov = AI_PROVIDERS[S.aiConfig.provider];
+    const body = {
+        model: S.aiConfig.model,
+        messages: [{role:'system', content:system}, {role:'user', content:user}],
+        response_format: {type: 'json_object'}
+    };
+
+    let res;
+    if (S.aiConfig.provider === 'puter') {
+        const combined = `${system}\n\n${user}`;
+        const resp = await puter.ai.chat(combined, {model: S.aiConfig.model});
+        res = { ok: true, json: async () => {
+            let content = resp.toString();
+            try { return JSON.parse(content); } catch(e) {
+                const match = content.match(/\{[\s\S]*\}/);
+                return JSON.parse(match ? match[0] : '{}');
+            }
+        }};
+    } else {
+        const url = S.aiConfig.useProxy ? '/api/ai-proxy' : `${prov.baseUrl}/chat/completions`;
+        const headers = { 'Content-Type': 'application/json' };
+        if(!S.aiConfig.useProxy) headers['Authorization'] = `Bearer ${S.aiConfig.apiKey}`;
+        
+        const fetchBody = S.aiConfig.useProxy ? {
+            provider: S.aiConfig.provider,
+            apiUrl: `${prov.baseUrl}/chat/completions`,
+            apiKey: S.aiConfig.apiKey,
+            payload: body
+        } : body;
+
+        res = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(fetchBody)
+        });
+    }
+
+    if(res.ok){
+        const data = await res.json();
+        let result = {};
+        try {
+            const rawContent = data.choices ? data.choices[0].message.content : (data.content || data);
+            result = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;
+        } catch(e) {
+            console.error("Failed to parse AI response:", e);
+            throw new Error("Respons AI tidak valid (bukan JSON).");
+        }
+        
+        (result.logs || []).forEach(l => addBuildLog(l, "info"));
+        (result.files || []).forEach(f => {
+            S.virtualWorkspace[f.path] = f.content;
+            addBuildLog(`File created: ${f.path}`, "success");
+            if(!S.activeFile) S.activeFile = f.path;
+        });
+        
+        if(result.finished) S.building = false;
+        render();
+    } else {
+        throw new Error("Gagal berkomunikasi dengan AI.");
+    }
+}
+
+async function downloadVirtualProject(){
+    const zip = new JSZip();
+    const folderName = slug(S.generated.name);
+    const folder = zip.folder(folderName);
+    
+    for(const [path, content] of Object.entries(S.virtualWorkspace)){
+        folder.file(path, content);
+    }
+    
+    const blob = await zip.generateAsync({type:'blob'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `SOURCE-${folderName}.zip`;
+    link.click();
+}
+
+function restart(){Object.assign(S,{mode:null,step:0,answers:{},generating:false,generated:null,activeTab:null, building:false, buildLogs:[], virtualWorkspace:{}, activeFile:null});render();window.scrollTo(0,0)}
+
 render();
 </script>
+
   <footer style="text-align:center; padding: 40px 20px; color:var(--text3); font-size:12px; font-family:var(--font); opacity:0.6; letter-spacing:0.05em;">
     &copy; 2026 B.O.A Indonesia
   </footer>
