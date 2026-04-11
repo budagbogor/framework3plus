@@ -3930,7 +3930,7 @@ File tambahan yang tersedia:
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  URL.revokeObjectURL(link.href);
+  setTimeout(() => URL.revokeObjectURL(link.href), 2000);
 }
 
 
