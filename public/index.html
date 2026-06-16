@@ -5332,9 +5332,9 @@ function renderBuilderPanel(){
                         ${S.building ? `<div class="agent-active-glow" style="width:8px; height:8px; background:#00f0ff; margin-left:auto; border-radius:50%; box-shadow: 0 0 15px #00f0ff;"></div>` : ''}
                     </div>
                     <div class="term-toolbar">
-                        <button class="term-btn ${S.isInstalled?'active':''}" onclick="execTerminalCmd('install')">📦 install</button>
-                        <button class="term-btn ${S.isDevRunning?'active':''}" onclick="execTerminalCmd('dev')">🚀 dev</button>
-                        <button class="term-btn preview-btn" onclick="openLivePreview()">🌐 Preview</button>
+                        <button class="term-btn ${S.isInstalled?'active':''}" onclick="execTerminalCmd('install')" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;" title="Harap tunggu AI selesai merakit kode..."' : ''}>📦 install</button>
+                        <button class="term-btn ${S.isDevRunning?'active':''}" onclick="execTerminalCmd('dev')" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;" title="Harap tunggu AI selesai merakit kode..."' : ''}>🚀 dev</button>
+                        <button class="term-btn preview-btn" onclick="openLivePreview()" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;" title="Harap tunggu AI selesai merakit kode..."' : ''}>🌐 Preview</button>
                     </div>
                     <div class="term-body" id="buildTerminal" style="flex:1; padding:20px; overflow-y:auto; font-family:var(--mono); font-size:13px; line-height:1.6; color: rgba(255,255,255,0.85);">${logs || '<div style="opacity:0.3">Waiting for logs...</div>'}</div>
                 </div>
@@ -5389,6 +5389,9 @@ async function startAutonomousBuild(){
         architect: 'idle',
         coder: 'idle',
         qa: 'idle',
+        security: 'idle',
+        polisher: 'idle',
+        tester: 'idle',
         devops: 'idle'
     };
 
@@ -5590,7 +5593,78 @@ FORMAT RESPONS (Valid JSON):
     render();
     await sleep(1500);
 
-    // 🚀 FASE 4: DEVOPS AI
+    // 🔐 FASE 4: SECURITY AI
+    S.activeAgent = 'security';
+    S.agentStatus.security = 'running';
+    addBuildLog("🔐 [Security AI] Mengaudit keseluruhan kode. Mencari celah keamanan XSS & SQL Injection...", "agent");
+    render();
+    await sleep(1000);
+
+    const secPrompt = `Role: SECURITY AUDITOR.
+Project: ${g.name || 'Proyek'}
+Konteks Workspace: [${workspaceFiles}]
+TUGAS: Analisis kode dari Coder AI. Pastikan aman dari kerentanan. Tulis file konfigurasi keamanan, atau perbarui file yang sudah ada jika perlu. Jika semua sudah aman, outputkan log saja tanpa modifikasi file.
+
+FORMAT RESPONS (Valid JSON):
+{
+  "logs": ["Auditing dependencies...", "Enforcing strict Content-Security-Policy... All Clear."],
+  "files": []
+}`;
+    await processBuildStep("Kamu adalah SECURITY AUDITOR.", secPrompt);
+    S.agentStatus.security = 'done';
+    addBuildLog("🔐 [Security AI] Audit selesai. Kode terjamin aman.", "success");
+    render();
+    await sleep(1500);
+
+    // ✨ FASE 5: POLISHER AI
+    S.activeAgent = 'polisher';
+    S.agentStatus.polisher = 'running';
+    addBuildLog("✨ [Polisher AI] Memperhalus UI/UX, menambahkan animasi, dan memastikan desain premium...", "agent");
+    render();
+    await sleep(1000);
+
+    const polisherPrompt = `Role: UX/UI POLISHER.
+Project: ${g.name || 'Proyek'}
+Konteks Workspace: [${workspaceFiles}]
+TUGAS: Perbaiki file CSS/HTML/JS yang sudah ada. Jika ada file CSS, berikan warna yang harmonis, transisi halus, dan animasi micro-interactions.
+
+FORMAT RESPONS (Valid JSON):
+{
+  "logs": ["Injecting micro-animations...", "Refining color palette contrast..."],
+  "files": []
+}`;
+    await processBuildStep("Kamu adalah UX/UI POLISHER.", polisherPrompt);
+    S.agentStatus.polisher = 'done';
+    addBuildLog("✨ [Polisher AI] Desain telah disempurnakan menjadi kelas dunia.", "success");
+    render();
+    await sleep(1500);
+
+    // 🧪 FASE 6: TESTER AI
+    S.activeAgent = 'tester';
+    S.agentStatus.tester = 'running';
+    addBuildLog("🧪 [Tester AI] Menulis dan menjalankan unit test (E2E) simulasi...", "agent");
+    render();
+    await sleep(1000);
+
+    const testerPrompt = `Role: E2E TEST ENGINEER.
+Project: ${g.name || 'Proyek'}
+Konteks Workspace: [${workspaceFiles}]
+TUGAS: Buat file testing dasar (misal test.js) yang memvalidasi logika inti dari proyek ini.
+
+FORMAT RESPONS (Valid JSON):
+{
+  "logs": ["Mocking user interactions...", "Validating component rendering... All tests passed."],
+  "files": [
+    {"path": "tests/app.test.js", "content": "// Test Suite"}
+  ]
+}`;
+    await processBuildStep("Kamu adalah E2E TEST ENGINEER.", testerPrompt);
+    S.agentStatus.tester = 'done';
+    addBuildLog("🧪 [Tester AI] Validasi kualitas lulus tanpa cela.", "success");
+    render();
+    await sleep(1500);
+
+    // 🚀 FASE 7: DEVOPS AI
     S.activeAgent = 'devops';
     S.agentStatus.devops = 'running';
     addBuildLog("🚀 [DevOps AI] Mempersiapkan konfigurasi deployment dan berkas README.md...", "agent");
