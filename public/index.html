@@ -3342,19 +3342,6 @@ async function execTerminalCmd(cmd) {
                 write(data) { addBuildLog(data, "info"); }
             }));
         }
-    } else if (cmd === 'build') {
-        if (!S.isInstalled) {
-            addBuildLog(`Error: Please run 'npm install' first.`, "error");
-            return;
-        }
-        addBuildLog(`npm run build`, "agent");
-        addBuildLog(`Creating an optimized production build...`, "info");
-        await new Promise(r => setTimeout(r, 2000));
-        addBuildLog(`Compiled successfully.`, "success");
-        addBuildLog(`Route (pages)                              Size     First Load JS`, "info");
-        addBuildLog(`┌ ○ /                                      5.28 kB        78.1 kB`, "info");
-        addBuildLog(`└ λ /api/hello                             0 B            72.8 kB`, "info");
-        addBuildLog(`+ First Load JS shared by all              72.8 kB`, "info");
     }
     render();
 }
@@ -5331,7 +5318,6 @@ function renderBuilderPanel(){
                     <div class="term-toolbar">
                         <button class="term-btn ${S.isInstalled?'active':''}" onclick="execTerminalCmd('install')">📦 install</button>
                         <button class="term-btn ${S.isDevRunning?'active':''}" onclick="execTerminalCmd('dev')">🚀 dev</button>
-                        <button class="term-btn" onclick="execTerminalCmd('build')">🏗️ build</button>
                         <button class="term-btn preview-btn" onclick="openLivePreview()">🌐 Preview</button>
                     </div>
                     <div class="term-body" id="buildTerminal" style="flex:1; padding:20px; overflow-y:auto; font-family:var(--mono); font-size:13px; line-height:1.6; color: rgba(255,255,255,0.85);">${logs || '<div style="opacity:0.3">Waiting for logs...</div>'}</div>
