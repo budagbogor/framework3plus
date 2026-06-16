@@ -44,12 +44,12 @@ body::after{content:'';position:fixed;inset:0;opacity:.025;pointer-events:none;z
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-size:128px;background-repeat:repeat}
 
-#app{max-width:1800px;margin:0 auto;padding:100px 32px 80px}
+#app{width:100%;margin:0 auto;padding:100px 32px 80px}
 
 /* ── Global Navigation ── */
 .top-nav{position:fixed;top:0;left:0;right:0;height:70px;background:rgba(var(--bg),0.85);backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);z-index:999;display:flex;align-items:center;transition:background-color 0.3s, border-color 0.3s}
-.nav-container{max-width:1800px;width:100%;margin:0 auto;padding:0 32px;display:flex;justify-content:space-between;align-items:center}
+.nav-container{width:100%;margin:0 auto;padding:0 32px;display:flex;justify-content:space-between;align-items:center}
 .nav-actions{display:flex;gap:8px}
 .nav-btn{background:var(--bg3);border:1.5px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all 0.15s;display:flex;align-items:center;gap:6px}
 .nav-btn:hover{color:var(--text);border-color:var(--border2)}
