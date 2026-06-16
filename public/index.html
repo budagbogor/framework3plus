@@ -721,7 +721,6 @@ pre{padding:16px;overflow-x:auto;overflow-y:auto;font-family:var(--mono);font-si
     border-color: var(--accent);
     background: var(--accent-light);
     box-shadow: 0 0 15px var(--accent-light);
-    animation: stepPulse 2s infinite;
 }
 
 .step-item.done {
@@ -5205,6 +5204,7 @@ function renderBuilderPanel(){
             display: flex;
             overflow-x: auto;
             gap: 12px;
+            padding-top: 12px;
             padding-bottom: 8px;
             /* Hide scrollbar for cleaner look */
             -ms-overflow-style: none;  
