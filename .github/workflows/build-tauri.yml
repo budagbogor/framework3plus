@@ -1,0 +1,52 @@
+name: Build Tauri Desktop App
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Build Tauri App
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'DevForge Studio v__VERSION__'
+          releaseBody: |
+            🚀 **DevForge Studio** - Framework Generator untuk Developer Indonesia
+            
+            ### Fitur Utama:
+            - 🌐 Generator Website (Landing, Blog, Portfolio)
+            - 💻 Generator Software SDLC (Full-stack, Mobile, Desktop)
+            - 🤖 Generator Agentic AI (Multi-agent, RAG, Chatbot)
+            - 🚀 Live Builder dengan orkestrasi 4-agen AI
+            - 📦 Export Project Bundle (ZIP)
+            
+            ### Cara Install:
+            Download file `.exe` untuk Windows di bawah.
+          releaseDraft: false
+          prerelease: false
