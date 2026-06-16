@@ -6602,21 +6602,7 @@ async function downloadVirtualProject(){
 function restart(){
     localStorage.removeItem('devforge_logs');
     localStorage.removeItem('devforge_workspace');
-    Object.assign(S,{
-        mode:null, step:0, answers:{}, generating:false, generated:null, activeTab:null, 
-        building:false, buildLogs:[], virtualWorkspace:{}, activeFile:null,
-        activeAgent: null,
-        isInstalled: false,
-        isDevRunning: false,
-        agentStatus: {
-            architect: 'idle',
-            coder: 'idle',
-            qa: 'idle',
-            devops: 'idle'
-        }
-    });
-    render();
-    window.scrollTo(0,0);
+    window.location.reload();
 }
 
 render();
