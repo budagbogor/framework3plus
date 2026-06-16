@@ -5171,6 +5171,25 @@ function renderBuilderPanel(){
             70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
             100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
+        @keyframes agent-icon-bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-8px) scale(1.2); }
+        }
+        @keyframes loading-dots {
+            0% { content: "."; }
+            33% { content: ".."; }
+            66% { content: "..."; }
+            100% { content: ""; }
+        }
+        .agent-active-icon {
+            display: inline-block;
+            animation: agent-icon-bounce 0.6s cubic-bezier(0.68, -0.55, 0.26, 1.55) infinite alternate;
+        }
+        .loading-text::after {
+            content: ".";
+            animation: loading-dots 1.5s infinite steps(1);
+        }
+        
         .agent-active-architect { animation: pulse-architect 2s infinite, float 3s ease-in-out infinite !important; }
         .agent-active-coder { animation: pulse-coder 2s infinite, float 3s ease-in-out infinite !important; }
         .agent-active-qa { animation: pulse-qa 2s infinite, float 3s ease-in-out infinite !important; }
@@ -5233,71 +5252,71 @@ function renderBuilderPanel(){
                     <div class="agent-cards-container">
                         <!-- Agent 1: Architect -->
                         <div class="agent-card ${S.activeAgent === 'architect' ? 'agent-active-architect' : ''}" style="background: ${S.activeAgent === 'architect' ? 'rgba(0, 240, 255, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.activeAgent === 'architect' ? '#00f0ff' : S.agentStatus?.architect === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
-                            <div style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'architect' ? 'drop-shadow(0 0 8px #00f0ff)' : 'none'}">📐</div>
+                            <div class="${S.activeAgent === 'architect' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'architect' ? 'drop-shadow(0 0 8px #00f0ff)' : 'none'}">📐</div>
                             <div style="font-size: 12px; font-weight: 700; color: #fff;">Arsitek AI</div>
                             <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Architect Agent</div>
                             <div style="font-size: 10px; color: ${S.activeAgent === 'architect' ? '#00f0ff' : S.agentStatus?.architect === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
-                                ${S.activeAgent === 'architect' ? '🧠 Merancang...' : S.agentStatus?.architect === 'done' ? '✅ Masterplan OK' : '💤 Idle'}
+                                ${S.activeAgent === 'architect' ? '<span class="loading-text">🧠 Merancang</span>' : S.agentStatus?.architect === 'done' ? '✅ Masterplan OK' : '💤 Idle'}
                             </div>
                         </div>
 
                         <!-- Agent 2: Coder -->
                         <div class="agent-card ${S.activeAgent === 'coder' ? 'agent-active-coder' : ''}" style="background: ${S.activeAgent === 'coder' ? 'rgba(190, 75, 219, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.activeAgent === 'coder' ? '#be4bdb' : S.agentStatus?.coder === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
-                            <div style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'coder' ? 'drop-shadow(0 0 8px #be4bdb)' : 'none'}">💻</div>
+                            <div class="${S.activeAgent === 'coder' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'coder' ? 'drop-shadow(0 0 8px #be4bdb)' : 'none'}">💻</div>
                             <div style="font-size: 12px; font-weight: 700; color: #fff;">Coder AI</div>
                             <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Developer Agent</div>
                             <div style="font-size: 10px; color: ${S.activeAgent === 'coder' ? '#be4bdb' : S.agentStatus?.coder === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
-                                ${S.activeAgent === 'coder' ? '✍️ Menulis Kode...' : S.agentStatus?.coder === 'done' ? '✅ Kode Ditulis' : '💤 Idle'}
+                                ${S.activeAgent === 'coder' ? '<span class="loading-text">✍️ Menulis Kode</span>' : S.agentStatus?.coder === 'done' ? '✅ Kode Ditulis' : '💤 Idle'}
                             </div>
                         </div>
 
                         <!-- Agent 3: QA Reviewer -->
                         <div class="agent-card ${S.activeAgent === 'qa' ? 'agent-active-qa' : ''}" style="background: ${S.activeAgent === 'qa' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.activeAgent === 'qa' ? '#f59e0b' : S.agentStatus?.qa === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
-                            <div style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'qa' ? 'drop-shadow(0 0 8px #f59e0b)' : 'none'}">🛡️</div>
+                            <div class="${S.activeAgent === 'qa' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'qa' ? 'drop-shadow(0 0 8px #f59e0b)' : 'none'}">🛡️</div>
                             <div style="font-size: 12px; font-weight: 700; color: #fff;">QA Reviewer</div>
                             <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">QA Specialist</div>
                             <div style="font-size: 10px; color: ${S.activeAgent === 'qa' ? '#f59e0b' : S.agentStatus?.qa === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
-                                ${S.activeAgent === 'qa' ? '🛡️ Verifikasi...' : S.agentStatus?.qa === 'done' ? '✅ Kode Bersih' : '💤 Idle'}
+                                ${S.activeAgent === 'qa' ? '<span class="loading-text">🛡️ Verifikasi</span>' : S.agentStatus?.qa === 'done' ? '✅ Kode Bersih' : '💤 Idle'}
                             </div>
                         </div>
 
                         <!-- Agent 4: Security AI -->
                         <div class="agent-card ${S.activeAgent === 'security' ? 'agent-active-security' : ''}" style="background: ${S.activeAgent === 'security' ? 'rgba(220, 38, 38, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.activeAgent === 'security' ? '#dc2626' : S.agentStatus?.security === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
-                            <div style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'security' ? 'drop-shadow(0 0 8px #dc2626)' : 'none'}">🔐</div>
+                            <div class="${S.activeAgent === 'security' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'security' ? 'drop-shadow(0 0 8px #dc2626)' : 'none'}">🔐</div>
                             <div style="font-size: 12px; font-weight: 700; color: #fff;">Security AI</div>
                             <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Vuln Auditor</div>
                             <div style="font-size: 10px; color: ${S.activeAgent === 'security' ? '#dc2626' : S.agentStatus?.security === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
-                                ${S.activeAgent === 'security' ? '🔐 Audit...' : S.agentStatus?.security === 'done' ? '✅ 0 Vulns' : '💤 Idle'}
+                                ${S.activeAgent === 'security' ? '<span class="loading-text">🔐 Audit</span>' : S.agentStatus?.security === 'done' ? '✅ 0 Vulns' : '💤 Idle'}
                             </div>
                         </div>
 
                         <!-- Agent 5: UX/Polisher AI -->
                         <div class="agent-card ${S.activeAgent === 'polisher' ? 'agent-active-polisher' : ''}" style="background: ${S.activeAgent === 'polisher' ? 'rgba(236, 72, 153, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.activeAgent === 'polisher' ? '#ec4899' : S.agentStatus?.polisher === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
-                            <div style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'polisher' ? 'drop-shadow(0 0 8px #ec4899)' : 'none'}">🪄</div>
+                            <div class="${S.activeAgent === 'polisher' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'polisher' ? 'drop-shadow(0 0 8px #ec4899)' : 'none'}">🪄</div>
                             <div style="font-size: 12px; font-weight: 700; color: #fff;">Polisher AI</div>
                             <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">UX Optimizer</div>
                             <div style="font-size: 10px; color: ${S.activeAgent === 'polisher' ? '#ec4899' : S.agentStatus?.polisher === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
-                                ${S.activeAgent === 'polisher' ? '🪄 Memoles UI...' : S.agentStatus?.polisher === 'done' ? '✅ UX Sempurna' : '💤 Idle'}
+                                ${S.activeAgent === 'polisher' ? '<span class="loading-text">🪄 Memoles UI</span>' : S.agentStatus?.polisher === 'done' ? '✅ UX Sempurna' : '💤 Idle'}
                             </div>
                         </div>
 
                         <!-- Agent 6: Tester AI -->
                         <div class="agent-card ${S.activeAgent === 'tester' ? 'agent-active-tester' : ''}" style="background: ${S.activeAgent === 'tester' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.activeAgent === 'tester' ? '#10b981' : S.agentStatus?.tester === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
-                            <div style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'tester' ? 'drop-shadow(0 0 8px #10b981)' : 'none'}">🧪</div>
+                            <div class="${S.activeAgent === 'tester' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'tester' ? 'drop-shadow(0 0 8px #10b981)' : 'none'}">🧪</div>
                             <div style="font-size: 12px; font-weight: 700; color: #fff;">Tester AI</div>
                             <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">E2E Testing</div>
                             <div style="font-size: 10px; color: ${S.activeAgent === 'tester' ? '#10b981' : S.agentStatus?.tester === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
-                                ${S.activeAgent === 'tester' ? '🧪 Simulasi...' : S.agentStatus?.tester === 'done' ? '✅ Lolos Test' : '💤 Idle'}
+                                ${S.activeAgent === 'tester' ? '<span class="loading-text">🧪 Simulasi</span>' : S.agentStatus?.tester === 'done' ? '✅ Lolos Test' : '💤 Idle'}
                             </div>
                         </div>
 
                         <!-- Agent 7: DevOps -->
                         <div class="agent-card ${S.activeAgent === 'devops' ? 'agent-active-devops' : ''}" style="background: ${S.activeAgent === 'devops' ? 'rgba(244, 63, 94, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.activeAgent === 'devops' ? '#f43f5e' : S.agentStatus?.devops === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
-                            <div style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'devops' ? 'drop-shadow(0 0 8px #f43f5e)' : 'none'}">🚀</div>
+                            <div class="${S.activeAgent === 'devops' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'devops' ? 'drop-shadow(0 0 8px #f43f5e)' : 'none'}">🚀</div>
                             <div style="font-size: 12px; font-weight: 700; color: #fff;">DevOps AI</div>
                             <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Deployment Agent</div>
                             <div style="font-size: 10px; color: ${S.activeAgent === 'devops' ? '#f43f5e' : S.agentStatus?.devops === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
-                                ${S.activeAgent === 'devops' ? '⚙️ Deployment...' : S.agentStatus?.devops === 'done' ? '✅ Siap Deploy' : '💤 Idle'}
+                                ${S.activeAgent === 'devops' ? '<span class="loading-text">⚙️ Deployment</span>' : S.agentStatus?.devops === 'done' ? '✅ Siap Deploy' : '💤 Idle'}
                             </div>
                         </div>
                     </div>
