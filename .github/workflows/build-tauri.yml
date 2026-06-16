@@ -6,30 +6,37 @@ on:
       - 'v*'
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install frontend dependencies
         run: npm install
 
-      - name: Setup Rust
+      - name: Setup Rust stable toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
 
-      - name: Rust cache
+      - name: Cache Rust dependencies
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
+          cache-on-failure: true
 
-      - name: Build Tauri App
+      - name: Build Tauri App & Create Release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -37,16 +44,22 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: 'DevForge Studio v__VERSION__'
           releaseBody: |
-            🚀 **DevForge Studio** - Framework Generator untuk Developer Indonesia
-            
-            ### Fitur Utama:
-            - 🌐 Generator Website (Landing, Blog, Portfolio)
-            - 💻 Generator Software SDLC (Full-stack, Mobile, Desktop)
-            - 🤖 Generator Agentic AI (Multi-agent, RAG, Chatbot)
-            - 🚀 Live Builder dengan orkestrasi 4-agen AI
-            - 📦 Export Project Bundle (ZIP)
-            
-            ### Cara Install:
-            Download file `.exe` untuk Windows di bawah.
+            🚀 **DevForge Studio** — Framework Generator untuk Developer Indonesia
+
+            ### ✨ Fitur Utama:
+            - 🌐 **Generator Website** — Landing page, Blog, Portfolio, SEO optimized
+            - 💻 **Generator Software** — Full-stack, Mobile App, SaaS, E-commerce
+            - 🤖 **Generator Agentic AI** — Multi-agent pipeline, RAG system, Chatbot
+            - 🚀 **Live Builder** — Orkestrasi 4 agen AI (Arsitek → Coder → QA → DevOps)
+            - 📦 **Export ZIP** — Download seluruh project bundle langsung
+
+            ### 🖥️ Cara Install Windows:
+            1. Download file `DevForge-Studio_x64_en-US.msi` atau `DevForge-Studio_x64-setup.exe`
+            2. Jalankan installer
+            3. Buka **DevForge Studio** dari Start Menu
+
+            ### 🌐 Versi Online:
+            Akses langsung tanpa install: [budagbogor.github.io/framework2plus](https://budagbogor.github.io/framework2plus)
           releaseDraft: false
           prerelease: false
+          includeUpdaterJson: false
