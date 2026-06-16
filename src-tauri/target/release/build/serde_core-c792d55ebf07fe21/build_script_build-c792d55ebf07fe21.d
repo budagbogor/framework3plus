@@ -1,0 +1,5 @@
+C:\Users\snwd\Videos\frameworkplus\framework2plus\src-tauri\target\release\build\serde_core-c792d55ebf07fe21\build_script_build-c792d55ebf07fe21.d: C:\Users\snwd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_core-1.0.228\build.rs
+
+C:\Users\snwd\Videos\frameworkplus\framework2plus\src-tauri\target\release\build\serde_core-c792d55ebf07fe21\build_script_build-c792d55ebf07fe21.exe: C:\Users\snwd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_core-1.0.228\build.rs
+
+C:\Users\snwd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_core-1.0.228\build.rs:

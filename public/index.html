@@ -3265,6 +3265,31 @@ function dlMasterplan() {
   document.body.removeChild(a);
 }
 
+async function initWebContainer() {
+    if (!webcontainerInstance) {
+        addBuildLog(`[WebContainer] Booting virtual Node.js environment di browser...`, "info");
+        try {
+            const { WebContainer } = window['@webcontainer/api'];
+            webcontainerInstance = await WebContainer.boot();
+            addBuildLog(`[WebContainer] OS Virtual berhasil disiapkan!`, "success");
+            
+            webcontainerInstance.on('server-ready', (port, url) => {
+                webcontainerUrl = url;
+                addBuildLog(`[WebContainer] Server berjalan di: ${url}`, "success");
+                addBuildLog(`[WebContainer] Klik tombol '🌐 Preview' untuk melihat hasilnya!`, "agent");
+            });
+        } catch (e) {
+            addBuildLog(`[WebContainer] Gagal boot: ${e.message}`, "error");
+            return false;
+        }
+    }
+    
+    addBuildLog(`[WebContainer] Menyalin Virtual Workspace ke File System...`, "info");
+    const tree = convertToWebContainerTree(S.virtualWorkspace);
+    await webcontainerInstance.mount(tree);
+    return true;
+}
+
 async function execTerminalCmd(cmd) {
     if (S.building) return;
 
@@ -3278,33 +3303,44 @@ async function execTerminalCmd(cmd) {
             addBuildLog(`Running native npm install...`, "agent");
             invoke('execute_command', { cmd: 'npm', args: ['install'], cwd: S.workspacePath });
         } else {
+            const ready = await initWebContainer();
+            if(!ready) return;
+            
             S.isInstalled = true;
-            addBuildLog(`npm install`, "agent");
-            addBuildLog(`[1/4] Resolving packages...`, "info");
-            await new Promise(r => setTimeout(r, 800));
-            addBuildLog(`[2/4] Fetching packages...`, "info");
-            await new Promise(r => setTimeout(r, 1200));
-            addBuildLog(`[3/4] Linking dependencies...`, "info");
-            await new Promise(r => setTimeout(r, 1000));
-            addBuildLog(`[4/4] Building fresh packages...`, "success");
-            addBuildLog(`added 1422 packages in 3s`, "success");
+            addBuildLog(`Menjalankan npm install...`, "agent");
+            const installProcess = await webcontainerInstance.spawn('npm', ['install']);
+            
+            installProcess.output.pipeTo(new WritableStream({
+                write(data) { addBuildLog(data, "info"); }
+            }));
+            
+            const exitCode = await installProcess.exit;
+            if(exitCode !== 0) {
+                addBuildLog(`npm install gagal dengan kode ${exitCode}`, "error");
+            } else {
+                addBuildLog(`npm install berhasil 100%!`, "success");
+            }
         }
     } else if (cmd === 'dev') {
         if (S.isNative) {
             addBuildLog(`Starting native dev server...`, "agent");
             invoke('execute_command', { cmd: 'npm', args: ['run', 'dev'], cwd: S.workspacePath });
-        } else if (S.isDevRunning) {
-            // ... (rest of dev logic)
-        }
-        S.isDevRunning = !S.isDevRunning;
-        if (S.isDevRunning) {
-            addBuildLog(`npm run dev`, "agent");
-            addBuildLog(`> next dev`, "info");
-            addBuildLog(`ready - started server on 0.0.0.0:3001 (VIRTUAL), url: <a href="javascript:void(0)" onclick="openLivePreview()" style="color:var(--accent); text-decoration:underline">http://localhost:3001</a>`, "success");
-            addBuildLog(`event - compiled client and server successfully in 1248 ms (169 modules)`, "success");
         } else {
-            addBuildLog(`Stopping dev server...`, "info");
-            addBuildLog(`Dev server stopped.`, "error");
+            if (!webcontainerInstance || !S.isInstalled) {
+                addBuildLog(`Error: Silakan klik 'install' terlebih dahulu!`, "error");
+                return;
+            }
+            if (S.isDevRunning) {
+                addBuildLog(`Server sudah berjalan. Silakan klik 'Preview'`, "info");
+                return;
+            }
+            S.isDevRunning = true;
+            addBuildLog(`Menjalankan npm run dev...`, "agent");
+            const devProcess = await webcontainerInstance.spawn('npm', ['run', 'dev']);
+            
+            devProcess.output.pipeTo(new WritableStream({
+                write(data) { addBuildLog(data, "info"); }
+            }));
         }
     } else if (cmd === 'build') {
         if (!S.isInstalled) {
