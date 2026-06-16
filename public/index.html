@@ -1903,7 +1903,23 @@ function nextStep(){
 function prevStep(){if(S.step>0){S.step--;render();window.scrollTo(0,0)}}
 
 // ── Generate ──
-function doGenerate(){S.generating=true;render();setTimeout(()=>{S.generating=false;S.generated=buildOutput();render()},3500)}
+function doGenerate() {
+  S.virtualWorkspace = {};
+  S.buildLogs = [];
+  S.isInstalled = false;
+  S.isDevRunning = false;
+  S.activeFile = null;
+  S.agentStatus = { architect: 'idle', coder: 'idle', qa: 'idle', security: 'idle', polisher: 'idle', tester: 'idle', devops: 'idle' };
+  try { saveWorkspaceToLocal(); } catch(e){}
+  
+  S.generating = true;
+  render();
+  setTimeout(() => {
+    S.generating = false;
+    S.generated = buildOutput();
+    render();
+  }, 3500);
+}
 
 function renderGenerating(){
   const msgs=['Menganalisis kebutuhanmu…','Menentukan arsitektur terbaik…','Menyusun struktur folder…','Menulis PRD & Master Plan…','Membuat starter prompts…','Finalisasi output…'];
