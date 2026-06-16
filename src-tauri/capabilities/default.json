@@ -6,11 +6,11 @@
   "permissions": [
     "core:default",
     {
-      "identifier": "fs:allow-write",
+      "identifier": "fs:allow-write-file",
       "allow": [{ "path": "**" }]
     },
     {
-      "identifier": "fs:allow-read",
+      "identifier": "fs:allow-read-file",
       "allow": [{ "path": "**" }]
     },
     {
@@ -18,12 +18,16 @@
       "allow": [{ "path": "**" }]
     },
     {
-      "identifier": "fs:allow-create-dir",
+      "identifier": "fs:allow-mkdir",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-read-dir",
       "allow": [{ "path": "**" }]
     },
     "fs:default",
     "dialog:default",
-    "allow-save-file",
-    "allow-execute-command"
+    "dialog:allow-save",
+    "core:app:default"
   ]
 }
