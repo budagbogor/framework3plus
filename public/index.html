@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -4769,8 +4769,9 @@ function updateAIStatus(state, msg, detail){
 }
 
 async function testAPIKey(){
-  const prov = S.aiConfig.provider;
-  const requiresKey = AI_PROVIDERS[prov]?.requiresKey !== false;
+  const provKey = S.aiConfig.provider;
+  const prov = AI_PROVIDERS[provKey];
+  const requiresKey = prov?.requiresKey !== false;
   const key = document.getElementById('aiKeyInput')?.value || S.aiConfig.apiKey;
   if(requiresKey && !key){ updateAIStatus('err','⚠️ API Key kosong.'); return; }
   S.aiConfig.apiKey = key;
