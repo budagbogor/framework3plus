@@ -5377,8 +5377,15 @@ function resetBuilder() {
             architect: 'idle',
             coder: 'idle',
             qa: 'idle',
+            security: 'idle',
+            polisher: 'idle',
+            tester: 'idle',
             devops: 'idle'
         };
+        try {
+            localStorage.removeItem('devforge_logs');
+            localStorage.removeItem('devforge_workspace');
+        } catch(e) {}
         saveWorkspaceToLocal();
         render();
     }
