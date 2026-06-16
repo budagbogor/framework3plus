@@ -4,6 +4,8 @@
  * to bypass CORS and manage security.
  */
 
+export const maxDuration = 60; // Izinkan eksekusi hingga 60 detik (hanya berlaku jika akun Vercel mendukung / Pro)
+
 export default async function handler(req, res) {
   // 1. Only allow POST
   if (req.method !== 'POST') {

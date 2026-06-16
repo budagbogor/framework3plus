@@ -5198,12 +5198,16 @@ function resetBuilder() {
         S.buildLogs = [];
         S.building = false;
         S.activeAgent = null;
+        S.activeFile = null;
+        S.isInstalled = false;
+        S.isDevRunning = false;
         S.agentStatus = {
             architect: 'idle',
             coder: 'idle',
             qa: 'idle',
             devops: 'idle'
         };
+        saveWorkspaceToLocal();
         render();
     }
 }
@@ -6339,7 +6343,13 @@ async function processBuildStep(system, user){
         let errText = "";
         try { errText = await res.text(); } catch(e){}
         console.error("AI Communication Error:", res.status, res.statusText, errText);
-        throw new Error(`Gagal berkomunikasi dengan AI. HTTP ${res.status}: ${res.statusText}. Detail: ${errText.substring(0, 100)}`);
+        
+        let extraTip = "";
+        if(res.status === 504 || res.status === 500) {
+            extraTip = " (Saran: Jika ini terus terjadi, coba BUKA AI Settings dan MATIKAN centang 'Gunakan Internal Proxy' karena mungkin terjadi limit waktu dari Vercel/Server)";
+        }
+        
+        throw new Error(`Gagal berkomunikasi dengan AI. HTTP ${res.status}: ${res.statusText}. Detail: ${errText.substring(0, 50)}${extraTip}`);
     }
 }
 
