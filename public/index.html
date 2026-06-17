@@ -1702,13 +1702,13 @@ function renderWizard(){
     <div id="q-body">${renderQBody(q)}</div>
   </div>
   <div class="nav-row">
-    <span class="step-info">${S.step+1} / ${total}</span>
     <div class="btn-group">
       <button class="btn btn-back" onclick="prevStep()" ${S.step===0?'style="visibility:hidden"':''}>\u2190 Kembali</button>
       ${isLast
         ?`<button class="btn btn-generate ${gClass}" onclick="doGenerate()">\u2726 Generate Sekarang</button>`
         :`<button class="btn btn-next ${gClass}" onclick="nextStep()">Lanjut \u2192</button>`}
     </div>
+    <span class="step-info">${S.step+1} / ${total}</span>
   </div>`;
 }
 
