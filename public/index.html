@@ -3294,7 +3294,13 @@ async function initWebContainer() {
             webcontainerInstance.on('server-ready', (port, url) => {
                 webcontainerUrl = url;
                 addBuildLog(`[WebContainer] Server berjalan di: ${url}`, "success");
-                addBuildLog(`[WebContainer] Klik tombol '🌐 Preview' untuk melihat hasilnya!`, "agent");
+                addBuildLog(`[WebContainer] Membuka URL secara otomatis di tab baru...`, "info");
+                
+                // Coba buka tab baru secara otomatis
+                const newWindow = window.open(url, '_blank');
+                if(!newWindow) {
+                    addBuildLog(`[Peringatan] Pop-up diblokir oleh browser. Silakan klik tombol '🌐 Preview' secara manual.`, "amber");
+                }
             });
         } catch (e) {
             addBuildLog(`[WebContainer] Gagal boot: ${e.message}`, "error");
