@@ -6609,11 +6609,8 @@ async function processBuildStep(system, user){
         const combined = `${system}\n\n${user}`;
         const resp = await puter.ai.chat(combined, {model: S.aiConfig.model});
         res = { ok: true, json: async () => {
-            let content = resp.toString().replace(/```json/g, '').replace(/```/g, '').trim();
-            try { return JSON.parse(content); } catch(e) {
-                const match = content.match(/\{[\s\S]*\}/);
-                return JSON.parse(match ? match[0] : '{}');
-            }
+            let content = resp.toString();
+            return robustParseJSON(content);
         }};
     } else {
         const url = S.aiConfig.useProxy ? '/api/ai-proxy' : `${prov.baseUrl}/chat/completions`;
@@ -6634,26 +6631,8 @@ async function processBuildStep(system, user){
         const data = await res.json();
         let result = {};
         const rawContent = data.choices ? data.choices[0].message.content : (data.content || data);
-        let clean = typeof rawContent === 'string' ? rawContent.replace(/```json/g, '').replace(/```/g, '').trim() : rawContent;
         
-        try {
-            result = typeof clean === 'string' ? JSON.parse(clean) : clean;
-        } catch(e) {
-            console.warn("Standard JSON parse failed, attempting deep clean...", e);
-            try {
-                const match = clean.match(/\{[\s\S]*\}/);
-                if(match){
-                    let deepClean = match[0]
-                        .replace(/\\n/g, "\\n")
-                        .replace(/\\'/g, "'")
-                        .replace(/[\u0000-\u001F\u007F-\u009F]/g, ""); // Remove control characters
-                    result = JSON.parse(deepClean);
-                } else { throw e; }
-            } catch(e2) {
-                addBuildLog("AI Response Corrupted. Retrying internal parsing...", "error");
-                result = { logs: ["Error parsing AI response"], files: [], finished: false };
-            }
-        }
+        result = robustParseJSON(typeof rawContent === 'string' ? rawContent : JSON.stringify(rawContent));
         
         (result.logs || []).forEach(l => addBuildLog(l, "info"));
         (result.files || []).forEach(f => {
@@ -6683,6 +6662,79 @@ async function processBuildStep(system, user){
         
         throw new Error(`Gagal berkomunikasi dengan AI. HTTP ${res.status}: ${res.statusText}. Detail: ${errText.substring(0, 50)}${extraTip}`);
     }
+}
+
+/**
+ * Robust JSON parser dengan multi-layer fallback.
+ * Menangani: markdown wrapper, karakter kontrol, newline dalam string,
+ * trailing comma, dan truncated JSON dari AI.
+ */
+function robustParseJSON(raw) {
+    if (!raw || typeof raw !== 'string') return { logs: [], files: [] };
+
+    // ── Layer 1: coba parse langsung ──
+    try { return JSON.parse(raw); } catch(_) {}
+
+    // ── Layer 2: hapus markdown code fence ──
+    let s = raw
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```\s*$/i, '')
+        .trim();
+    try { return JSON.parse(s); } catch(_) {}
+
+    // ── Layer 3: hapus karakter kontrol kecuali \n \r \t ──
+    s = s.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '');
+    try { return JSON.parse(s); } catch(_) {}
+
+    // ── Layer 4: escape newline & tab yang ada di dalam nilai string JSON ──
+    // (AI sering mengirim literal newline di dalam value, yang tidak valid di JSON)
+    s = s.replace(/"((?:[^"\\]|\\.)*)"/g, (match) => {
+        return match
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')
+            .replace(/\t/g, '\\t');
+    });
+    try { return JSON.parse(s); } catch(_) {}
+
+    // ── Layer 5: cari blok JSON terluar dengan regex ──
+    const outerMatch = s.match(/\{[\s\S]*\}/);
+    if (outerMatch) {
+        try { return JSON.parse(outerMatch[0]); } catch(_) {}
+        // Layer 5b: bersihkan trailing comma sebelum } atau ]
+        const noTrailing = outerMatch[0].replace(/,\s*([}\]])/g, '$1');
+        try { return JSON.parse(noTrailing); } catch(_) {}
+    }
+
+    // ── Layer 6: ekstrak field "files" dan "logs" secara manual ──
+    const result = { logs: [], files: [] };
+    const logsMatch = s.match(/"logs"\s*:\s*\[([\s\S]*?)\]/);
+    if (logsMatch) {
+        try {
+            result.logs = JSON.parse('[' + logsMatch[1] + ']');
+        } catch(_) {
+            result.logs = logsMatch[1].match(/"([^"]+)"/g)?.map(x => x.slice(1,-1)) || [];
+        }
+    }
+
+    const filesMatch = s.match(/"files"\s*:\s*\[([\s\S]*)\]/);
+    if (filesMatch) {
+        try {
+            result.files = JSON.parse('[' + filesMatch[1] + ']');
+        } catch(_) {
+            // coba ekstrak tiap objek file satu per satu
+            const fileBlocks = filesMatch[1].match(/\{[\s\S]*?"path"[\s\S]*?"content"[\s\S]*?\}/g) || [];
+            fileBlocks.forEach(block => {
+                try { result.files.push(JSON.parse(block)); } catch(_) {}
+            });
+        }
+    }
+
+    if (result.files.length > 0 || result.logs.length > 0) return result;
+
+    // ── Layer 7 (last resort): tidak ada yang bisa dipulihkan ──
+    console.warn("robustParseJSON: semua layer gagal untuk input:", raw.substring(0, 200));
+    addBuildLog("⚠️ Respons AI tidak bisa di-parse, langkah ini dilewati.", "amber");
+    return { logs: [], files: [] };
 }
 
 async function downloadVirtualProject(){
