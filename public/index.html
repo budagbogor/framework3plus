@@ -5428,7 +5428,8 @@ function renderBuilderPanel(){
                 </div>
                 
                 <div class="chat-container">
-                    <div class="chat-input-row">
+
+                <div class="chat-input-row">
                         <input type="text" id="agentChatInput" class="chat-input-field" placeholder="Minta revisi atau tambah fitur... (Contoh: 'Tambahkan halaman login')" onkeydown="if(event.key==='Enter') submitAgentChat()">
                         <button class="chat-send-btn" onclick="submitAgentChat()">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
@@ -5605,154 +5606,409 @@ Lakukan perubahan yang diperlukan agar hasil sesuai dengan permintaan user di at
 
 async function runAutonomousLoop(){
     const g = S.generated || {};
-    
-    // 📐 FASE 1: ARSITEK AI
+    const projectName = g.name || 'Proyek Otonom';
+    const mode = S.mode || 'sdlc';
+    const desc = S.answers.projectName || projectName;
+    const fe = g.fe || g.fw || 'HTML/CSS/JS Vanilla';
+    const be = g.be || 'None';
+    const db = g.db || 'None';
+    const dep = (Array.isArray(S.answers.deployment) ? S.answers.deployment[0] : S.answers.deployment) || 'Vercel';
+    const ui  = (Array.isArray(S.answers.uiLib) ? S.answers.uiLib[0] : S.answers.uiLib) || 'Vanilla CSS';
+
+    const getWorkspaceSnapshot = () => {
+        const ws = S.virtualWorkspace || {};
+        return Object.entries(ws)
+            .filter(([k]) => !k.endsWith('.md') || k === 'MASTERPLAN.md')
+            .map(([k, v]) => `=== ${k} ===\n${(v || '').substring(0, 800)}`)
+            .join('\n\n')
+            .substring(0, 5000);
+    };
+
+    // ── FASE 1: ARSITEK AI ──
     S.agentStatus.architect = 'running';
-    addBuildLog("📐 [Arsitek AI] Memulai analisis kebutuhan proyek dan perancangan cetak biru arsitektur...", "agent");
+    addBuildLog("📐 [Arsitek AI] Menganalisis kebutuhan & merancang arsitektur sistem...", "agent");
     render();
     await sleep(1000);
 
-    const blueprintPrompt = `Role: SENIOR SYSTEM ARCHITECT.
-Project: ${g.name || 'Proyek Otonom'} (${S.mode})
-Description: ${S.answers.projectName || ''}
-Tech Stack: ${g.fe || g.fw || ''} | ${g.be || ''} | ${g.db || ''}
+    const blueprintPrompt = `You are a SENIOR SYSTEM ARCHITECT with 15 years experience.
 
-TUGAS: Buat file MASTERPLAN.md dan TECH_NOTES.md sangat detail.
-Masterplan harus mencakup daftar semua file yang akan kita bangun agar aplikasi 100% fungsional hingga siap DEPLOY.
-Tech Notes harus mencakup panduan deployment (Vercel/Docker).
+PROJECT BRIEF:
+- Name: ${projectName}
+- Mode: ${mode === 'adlc' ? 'Agentic AI System' : mode === 'website' ? 'Website/Landing Page' : 'Software Application'}
+- Description: ${desc}
+- Tech Stack: Frontend=${fe} | Backend=${be} | Database=${db} | Deploy=${dep} | UI=${ui}
 
-FORMAT RESPONS (Valid JSON):
+YOUR TASK:
+1. Write MASTERPLAN.md with: project overview, complete file structure, component breakdown, data models, feature checklist
+2. Write TECH_NOTES.md with: setup steps, env vars, deployment guide for ${dep}, technical decisions
+
+CRITICAL RULES:
+- MASTERPLAN.md must list EVERY file to be created, including index.html, style.css, app.js at minimum
+- No vague descriptions — be specific about file names and function names
+
+RESPOND ONLY with valid JSON:
 {
-  "logs": ["Designing system architecture...", "Mapping core database endpoints..."],
+  "logs": ["Analyzing requirements...", "Designing architecture...", "Writing MASTERPLAN.md...", "Writing TECH_NOTES.md..."],
   "files": [
-    {"path": "MASTERPLAN.md", "content": "# Masterplan - ${g.name || 'Proyek'}\\n\\n[Rincian arsitektur lengkap]"},
-    {"path": "TECH_NOTES.md", "content": "# Tech Notes\\n\\n[Detail konfigurasi teknis]"}
+    {"path": "MASTERPLAN.md", "content": "# ${projectName} — MASTERPLAN\\n\\n## Overview\\n...detailed content..."},
+    {"path": "TECH_NOTES.md", "content": "# Tech Notes\\n\\n...detailed content..."}
   ]
 }`;
-    
-    await processBuildStep("Kamu adalah SENIOR SYSTEM ARCHITECT.", blueprintPrompt);
-    S.agentStatus.architect = 'done';
-    addBuildLog("📐 [Arsitek AI] Struktur Masterplan berhasil disusun dan diverifikasi.", "success");
-    render();
-    await sleep(1500);
 
-    // 💻 & 🚀 FASE 2: CODER AI & DEVOPS AI (PARALEL)
+    await processBuildStep(
+        `You are an expert SENIOR SYSTEM ARCHITECT. Always respond in valid JSON only. Never use markdown code fences outside JSON string values.`,
+        blueprintPrompt
+    );
+    S.agentStatus.architect = 'done';
+    addBuildLog("📐 [Arsitek AI] Masterplan & Tech Notes berhasil dirancang.", "success");
+    render();
+    await sleep(1200);
+
+    // ── FASE 2: CODER AI & DEVOPS AI (PARALEL) ──
     const runCoder = async () => {
         S.agentStatus.coder = 'running';
-        addBuildLog("💻 [Coder AI] Mengimpor blueprint arsitektur. Mulai menulis berkas kode utama secara modular...", "agent");
+        addBuildLog("💻 [Coder AI] Membaca Masterplan dan menulis kode utama...", "agent");
         render();
-        await sleep(1000);
-        const coderPrompt = `Role: SENIOR DEVELOPER AGENT.\nProject: ${g.name || 'Proyek'} (${S.mode})\nDescription: ${S.answers.projectName || ''}\nMasterplan: ${S.virtualWorkspace['MASTERPLAN.md'] || ''}\nTech Stack: ${g.fe || g.fw || ''} | ${g.be || ''} | ${g.db || ''}\n\nTUGAS: Tulis file kode program utama yang fungsional (misal index.html, app.js, src/main.py, dsb) sesuai dengan Masterplan. Kode harus lengkap tanpa placeholder.\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Writing core codebase modules...", "Implementing routing logic..."],\n  "files": [\n    {"path": "index.html", "content": "<!DOCTYPE html><html><head><title>${g.name || 'Web'}</title></head><body><h1>Selamat datang di ${g.name || 'Aplikasi'}</h1></body></html>"}\n  ]\n}`;
-        await processBuildStep("Kamu adalah SENIOR PROFESSIONAL DEVELOPER AGENT.", coderPrompt);
+        await sleep(800);
+
+        const masterplan = S.virtualWorkspace['MASTERPLAN.md'] || 'No masterplan yet.';
+        const coderPrompt = `You are a SENIOR FULLSTACK DEVELOPER. Write COMPLETE, PRODUCTION-READY source code.
+
+PROJECT:
+- Name: ${projectName}
+- Description: ${desc}
+- Tech Stack: ${fe} | ${be} | ${db}
+- UI Library: ${ui}
+- Masterplan:
+${masterplan.substring(0, 3000)}
+
+MANDATORY FILES:
+- index.html  (complete HTML: semantic, meta viewport, Google Fonts linked)
+- style.css   (premium: CSS variables, glassmorphism/flat modern, transitions, fully responsive)
+- app.js      (complete vanilla JS: all interactivity, DOM manipulation, data logic)
+
+STRICT RULES:
+1. ZERO placeholders. No "// TODO", no "[content here]", no empty functions
+2. App must be VISUALLY COMPLETE when opened in browser — not a blank page
+3. CSS must have :root variables, flexbox/grid, hover states & smooth transitions
+4. Write beautiful UI that would win a design award
+5. No import/export statements in app.js — use vanilla JS only
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Writing index.html...", "Writing premium style.css...", "Writing complete app.js..."],
+  "files": [
+    {"path": "index.html", "content": "<!DOCTYPE html>...COMPLETE HTML..."},
+    {"path": "style.css", "content": ":root { ... }...COMPLETE CSS..."},
+    {"path": "app.js", "content": "// Complete logic...COMPLETE JS..."}
+  ]
+}`;
+
+        await processBuildStep(
+            `You are an elite SENIOR FULLSTACK DEVELOPER. Output complete working code. Never use placeholders. Respond only in valid JSON.`,
+            coderPrompt
+        );
         S.agentStatus.coder = 'done';
-        addBuildLog("💻 [Coder AI] File program utama selesai ditulis.", "success");
+        addBuildLog("💻 [Coder AI] Kode utama berhasil ditulis lengkap.", "success");
         render();
     };
 
     const runDevops = async () => {
         S.agentStatus.devops = 'running';
-        addBuildLog("🚀 [DevOps AI] Mempersiapkan konfigurasi deployment dan berkas README.md...", "agent");
+        addBuildLog("🚀 [DevOps AI] Menyiapkan konfigurasi deployment & dokumentasi...", "agent");
         render();
-        await sleep(1000);
-        const devopsPrompt = `Role: DEVOPS SPECIALIST.\nProject: ${g.name || 'Proyek'}\nTUGAS: Buat file vercel.json (atau Dockerfile/config lain) dan README.md yang sangat lengkap dan profesional dalam Bahasa Indonesia.\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Configuring deployment manifests...", "Generating final project documentation..."],\n  "files": [\n    {"path": "vercel.json", "content": "{\\n  \\"version\\": 2\\n}"},\n    {"path": "README.md", "content": "# ${g.name || 'Proyek'}\\n\\n[Panduan Instalasi]"}\n  ]\n}`;
-        await processBuildStep("Kamu adalah DEVOPS SPECIALIST.", devopsPrompt);
+        await sleep(800);
+
+        const safeName = (projectName || 'project').toLowerCase().replace(/\s+/g, '-');
+        const devopsPrompt = `You are a SENIOR DEVOPS ENGINEER.
+
+PROJECT: ${projectName} | Deploy: ${dep} | Stack: ${fe} | ${be} | ${db}
+
+FILES TO CREATE:
+1. vercel.json — valid JSON config for Vercel SPA deployment
+2. .gitignore — comprehensive (Node, Python, OS, env files)
+3. README.md — professional with emoji headers, features table, setup steps, deployment guide
+4. package.json — with name="${safeName}", scripts: dev, build, start
+
+STRICT RULES:
+1. All files must be complete and immediately usable
+2. README.md must be impressive and professional
+3. package.json "dev" script: "npx serve ."
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Configuring ${dep}...", "Writing .gitignore...", "Generating README.md..."],
+  "files": [
+    {"path": "vercel.json", "content": "{\\"version\\": 2, \\"routes\\": [{\\"src\\": \\"/(.*)\\"..}]}"},
+    {"path": ".gitignore", "content": "node_modules/\\n.env\\n.DS_Store\\ndist/"},
+    {"path": "README.md", "content": "# ${projectName}\\n\\n...COMPLETE README..."},
+    {"path": "package.json", "content": "{\\"name\\": \\"${safeName}\\", \\"scripts\\": {\\"dev\\": \\"npx serve .\\"}}"}
+  ]
+}`;
+
+        await processBuildStep(
+            `You are a SENIOR DEVOPS ENGINEER. Create complete, production-ready config files. Respond only in valid JSON.`,
+            devopsPrompt
+        );
         S.agentStatus.devops = 'done';
-        addBuildLog("🚀 [DevOps AI] File deployment dan README.md berhasil dipersiapkan.", "success");
+        addBuildLog("🚀 [DevOps AI] Konfigurasi deployment berhasil dibuat.", "success");
         render();
     };
 
     await Promise.all([runCoder(), runDevops()]);
-    await sleep(1500);
+    await sleep(1200);
 
-    // 🧩 📝 FASE 3: FEATURE & CONTENT (PARALEL)
+    // ── FASE 3: FEATURE & CONTENT (PARALEL) ──
     const runFeature = async () => {
         S.agentStatus.feature = 'running';
-        addBuildLog("🧩 [Feature Implementer AI] Mengisi empty stubs komponen. Menghubungkan logika props...", "agent");
+        addBuildLog("🧩 [Feature AI] Mengimplementasi komponen dan logika bisnis...", "agent");
         render();
-        await sleep(1000);
-        const featurePrompt = `Role: COMPONENT BUILDER AGENT.\nProject: ${g.name || 'Proyek'}\nTUGAS: Selesaikan komponen-komponen yang masih berupa empty stubs atau kerangka kosong dari hasil Coder AI.\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Implementing Business Logic...", "Completing ServiceCard and BaseLayout components..."],\n  "files": [\n    {"path": "src/components.js", "content": "// Logic"}\n  ]\n}`;
-        await processBuildStep("Kamu adalah COMPONENT BUILDER AGENT.", featurePrompt);
+        await sleep(800);
+
+        const wsSnap = getWorkspaceSnapshot();
+        const featurePrompt = `You are a SENIOR COMPONENT ENGINEER. ENHANCE the existing codebase.
+
+PROJECT: ${projectName}
+CURRENT WORKSPACE:
+${wsSnap}
+
+ADD these features if not already present:
+- Mobile navigation with hamburger menu
+- Smooth scroll behavior
+- Dark/light mode toggle (with localStorage persistence)
+- Form validation with real-time feedback (if forms exist)
+- Skeleton loading states
+- Scroll-triggered animations (IntersectionObserver)
+
+RULES:
+1. Only output files you actually changed
+2. All code must be complete — no "..." or placeholder comments
+3. Enhance existing code, don't rewrite from scratch
+4. If everything is already complete, output minimal changes
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Adding hamburger menu...", "Implementing dark mode...", "Adding scroll animations..."],
+  "files": [{"path": "app.js", "content": "// Enhanced...COMPLETE CODE..."}]
+}`;
+
+        await processBuildStep(
+            `You are a SENIOR COMPONENT ENGINEER. Enhance code without breaking it. Respond only in valid JSON.`,
+            featurePrompt
+        );
         S.agentStatus.feature = 'done';
-        addBuildLog("🧩 [Feature Implementer AI] Komponen sukses diimplementasikan penuh.", "success");
+        addBuildLog("🧩 [Feature AI] Semua komponen berhasil diimplementasi.", "success");
         render();
     };
 
     const runContent = async () => {
         S.agentStatus.content = 'running';
-        addBuildLog("📝 [Content Writer AI] Menulis konten struktural dan mengisi file markdown...", "agent");
+        addBuildLog("📝 [Content AI] Mengisi konten nyata & data...", "agent");
         render();
-        await sleep(1000);
-        const contentPrompt = `Role: COPYWRITER AGENT.\nProject: ${g.name || 'Proyek'}\nTUGAS: Tulis semua teks placeholder menjadi konten nyata, serta buat file .md (seperti About.md atau panduan.md).\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Writing markdown contents...", "Filling out dummy data..."],\n  "files": [\n    {"path": "content/data.json", "content": "{}"}\n  ]\n}`;
-        await processBuildStep("Kamu adalah COPYWRITER AGENT.", contentPrompt);
+        await sleep(800);
+
+        const wsSnap = getWorkspaceSnapshot();
+        const contentPrompt = `You are a SENIOR COPYWRITER & CONTENT STRATEGIST.
+
+PROJECT: ${projectName} — ${desc}
+CURRENT WORKSPACE:
+${wsSnap}
+
+TASKS:
+1. Replace ALL placeholder text (Lorem ipsum, [Title Here], etc.) with real content specific to "${projectName}"
+2. Fill data arrays in JS with realistic entries (products, services, team, posts, etc.)
+3. Create content/data.json with structured data for the app's domain
+4. Create CHANGELOG.md with v1.0.0 release notes
+
+RULES:
+1. Content must be specific to "${projectName}" — not generic filler
+2. Use Indonesian language where appropriate
+3. Fill ALL slots visible in the HTML
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Replacing placeholders...", "Writing realistic data...", "Creating CHANGELOG..."],
+  "files": [
+    {"path": "content/data.json", "content": "[{\\"id\\": 1, ...}]"},
+    {"path": "CHANGELOG.md", "content": "# Changelog\\n## v1.0.0..."}
+  ]
+}`;
+
+        await processBuildStep(
+            `You are a SENIOR COPYWRITER. Write real content, not placeholders. Respond only in valid JSON.`,
+            contentPrompt
+        );
         S.agentStatus.content = 'done';
-        addBuildLog("📝 [Content Writer AI] Konten dan copywriting berhasil dibuat.", "success");
+        addBuildLog("📝 [Content AI] Konten nyata berhasil diisi.", "success");
         render();
     };
 
     await Promise.all([runFeature(), runContent()]);
-    await sleep(1500);
+    await sleep(1200);
 
-    // 🛡️ 🔐 ✨ 🧪 FASE 4: QA, SECURITY, POLISHER, TESTER (PARALEL)
+    // ── FASE 4: QA, SECURITY, POLISHER, TESTER (PARALEL) ──
     const workspaceFiles = Object.keys(S.virtualWorkspace).join(", ");
-    
+    const wsSnap4 = getWorkspaceSnapshot();
+
     const runQa = async () => {
         S.agentStatus.qa = 'running';
-        addBuildLog("🛡️ [QA Reviewer AI] Melakukan audit kode statis dan pengujian kompatibilitas...", "agent");
+        addBuildLog("🛡️ [QA AI] Menjalankan audit kode & mencari bug...", "agent");
         render();
-        await sleep(1000);
-        const qaPrompt = `Role: QA REVIEWER AGENT.\nProject: ${g.name || 'Proyek'}\nKonteks Workspace: [${workspaceFiles}]\nTUGAS: Analisis kode yang telah ditulis oleh Coder AI. Periksa bug, import yang salah, sintaks error, atau ketidaksesuaian fungsionalitas. Berikan perbaikan jika perlu atau setujui kode.\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Running automated syntax checking...", "Evaluating integrity checks... All green."],\n  "files": []\n}`;
-        await processBuildStep("Kamu adalah QA REVIEWER AGENT.", qaPrompt);
+        await sleep(800);
+
+        const qaPrompt = `You are a SENIOR QA ENGINEER (static analysis + browser compatibility expert).
+
+PROJECT: ${projectName}
+FILES: ${workspaceFiles}
+CODE:
+${wsSnap4}
+
+FIND AND FIX:
+1. Broken HTML (unclosed tags, missing attributes)
+2. JS errors (undefined vars, broken selectors, missing null checks)
+3. CSS issues (missing units, broken responsiveness)
+4. Dead code and unused functions
+5. Missing try/catch around fetch() calls
+6. Accessibility (missing alt, aria-labels, poor contrast)
+
+OUTPUT: Fixed files only. Skip unchanged files. Log exactly what was fixed.
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Fixed: undefined variable in app.js...", "Fixed: missing alt on images..."],
+  "files": [{"path": "app.js", "content": "// Fixed...COMPLETE..."}]
+}`;
+
+        await processBuildStep(
+            `You are a SENIOR QA ENGINEER. Find and fix real bugs. Respond only in valid JSON.`,
+            qaPrompt
+        );
         S.agentStatus.qa = 'done';
-        addBuildLog("🛡️ [QA Reviewer AI] Hasil audit: Lulus 100%. Kode program aman dan efisien.", "success");
+        addBuildLog("🛡️ [QA AI] Audit selesai — semua bug diperbaiki.", "success");
         render();
     };
 
     const runSecurity = async () => {
         S.agentStatus.security = 'running';
-        addBuildLog("🔐 [Security AI] Mengaudit keseluruhan kode. Mencari celah keamanan XSS & SQL Injection...", "agent");
+        addBuildLog("🔐 [Security AI] Mengaudit kerentanan keamanan (OWASP Top 10)...", "agent");
         render();
-        await sleep(1000);
-        const secPrompt = `Role: SECURITY AUDITOR.\nProject: ${g.name || 'Proyek'}\nKonteks Workspace: [${workspaceFiles}]\nTUGAS: Analisis kode dari Coder AI. Pastikan aman dari kerentanan. Tulis file konfigurasi keamanan, atau perbarui file yang sudah ada jika perlu. Jika semua sudah aman, outputkan log saja tanpa modifikasi file.\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Auditing dependencies...", "Enforcing strict Content-Security-Policy... All Clear."],\n  "files": []\n}`;
-        await processBuildStep("Kamu adalah SECURITY AUDITOR.", secPrompt);
+        await sleep(800);
+
+        const secPrompt = `You are a SENIOR SECURITY ENGINEER (OWASP Top 10 specialist).
+
+PROJECT: ${projectName}
+FILES: ${workspaceFiles}
+CODE:
+${wsSnap4}
+
+CHECK AND FIX:
+1. XSS vulnerabilities (innerHTML with user input → use textContent)
+2. Exposed secrets in frontend code
+3. Missing Content-Security-Policy meta tag → add to index.html
+4. eval() / Function() usage → remove
+5. Unvalidated form inputs
+6. IMPORTANT: Do NOT add integrity= attributes to <link>/<script> tags (breaks blob preview)
+
+Add security.config.js if significant hardening applied.
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Scanning XSS vectors...", "Adding CSP meta tag...", "Sanitizing inputs..."],
+  "files": [{"path": "index.html", "content": "...COMPLETE SECURED HTML..."}]
+}`;
+
+        await processBuildStep(
+            `You are a SENIOR SECURITY ENGINEER. Apply OWASP best practices. Respond only in valid JSON.`,
+            secPrompt
+        );
         S.agentStatus.security = 'done';
-        addBuildLog("🔐 [Security AI] Audit selesai. Kode terjamin aman.", "success");
+        addBuildLog("🔐 [Security AI] Audit keamanan selesai.", "success");
         render();
     };
 
     const runPolisher = async () => {
         S.agentStatus.polisher = 'running';
-        addBuildLog("✨ [Polisher AI] Memperhalus UI/UX, menambahkan animasi, dan memastikan desain premium...", "agent");
+        addBuildLog("✨ [Polisher AI] Mempercantik UI/UX ke level premium...", "agent");
         render();
-        await sleep(1000);
-        const polisherPrompt = `Role: UX/UI POLISHER.\nProject: ${g.name || 'Proyek'}\nKonteks Workspace: [${workspaceFiles}]\nTUGAS: Perbaiki file CSS/HTML/JS yang sudah ada. Jika ada file CSS, berikan warna yang harmonis, transisi halus, dan animasi micro-interactions.\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Injecting micro-animations...", "Refining color palette contrast..."],\n  "files": []\n}`;
-        await processBuildStep("Kamu adalah UX/UI POLISHER.", polisherPrompt);
+        await sleep(800);
+
+        const polisherPrompt = `You are a WORLD-CLASS UI/UX DESIGNER (ex-Apple, ex-Stripe design team).
+
+PROJECT: ${projectName}
+FILES: ${workspaceFiles}
+CODE:
+${wsSnap4}
+
+TRANSFORM THE UI:
+1. CSS — Add smooth transitions on ALL interactive elements, micro-animations (fadeIn, hover lift, button press), glassmorphism accents, gradient headings
+2. Typography — Import Inter/Plus Jakarta Sans/Outfit from Google Fonts, consistent 8px spacing grid, contrast ratio ≥ 4.5:1
+3. Responsive — Perfect on 320px (mobile), 768px (tablet), 1440px (desktop), touch targets ≥ 44px
+
+Output improved style.css (and index.html if structure changes needed).
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Applying micro-animations...", "Enhancing color palette...", "Polishing responsive..."],
+  "files": [{"path": "style.css", "content": "/* World-class CSS */\\n:root { ... }\\n...COMPLETE CSS..."}]
+}`;
+
+        await processBuildStep(
+            `You are a world-class UI/UX Designer. Make the interface visually stunning. Respond only in valid JSON.`,
+            polisherPrompt
+        );
         S.agentStatus.polisher = 'done';
-        addBuildLog("✨ [Polisher AI] Desain telah disempurnakan menjadi kelas dunia.", "success");
+        addBuildLog("✨ [Polisher AI] UI/UX berhasil dipoles ke level kelas dunia.", "success");
         render();
     };
 
     const runTester = async () => {
         S.agentStatus.tester = 'running';
-        addBuildLog("🧪 [Tester AI] Menulis dan menjalankan unit test (E2E) simulasi...", "agent");
+        addBuildLog("🧪 [Tester AI] Menulis unit & integration tests...", "agent");
         render();
-        await sleep(1000);
-        const testerPrompt = `Role: E2E TEST ENGINEER.\nProject: ${g.name || 'Proyek'}\nKonteks Workspace: [${workspaceFiles}]\nTUGAS: Buat file testing dasar (misal test.js) yang memvalidasi logika inti dari proyek ini.\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Mocking user interactions...", "Validating component rendering... All tests passed."],\n  "files": [\n    {"path": "tests/app.test.js", "content": "// Test Suite"}\n  ]\n}`;
-        await processBuildStep("Kamu adalah E2E TEST ENGINEER.", testerPrompt);
+        await sleep(800);
+
+        const testerPrompt = `You are a SENIOR TEST ENGINEER (browser-based testing specialist).
+
+PROJECT: ${projectName}
+FILES: ${workspaceFiles}
+
+WRITE:
+1. tests/app.test.js — Pure vanilla JS test suite:
+   - Tests for all major app.js functions
+   - DOM interaction tests (simulated clicks, form submissions)
+   - localStorage read/write tests
+   - Outputs results to console.table()
+2. tests/run-tests.html — Visual test runner page
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Writing unit tests...", "Adding DOM tests...", "Creating test runner..."],
+  "files": [
+    {"path": "tests/app.test.js", "content": "const results = [];\\n...COMPLETE TESTS..."},
+    {"path": "tests/run-tests.html", "content": "<!DOCTYPE html>...COMPLETE RUNNER..."}
+  ]
+}`;
+
+        await processBuildStep(
+            `You are a SENIOR TEST ENGINEER. Write complete runnable tests. Respond only in valid JSON.`,
+            testerPrompt
+        );
         S.agentStatus.tester = 'done';
-        addBuildLog("🧪 [Tester AI] Validasi kualitas lulus tanpa cela.", "success");
+        addBuildLog("🧪 [Tester AI] Test suite berhasil ditulis.", "success");
         render();
     };
 
     await Promise.all([runQa(), runSecurity(), runPolisher(), runTester()]);
-    await sleep(1500);
+    await sleep(1200);
 
     S.activeAgent = null;
     S.building = false;
-    addBuildLog("🚀 PEMBANGUNAN MULTI-AGENT NYATA SELESAI 100%.", "success");
+    addBuildLog("🎉 PEMBANGUNAN MULTI-AGENT SELESAI 100% — Klik Preview untuk melihat hasilnya!", "success");
     render();
 }
 
 async function runSimulationLoop(){
+
     const g = S.generated || {};
     const name = g.name || S.answers.projectName || 'My Proyek';
     const fe = g.fe || g.fw || 'HTML/CSS/JS';
