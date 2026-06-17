@@ -781,6 +781,9 @@ pre{padding:16px;overflow-x:auto;overflow-y:auto;font-family:var(--mono);font-si
   .builder-sidebar { height: 200px; }
   .builder-main { height: 400px; }
 }
+
+        .agent-active-feature { box-shadow: inset 0 0 15px rgba(59, 130, 246, 0.2); }
+        .agent-active-content { box-shadow: inset 0 0 15px rgba(168, 85, 247, 0.2); }
 </style>
 
 </head>
@@ -1908,7 +1911,7 @@ function doGenerate() {
   S.isInstalled = false;
   S.isDevRunning = false;
   S.activeFile = null;
-  S.agentStatus = { architect: 'idle', coder: 'idle', qa: 'idle', security: 'idle', polisher: 'idle', tester: 'idle', devops: 'idle' };
+  S.agentStatus = { architect: 'idle', coder: 'idle', qa: 'idle', security: 'idle', polisher: 'idle', tester: 'idle', devops: 'idle', feature: 'idle', content: 'idle' };
   try { saveWorkspaceToLocal(); } catch(e){}
   
   S.generating = true;
@@ -5274,6 +5277,26 @@ function renderBuilderPanel(){
                             </div>
                         </div>
 
+                                                <!-- Agent 3 (New): Feature Implementer -->
+                        <div class="agent-card ${S.agentStatus?.feature === 'running' ? 'agent-active-feature' : ''}" style="background: ${S.agentStatus?.feature === 'running' ? 'rgba(59, 130, 246, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.feature === 'running' ? '#3b82f6' : S.agentStatus?.feature === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class="${S.agentStatus?.feature === 'running' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.feature === 'running' ? 'drop-shadow(0 0 8px #3b82f6)' : 'none'}">🧩</div>
+                            <div style="font-size: 12px; font-weight: 700; color: #fff;">Feature AI</div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Component Builder</div>
+                            <div style="font-size: 10px; color: ${S.agentStatus?.feature === 'running' ? '#3b82f6' : S.agentStatus?.feature === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.feature === 'running' ? '<span class="loading-text">🧩 Menyusun</span>' : S.agentStatus?.feature === 'done' ? '✅ Fitur Siap' : '💤 Idle'}
+                            </div>
+                        </div>
+
+                        <!-- Agent 4 (New): Content Writer -->
+                        <div class="agent-card ${S.agentStatus?.content === 'running' ? 'agent-active-content' : ''}" style="background: ${S.agentStatus?.content === 'running' ? 'rgba(168, 85, 247, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.content === 'running' ? '#a855f7' : S.agentStatus?.content === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class="${S.agentStatus?.content === 'running' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.content === 'running' ? 'drop-shadow(0 0 8px #a855f7)' : 'none'}">📝</div>
+                            <div style="font-size: 12px; font-weight: 700; color: #fff;">Content AI</div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Copywriter</div>
+                            <div style="font-size: 10px; color: ${S.agentStatus?.content === 'running' ? '#a855f7' : S.agentStatus?.content === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.content === 'running' ? '<span class="loading-text">📝 Menulis</span>' : S.agentStatus?.content === 'done' ? '✅ Konten Terisi' : '💤 Idle'}
+                            </div>
+                        </div>
+
                         <!-- Agent 3: QA Reviewer -->
                         <div class="agent-card ${S.agentStatus?.qa === 'running' ? 'agent-active-qa' : ''}" style="background: ${S.agentStatus?.qa === 'running' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.qa === 'running' ? '#f59e0b' : S.agentStatus?.qa === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
                             <div class=\"${S.agentStatus?.qa === 'running' ? 'agent-active-icon' : ''}\" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.qa === 'running' ? 'drop-shadow(0 0 8px #f59e0b)' : 'none'}">🛡️</div>
@@ -5380,7 +5403,9 @@ function resetBuilder() {
             security: 'idle',
             polisher: 'idle',
             tester: 'idle',
-            devops: 'idle'
+            devops: 'idle',
+            feature: 'idle',
+            content: 'idle'
         };
         try {
             localStorage.removeItem('devforge_logs');
@@ -5400,7 +5425,9 @@ async function startAutonomousBuild(){
         security: 'idle',
         polisher: 'idle',
         tester: 'idle',
-        devops: 'idle'
+        devops: 'idle',
+        feature: 'idle',
+        content: 'idle'
     };
 
     if(!S.aiConfig.enabled || !S.aiConfig.connected){
@@ -5573,7 +5600,35 @@ FORMAT RESPONS (Valid JSON):
     await Promise.all([runCoder(), runDevops()]);
     await sleep(1500);
 
-    // 🛡️ 🔐 ✨ 🧪 FASE 3: QA, SECURITY, POLISHER, TESTER (PARALEL)
+    // 🧩 📝 FASE 3: FEATURE & CONTENT (PARALEL)
+    const runFeature = async () => {
+        S.agentStatus.feature = 'running';
+        addBuildLog("🧩 [Feature Implementer AI] Mengisi empty stubs komponen. Menghubungkan logika props...", "agent");
+        render();
+        await sleep(1000);
+        const featurePrompt = `Role: COMPONENT BUILDER AGENT.\nProject: ${g.name || 'Proyek'}\nTUGAS: Selesaikan komponen-komponen yang masih berupa empty stubs atau kerangka kosong dari hasil Coder AI.\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Implementing Business Logic...", "Completing ServiceCard and BaseLayout components..."],\n  "files": [\n    {"path": "src/components.js", "content": "// Logic"}\n  ]\n}`;
+        await processBuildStep("Kamu adalah COMPONENT BUILDER AGENT.", featurePrompt);
+        S.agentStatus.feature = 'done';
+        addBuildLog("🧩 [Feature Implementer AI] Komponen sukses diimplementasikan penuh.", "success");
+        render();
+    };
+
+    const runContent = async () => {
+        S.agentStatus.content = 'running';
+        addBuildLog("📝 [Content Writer AI] Menulis konten struktural dan mengisi file markdown...", "agent");
+        render();
+        await sleep(1000);
+        const contentPrompt = `Role: COPYWRITER AGENT.\nProject: ${g.name || 'Proyek'}\nTUGAS: Tulis semua teks placeholder menjadi konten nyata, serta buat file .md (seperti About.md atau panduan.md).\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Writing markdown contents...", "Filling out dummy data..."],\n  "files": [\n    {"path": "content/data.json", "content": "{}"}\n  ]\n}`;
+        await processBuildStep("Kamu adalah COPYWRITER AGENT.", contentPrompt);
+        S.agentStatus.content = 'done';
+        addBuildLog("📝 [Content Writer AI] Konten dan copywriting berhasil dibuat.", "success");
+        render();
+    };
+
+    await Promise.all([runFeature(), runContent()]);
+    await sleep(1500);
+
+    // 🛡️ 🔐 ✨ 🧪 FASE 4: QA, SECURITY, POLISHER, TESTER (PARALEL)
     const workspaceFiles = Object.keys(S.virtualWorkspace).join(", ");
     
     const runQa = async () => {
@@ -6373,7 +6428,39 @@ console.log("Application initialized successfully.");`;
     render();
     await sleep(2000);
 
-    // 🛡️ 🔐 ✨ 🧪 FASE 3: QA, SECURITY, POLISHER, TESTER (PARALEL)
+    // 🧩 📝 FASE 3: FEATURE & CONTENT (PARALEL)
+    const runFeatureSim = async () => {
+        S.agentStatus.feature = 'running';
+        addBuildLog("🧩 [Feature Implementer AI] Menelusuri komponen kosong (stubs)...", "agent");
+        await sleep(1500);
+        addBuildLog("🧩 [Feature Implementer AI] Mengisi state logika dan props pada Hero, ServiceCard, dan ContactForm.", "info");
+        await sleep(1500);
+        const featureContent = `// FULL COMPONENTS IMPLEMENTATION\nexport const Hero = () => '<header>Full</header>';`;
+        S.virtualWorkspace['src/components.js'] = featureContent;
+        addBuildLog("Manufacturing module: src/components.js", "success");
+        S.agentStatus.feature = 'done';
+        addBuildLog("🧩 [Feature Implementer AI] Semua fitur telah beroperasi penuh.", "success");
+        render();
+    };
+
+    const runContentSim = async () => {
+        S.agentStatus.content = 'running';
+        addBuildLog("📝 [Content Writer AI] Mempersiapkan koleksi konten markdown...", "agent");
+        await sleep(1500);
+        addBuildLog("📝 [Content Writer AI] Mengubah Lorem Ipsum menjadi copywriting SEO-friendly.", "info");
+        await sleep(1500);
+        const mdContent = `# Selamat Datang\n\nIni adalah konten asli.`;
+        S.virtualWorkspace['content/index.md'] = mdContent;
+        addBuildLog("Manufacturing module: content/index.md", "success");
+        S.agentStatus.content = 'done';
+        addBuildLog("📝 [Content Writer AI] Struktur konten selesai ditulis.", "success");
+        render();
+    };
+
+    await Promise.all([runFeatureSim(), runContentSim()]);
+    await sleep(2000);
+
+    // 🛡️ 🔐 ✨ 🧪 FASE 4: QA, SECURITY, POLISHER, TESTER (PARALEL)
     const runQaSim = async () => {
         S.agentStatus.qa = 'running';
         addBuildLog("🛡️ [QA Reviewer AI] Membaca file program. Memulai analisis statis...", "agent");
