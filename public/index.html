@@ -288,6 +288,7 @@ h1 em{font-style:normal;color:var(--accent);text-shadow:0 0 20px var(--accent-li
 
 /* nav */
 .nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+.nav-row .btn-group{display:flex;gap:8px;align-items:center}
 .btn{padding:10px 22px;border-radius:var(--r);font-family:var(--font);font-size:13px;
   font-weight:700;cursor:pointer;border:none;transition:all .15s;letter-spacing:.02em}
 .btn-back{background:var(--bg3);color:var(--text2);border:1.5px solid var(--border)}
@@ -1701,11 +1702,13 @@ function renderWizard(){
     <div id="q-body">${renderQBody(q)}</div>
   </div>
   <div class="nav-row">
-    <button class="btn btn-back" onclick="prevStep()" ${S.step===0?'style="visibility:hidden"':''}>← Kembali</button>
     <span class="step-info">${S.step+1} / ${total}</span>
-    ${isLast
-      ?`<button class="btn btn-generate ${gClass}" onclick="doGenerate()">✦ Generate Sekarang</button>`
-      :`<button class="btn btn-next ${gClass}" onclick="nextStep()">Lanjut →</button>`}
+    <div class="btn-group">
+      <button class="btn btn-back" onclick="prevStep()" ${S.step===0?'style="visibility:hidden"':''}>\u2190 Kembali</button>
+      ${isLast
+        ?`<button class="btn btn-generate ${gClass}" onclick="doGenerate()">\u2726 Generate Sekarang</button>`
+        :`<button class="btn btn-next ${gClass}" onclick="nextStep()">Lanjut \u2192</button>`}
+    </div>
   </div>`;
 }
 
@@ -4987,9 +4990,8 @@ setTimeout(updateNavAIBtn, 100);
 function openLivePreview() {
     const workspace = S.virtualWorkspace || {};
     let content = workspace['index.html'] || workspace['public/index.html'] || workspace['src/index.html'];
-    
+
     if (!content) {
-        // Try to find any HTML file
         const htmlFile = Object.keys(workspace).find(k => k.endsWith('.html'));
         if (htmlFile) content = workspace[htmlFile];
     }
@@ -5005,11 +5007,50 @@ function openLivePreview() {
         return;
     }
 
+    // ── Inject semua CSS dari virtual workspace sebagai <style> inline ──
+    let inlineStyles = '';
+    Object.keys(workspace).forEach(path => {
+        if (path.endsWith('.css')) {
+            inlineStyles += `\n<style>/* ${path} */\n${workspace[path]}\n</style>`;
+        }
+    });
+
+    // ── Inject semua JS dari virtual workspace sebagai <script> inline ──
+    // Kecualikan file config (vite.config, astro.config, dsb)
+    let inlineScripts = '';
+    const skipPatterns = [/vite\.config/, /astro\.config/, /tailwind\.config/, /postcss\.config/, /next\.config/];
+    Object.keys(workspace).forEach(path => {
+        if (path.endsWith('.js') || path.endsWith('.ts')) {
+            const skip = skipPatterns.some(p => p.test(path));
+            if (!skip) {
+                inlineScripts += `\n<script>/* ${path} */\n${workspace[path]}\n<\/script>`;
+            }
+        }
+    });
+
+    // ── Ganti referensi <link href="...css"> dengan versi inline ──
+    let finalContent = content
+        .replace(/<link[^>]+rel=["']stylesheet["'][^>]*>/gi, '')
+        .replace(/<script\s+src=["'][^"']*["'][^>]*><\/script>/gi, '');
+
+    // ── Sisipkan style & script tepat sebelum </head> atau </body> ──
+    if (inlineStyles) {
+        finalContent = finalContent.includes('</head>')
+            ? finalContent.replace('</head>', inlineStyles + '\n</head>')
+            : inlineStyles + finalContent;
+    }
+    if (inlineScripts) {
+        finalContent = finalContent.includes('</body>')
+            ? finalContent.replace('</body>', inlineScripts + '\n</body>')
+            : finalContent + inlineScripts;
+    }
+
     addBuildLog("Opening Live Preview in new tab...", "info");
-    const blob = new Blob([content], { type: 'text/html' });
+    const blob = new Blob([finalContent], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
 }
+
 
 function openGuidePanel(){
   if(document.getElementById('gdOverlay')) return;
