@@ -5007,7 +5007,11 @@ function openLivePreview() {
         return;
     }
 
-    // ── Inject semua CSS dari virtual workspace sebagai <style> inline ──
+    // ── Deteksi apakah sebuah JS content menggunakan ES Module ──
+    const isESModule = (code) => /^\s*(import\s|export\s)/m.test(code);
+
+    // ── Inject CSS dari virtual workspace sebagai <style> inline ──
+    // (CSS eksternal tidak bisa dimuat dari blob URL karena path relatif tidak berlaku)
     let inlineStyles = '';
     Object.keys(workspace).forEach(path => {
         if (path.endsWith('.css')) {
@@ -5015,31 +5019,55 @@ function openLivePreview() {
         }
     });
 
-    // ── Inject semua JS dari virtual workspace sebagai <script> inline ──
-    // Kecualikan file config (vite.config, astro.config, dsb)
-    let inlineScripts = '';
+    // ── Inject JS dari virtual workspace sebagai <script> inline ──
+    // Gunakan type="module" jika JS tersebut mengandung import/export
     const skipPatterns = [/vite\.config/, /astro\.config/, /tailwind\.config/, /postcss\.config/, /next\.config/];
+    let inlineScripts = '';
     Object.keys(workspace).forEach(path => {
         if (path.endsWith('.js') || path.endsWith('.ts')) {
             const skip = skipPatterns.some(p => p.test(path));
             if (!skip) {
-                inlineScripts += `\n<script>/* ${path} */\n${workspace[path]}\n<\/script>`;
+                const jsCode = workspace[path] || '';
+                const modType = isESModule(jsCode) ? ' type="module"' : '';
+                inlineScripts += `\n<script${modType}>/* ${path} */\n${jsCode}\n<\/script>`;
             }
         }
     });
 
-    // ── Ganti referensi <link href="...css"> dengan versi inline ──
-    let finalContent = content
-        .replace(/<link[^>]+rel=["']stylesheet["'][^>]*>/gi, '')
-        .replace(/<script\s+src=["'][^"']*["'][^>]*><\/script>/gi, '');
+    let finalContent = content;
 
-    // ── Sisipkan style & script tepat sebelum </head> atau </body> ──
+    // ── Hapus hanya <link stylesheet> karena CSS sudah di-inject inline ──
+    // Pertahankan <script src> yang sudah ada di HTML (jangan dihapus)
+    finalContent = finalContent.replace(/<link[^>]+rel=["']stylesheet["'][^>]*>/gi, '');
+
+    // ── Jika ada <script src="./xxx.js"> yang merujuk ke file dalam workspace,
+    //    ganti dengan inline script yang sudah benar type-nya ──
+    finalContent = finalContent.replace(/<script([^>]*)\s+src=["']([^"']+)["']([^>]*)><\/script>/gi, (match, pre, src, post) => {
+        // Normalisasi path: hapus ./ atau / di depan
+        const normalizedSrc = src.replace(/^\.?\//, '');
+        const jsCode = workspace[normalizedSrc] || workspace[src];
+        if (jsCode !== undefined) {
+            const existingAttrs = (pre + post).trim();
+            // Jika sudah ada type="module" atau JS-nya pakai import, pakai module
+            const needsModule = isESModule(jsCode) || /type=["']module["']/.test(existingAttrs);
+            const modAttr = needsModule ? ' type="module"' : '';
+            return `<script${modAttr}>/* ${normalizedSrc} */\n${jsCode}\n<\/script>`;
+        }
+        // Jika file tidak ada di workspace, biarkan tag aslinya
+        return match;
+    });
+
+    // ── Sisipkan style inline tepat sebelum </head> ──
     if (inlineStyles) {
         finalContent = finalContent.includes('</head>')
             ? finalContent.replace('</head>', inlineStyles + '\n</head>')
             : inlineStyles + finalContent;
     }
-    if (inlineScripts) {
+
+    // ── Sisipkan script inline tepat sebelum </body>
+    //    hanya jika tidak ada <script src> yang sudah di-resolve di atas ──
+    const hasExistingScripts = /<script[^>]*>[\s\S]*?<\/script>/i.test(finalContent);
+    if (inlineScripts && !hasExistingScripts) {
         finalContent = finalContent.includes('</body>')
             ? finalContent.replace('</body>', inlineScripts + '\n</body>')
             : finalContent + inlineScripts;
