@@ -5255,72 +5255,72 @@ function renderBuilderPanel(){
                     </div>
                     <div class="agent-cards-container">
                         <!-- Agent 1: Architect -->
-                        <div class="agent-card ${S.activeAgent === 'architect' ? 'agent-active-architect' : ''}" style="background: ${S.activeAgent === 'architect' ? 'rgba(0, 240, 255, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.activeAgent === 'architect' ? '#00f0ff' : S.agentStatus?.architect === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
-                            <div class="${S.activeAgent === 'architect' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'architect' ? 'drop-shadow(0 0 8px #00f0ff)' : 'none'}">📐</div>
+                        <div class="agent-card ${S.agentStatus?.architect === 'running' ? 'agent-active-architect' : ''}" style="background: ${S.agentStatus?.architect === 'running' ? 'rgba(0, 240, 255, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.architect === 'running' ? '#00f0ff' : S.agentStatus?.architect === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class=\"${S.agentStatus?.architect === 'running' ? 'agent-active-icon' : ''}\" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.architect === 'running' ? 'drop-shadow(0 0 8px #00f0ff)' : 'none'}">📐</div>
                             <div style="font-size: 12px; font-weight: 700; color: #fff;">Arsitek AI</div>
                             <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Architect Agent</div>
-                            <div style="font-size: 10px; color: ${S.activeAgent === 'architect' ? '#00f0ff' : S.agentStatus?.architect === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
-                                ${S.activeAgent === 'architect' ? '<span class="loading-text">🧠 Merancang</span>' : S.agentStatus?.architect === 'done' ? '✅ Masterplan OK' : '💤 Idle'}
+                            <div style="font-size: 10px; color: ${S.agentStatus?.architect === 'running' ? '#00f0ff' : S.agentStatus?.architect === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.architect === 'running' ? '<span class=\"loading-text\">🧠 Merancang</span>' : S.agentStatus?.architect === 'done' ? '✅ Masterplan OK' : '💤 Idle'}
                             </div>
                         </div>
 
                         <!-- Agent 2: Coder -->
-                        <div class="agent-card ${S.activeAgent === 'coder' ? 'agent-active-coder' : ''}" style="background: ${S.activeAgent === 'coder' ? 'rgba(190, 75, 219, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.activeAgent === 'coder' ? '#be4bdb' : S.agentStatus?.coder === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
-                            <div class="${S.activeAgent === 'coder' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'coder' ? 'drop-shadow(0 0 8px #be4bdb)' : 'none'}">💻</div>
+                        <div class="agent-card ${S.agentStatus?.coder === 'running' ? 'agent-active-coder' : ''}" style="background: ${S.agentStatus?.coder === 'running' ? 'rgba(190, 75, 219, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.coder === 'running' ? '#be4bdb' : S.agentStatus?.coder === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class=\"${S.agentStatus?.coder === 'running' ? 'agent-active-icon' : ''}\" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.coder === 'running' ? 'drop-shadow(0 0 8px #be4bdb)' : 'none'}">💻</div>
                             <div style="font-size: 12px; font-weight: 700; color: #fff;">Coder AI</div>
                             <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Developer Agent</div>
-                            <div style="font-size: 10px; color: ${S.activeAgent === 'coder' ? '#be4bdb' : S.agentStatus?.coder === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
-                                ${S.activeAgent === 'coder' ? '<span class="loading-text">✍️ Menulis Kode</span>' : S.agentStatus?.coder === 'done' ? '✅ Kode Ditulis' : '💤 Idle'}
+                            <div style="font-size: 10px; color: ${S.agentStatus?.coder === 'running' ? '#be4bdb' : S.agentStatus?.coder === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.coder === 'running' ? '<span class=\"loading-text\">✍️ Menulis Kode</span>' : S.agentStatus?.coder === 'done' ? '✅ Kode Ditulis' : '💤 Idle'}
                             </div>
                         </div>
 
                         <!-- Agent 3: QA Reviewer -->
-                        <div class="agent-card ${S.activeAgent === 'qa' ? 'agent-active-qa' : ''}" style="background: ${S.activeAgent === 'qa' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.activeAgent === 'qa' ? '#f59e0b' : S.agentStatus?.qa === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
-                            <div class="${S.activeAgent === 'qa' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'qa' ? 'drop-shadow(0 0 8px #f59e0b)' : 'none'}">🛡️</div>
+                        <div class="agent-card ${S.agentStatus?.qa === 'running' ? 'agent-active-qa' : ''}" style="background: ${S.agentStatus?.qa === 'running' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.qa === 'running' ? '#f59e0b' : S.agentStatus?.qa === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class=\"${S.agentStatus?.qa === 'running' ? 'agent-active-icon' : ''}\" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.qa === 'running' ? 'drop-shadow(0 0 8px #f59e0b)' : 'none'}">🛡️</div>
                             <div style="font-size: 12px; font-weight: 700; color: #fff;">QA Reviewer</div>
                             <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">QA Specialist</div>
-                            <div style="font-size: 10px; color: ${S.activeAgent === 'qa' ? '#f59e0b' : S.agentStatus?.qa === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
-                                ${S.activeAgent === 'qa' ? '<span class="loading-text">🛡️ Verifikasi</span>' : S.agentStatus?.qa === 'done' ? '✅ Kode Bersih' : '💤 Idle'}
+                            <div style="font-size: 10px; color: ${S.agentStatus?.qa === 'running' ? '#f59e0b' : S.agentStatus?.qa === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.qa === 'running' ? '<span class=\"loading-text\">🛡️ Verifikasi</span>' : S.agentStatus?.qa === 'done' ? '✅ Kode Bersih' : '💤 Idle'}
                             </div>
                         </div>
 
                         <!-- Agent 4: Security AI -->
-                        <div class="agent-card ${S.activeAgent === 'security' ? 'agent-active-security' : ''}" style="background: ${S.activeAgent === 'security' ? 'rgba(220, 38, 38, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.activeAgent === 'security' ? '#dc2626' : S.agentStatus?.security === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
-                            <div class="${S.activeAgent === 'security' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'security' ? 'drop-shadow(0 0 8px #dc2626)' : 'none'}">🔐</div>
+                        <div class="agent-card ${S.agentStatus?.security === 'running' ? 'agent-active-security' : ''}" style="background: ${S.agentStatus?.security === 'running' ? 'rgba(220, 38, 38, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.security === 'running' ? '#dc2626' : S.agentStatus?.security === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class=\"${S.agentStatus?.security === 'running' ? 'agent-active-icon' : ''}\" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.security === 'running' ? 'drop-shadow(0 0 8px #dc2626)' : 'none'}">🔐</div>
                             <div style="font-size: 12px; font-weight: 700; color: #fff;">Security AI</div>
                             <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Vuln Auditor</div>
-                            <div style="font-size: 10px; color: ${S.activeAgent === 'security' ? '#dc2626' : S.agentStatus?.security === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
-                                ${S.activeAgent === 'security' ? '<span class="loading-text">🔐 Audit</span>' : S.agentStatus?.security === 'done' ? '✅ 0 Vulns' : '💤 Idle'}
+                            <div style="font-size: 10px; color: ${S.agentStatus?.security === 'running' ? '#dc2626' : S.agentStatus?.security === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.security === 'running' ? '<span class=\"loading-text\">🔐 Audit</span>' : S.agentStatus?.security === 'done' ? '✅ 0 Vulns' : '💤 Idle'}
                             </div>
                         </div>
 
                         <!-- Agent 5: UX/Polisher AI -->
-                        <div class="agent-card ${S.activeAgent === 'polisher' ? 'agent-active-polisher' : ''}" style="background: ${S.activeAgent === 'polisher' ? 'rgba(236, 72, 153, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.activeAgent === 'polisher' ? '#ec4899' : S.agentStatus?.polisher === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
-                            <div class="${S.activeAgent === 'polisher' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'polisher' ? 'drop-shadow(0 0 8px #ec4899)' : 'none'}">🪄</div>
+                        <div class="agent-card ${S.agentStatus?.polisher === 'running' ? 'agent-active-polisher' : ''}" style="background: ${S.agentStatus?.polisher === 'running' ? 'rgba(236, 72, 153, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.polisher === 'running' ? '#ec4899' : S.agentStatus?.polisher === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class=\"${S.agentStatus?.polisher === 'running' ? 'agent-active-icon' : ''}\" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.polisher === 'running' ? 'drop-shadow(0 0 8px #ec4899)' : 'none'}">🪄</div>
                             <div style="font-size: 12px; font-weight: 700; color: #fff;">Polisher AI</div>
                             <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">UX Optimizer</div>
-                            <div style="font-size: 10px; color: ${S.activeAgent === 'polisher' ? '#ec4899' : S.agentStatus?.polisher === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
-                                ${S.activeAgent === 'polisher' ? '<span class="loading-text">🪄 Memoles UI</span>' : S.agentStatus?.polisher === 'done' ? '✅ UX Sempurna' : '💤 Idle'}
+                            <div style="font-size: 10px; color: ${S.agentStatus?.polisher === 'running' ? '#ec4899' : S.agentStatus?.polisher === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.polisher === 'running' ? '<span class=\"loading-text\">🪄 Memoles UI</span>' : S.agentStatus?.polisher === 'done' ? '✅ UX Sempurna' : '💤 Idle'}
                             </div>
                         </div>
 
                         <!-- Agent 6: Tester AI -->
-                        <div class="agent-card ${S.activeAgent === 'tester' ? 'agent-active-tester' : ''}" style="background: ${S.activeAgent === 'tester' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.activeAgent === 'tester' ? '#10b981' : S.agentStatus?.tester === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
-                            <div class="${S.activeAgent === 'tester' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'tester' ? 'drop-shadow(0 0 8px #10b981)' : 'none'}">🧪</div>
+                        <div class="agent-card ${S.agentStatus?.tester === 'running' ? 'agent-active-tester' : ''}" style="background: ${S.agentStatus?.tester === 'running' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.tester === 'running' ? '#10b981' : S.agentStatus?.tester === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class=\"${S.agentStatus?.tester === 'running' ? 'agent-active-icon' : ''}\" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.tester === 'running' ? 'drop-shadow(0 0 8px #10b981)' : 'none'}">🧪</div>
                             <div style="font-size: 12px; font-weight: 700; color: #fff;">Tester AI</div>
                             <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">E2E Testing</div>
-                            <div style="font-size: 10px; color: ${S.activeAgent === 'tester' ? '#10b981' : S.agentStatus?.tester === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
-                                ${S.activeAgent === 'tester' ? '<span class="loading-text">🧪 Simulasi</span>' : S.agentStatus?.tester === 'done' ? '✅ Lolos Test' : '💤 Idle'}
+                            <div style="font-size: 10px; color: ${S.agentStatus?.tester === 'running' ? '#10b981' : S.agentStatus?.tester === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.tester === 'running' ? '<span class=\"loading-text\">🧪 Simulasi</span>' : S.agentStatus?.tester === 'done' ? '✅ Lolos Test' : '💤 Idle'}
                             </div>
                         </div>
 
                         <!-- Agent 7: DevOps -->
-                        <div class="agent-card ${S.activeAgent === 'devops' ? 'agent-active-devops' : ''}" style="background: ${S.activeAgent === 'devops' ? 'rgba(244, 63, 94, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.activeAgent === 'devops' ? '#f43f5e' : S.agentStatus?.devops === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
-                            <div class="${S.activeAgent === 'devops' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.activeAgent === 'devops' ? 'drop-shadow(0 0 8px #f43f5e)' : 'none'}">🚀</div>
+                        <div class="agent-card ${S.agentStatus?.devops === 'running' ? 'agent-active-devops' : ''}" style="background: ${S.agentStatus?.devops === 'running' ? 'rgba(244, 63, 94, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.devops === 'running' ? '#f43f5e' : S.agentStatus?.devops === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class=\"${S.agentStatus?.devops === 'running' ? 'agent-active-icon' : ''}\" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.devops === 'running' ? 'drop-shadow(0 0 8px #f43f5e)' : 'none'}">🚀</div>
                             <div style="font-size: 12px; font-weight: 700; color: #fff;">DevOps AI</div>
                             <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Deployment Agent</div>
-                            <div style="font-size: 10px; color: ${S.activeAgent === 'devops' ? '#f43f5e' : S.agentStatus?.devops === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
-                                ${S.activeAgent === 'devops' ? '<span class="loading-text">⚙️ Deployment</span>' : S.agentStatus?.devops === 'done' ? '✅ Siap Deploy' : '💤 Idle'}
+                            <div style="font-size: 10px; color: ${S.agentStatus?.devops === 'running' ? '#f43f5e' : S.agentStatus?.devops === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.devops === 'running' ? '<span class=\"loading-text\">⚙️ Deployment</span>' : S.agentStatus?.devops === 'done' ? '✅ Siap Deploy' : '💤 Idle'}
                             </div>
                         </div>
                     </div>
@@ -5514,10 +5514,8 @@ Lakukan perubahan yang diperlukan agar hasil sesuai dengan permintaan user di at
 
 async function runAutonomousLoop(){
     const g = S.generated || {};
-    let iteration = 0;
     
     // 📐 FASE 1: ARSITEK AI
-    S.activeAgent = 'architect';
     S.agentStatus.architect = 'running';
     addBuildLog("📐 [Arsitek AI] Memulai analisis kebutuhan proyek dan perancangan cetak biru arsitektur...", "agent");
     render();
@@ -5547,156 +5545,87 @@ FORMAT RESPONS (Valid JSON):
     render();
     await sleep(1500);
 
-    // 💻 FASE 2: CODER AI
-    S.activeAgent = 'coder';
-    S.agentStatus.coder = 'running';
-    addBuildLog("💻 [Coder AI] Mengimpor blueprint arsitektur. Mulai menulis berkas kode utama secara modular...", "agent");
-    render();
-    await sleep(1000);
+    // 💻 & 🚀 FASE 2: CODER AI & DEVOPS AI (PARALEL)
+    const runCoder = async () => {
+        S.agentStatus.coder = 'running';
+        addBuildLog("💻 [Coder AI] Mengimpor blueprint arsitektur. Mulai menulis berkas kode utama secara modular...", "agent");
+        render();
+        await sleep(1000);
+        const coderPrompt = `Role: SENIOR DEVELOPER AGENT.\nProject: ${g.name || 'Proyek'} (${S.mode})\nDescription: ${S.answers.projectName || ''}\nMasterplan: ${S.virtualWorkspace['MASTERPLAN.md'] || ''}\nTech Stack: ${g.fe || g.fw || ''} | ${g.be || ''} | ${g.db || ''}\n\nTUGAS: Tulis file kode program utama yang fungsional (misal index.html, app.js, src/main.py, dsb) sesuai dengan Masterplan. Kode harus lengkap tanpa placeholder.\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Writing core codebase modules...", "Implementing routing logic..."],\n  "files": [\n    {"path": "index.html", "content": "<!DOCTYPE html><html><head><title>${g.name || 'Web'}</title></head><body><h1>Selamat datang di ${g.name || 'Aplikasi'}</h1></body></html>"}\n  ]\n}`;
+        await processBuildStep("Kamu adalah SENIOR PROFESSIONAL DEVELOPER AGENT.", coderPrompt);
+        S.agentStatus.coder = 'done';
+        addBuildLog("💻 [Coder AI] File program utama selesai ditulis.", "success");
+        render();
+    };
 
-    const coderPrompt = `Role: SENIOR DEVELOPER AGENT.
-Project: ${g.name || 'Proyek'} (${S.mode})
-Description: ${S.answers.projectName || ''}
-Masterplan: ${S.virtualWorkspace['MASTERPLAN.md'] || ''}
-Tech Stack: ${g.fe || g.fw || ''} | ${g.be || ''} | ${g.db || ''}
+    const runDevops = async () => {
+        S.agentStatus.devops = 'running';
+        addBuildLog("🚀 [DevOps AI] Mempersiapkan konfigurasi deployment dan berkas README.md...", "agent");
+        render();
+        await sleep(1000);
+        const devopsPrompt = `Role: DEVOPS SPECIALIST.\nProject: ${g.name || 'Proyek'}\nTUGAS: Buat file vercel.json (atau Dockerfile/config lain) dan README.md yang sangat lengkap dan profesional dalam Bahasa Indonesia.\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Configuring deployment manifests...", "Generating final project documentation..."],\n  "files": [\n    {"path": "vercel.json", "content": "{\\n  \\"version\\": 2\\n}"},\n    {"path": "README.md", "content": "# ${g.name || 'Proyek'}\\n\\n[Panduan Instalasi]"}\n  ]\n}`;
+        await processBuildStep("Kamu adalah DEVOPS SPECIALIST.", devopsPrompt);
+        S.agentStatus.devops = 'done';
+        addBuildLog("🚀 [DevOps AI] File deployment dan README.md berhasil dipersiapkan.", "success");
+        render();
+    };
 
-TUGAS: Tulis file kode program utama yang fungsional (misal index.html, app.js, src/main.py, dsb) sesuai dengan Masterplan. Kode harus lengkap tanpa placeholder.
-
-FORMAT RESPONS (Valid JSON):
-{
-  "logs": ["Writing core codebase modules...", "Implementing routing logic..."],
-  "files": [
-    {"path": "index.html", "content": "<!DOCTYPE html><html><head><title>${g.name || 'Web'}</title></head><body><h1>Selamat datang di ${g.name || 'Aplikasi'}</h1></body></html>"}
-  ]
-}`;
-    
-    await processBuildStep("Kamu adalah SENIOR PROFESSIONAL DEVELOPER AGENT.", coderPrompt);
-    S.agentStatus.coder = 'done';
-    addBuildLog("💻 [Coder AI] File program utama selesai ditulis.", "success");
-    render();
+    await Promise.all([runCoder(), runDevops()]);
     await sleep(1500);
 
-    // 🛡️ FASE 3: QA REVIEWER AI
-    S.activeAgent = 'qa';
-    S.agentStatus.qa = 'running';
-    addBuildLog("🛡️ [QA Reviewer AI] Melakukan audit kode statis dan pengujian kompatibilitas...", "agent");
-    render();
-    await sleep(1000);
-
+    // 🛡️ 🔐 ✨ 🧪 FASE 3: QA, SECURITY, POLISHER, TESTER (PARALEL)
     const workspaceFiles = Object.keys(S.virtualWorkspace).join(", ");
-    const qaPrompt = `Role: QA REVIEWER AGENT.
-Project: ${g.name || 'Proyek'}
-Konteks Workspace: [${workspaceFiles}]
-TUGAS: Analisis kode yang telah ditulis oleh Coder AI. Periksa bug, import yang salah, sintaks error, atau ketidaksesuaian fungsionalitas. Berikan perbaikan jika perlu atau setujui kode.
+    
+    const runQa = async () => {
+        S.agentStatus.qa = 'running';
+        addBuildLog("🛡️ [QA Reviewer AI] Melakukan audit kode statis dan pengujian kompatibilitas...", "agent");
+        render();
+        await sleep(1000);
+        const qaPrompt = `Role: QA REVIEWER AGENT.\nProject: ${g.name || 'Proyek'}\nKonteks Workspace: [${workspaceFiles}]\nTUGAS: Analisis kode yang telah ditulis oleh Coder AI. Periksa bug, import yang salah, sintaks error, atau ketidaksesuaian fungsionalitas. Berikan perbaikan jika perlu atau setujui kode.\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Running automated syntax checking...", "Evaluating integrity checks... All green."],\n  "files": []\n}`;
+        await processBuildStep("Kamu adalah QA REVIEWER AGENT.", qaPrompt);
+        S.agentStatus.qa = 'done';
+        addBuildLog("🛡️ [QA Reviewer AI] Hasil audit: Lulus 100%. Kode program aman dan efisien.", "success");
+        render();
+    };
 
-FORMAT RESPONS (Valid JSON):
-{
-  "logs": ["Running automated syntax checking...", "Evaluating integrity checks... All green."],
-  "files": []
-}`;
+    const runSecurity = async () => {
+        S.agentStatus.security = 'running';
+        addBuildLog("🔐 [Security AI] Mengaudit keseluruhan kode. Mencari celah keamanan XSS & SQL Injection...", "agent");
+        render();
+        await sleep(1000);
+        const secPrompt = `Role: SECURITY AUDITOR.\nProject: ${g.name || 'Proyek'}\nKonteks Workspace: [${workspaceFiles}]\nTUGAS: Analisis kode dari Coder AI. Pastikan aman dari kerentanan. Tulis file konfigurasi keamanan, atau perbarui file yang sudah ada jika perlu. Jika semua sudah aman, outputkan log saja tanpa modifikasi file.\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Auditing dependencies...", "Enforcing strict Content-Security-Policy... All Clear."],\n  "files": []\n}`;
+        await processBuildStep("Kamu adalah SECURITY AUDITOR.", secPrompt);
+        S.agentStatus.security = 'done';
+        addBuildLog("🔐 [Security AI] Audit selesai. Kode terjamin aman.", "success");
+        render();
+    };
 
-    await processBuildStep("Kamu adalah QA REVIEWER AGENT.", qaPrompt);
-    S.agentStatus.qa = 'done';
-    addBuildLog("🛡️ [QA Reviewer AI] Hasil audit: Lulus 100%. Kode program aman dan efisien.", "success");
-    render();
+    const runPolisher = async () => {
+        S.agentStatus.polisher = 'running';
+        addBuildLog("✨ [Polisher AI] Memperhalus UI/UX, menambahkan animasi, dan memastikan desain premium...", "agent");
+        render();
+        await sleep(1000);
+        const polisherPrompt = `Role: UX/UI POLISHER.\nProject: ${g.name || 'Proyek'}\nKonteks Workspace: [${workspaceFiles}]\nTUGAS: Perbaiki file CSS/HTML/JS yang sudah ada. Jika ada file CSS, berikan warna yang harmonis, transisi halus, dan animasi micro-interactions.\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Injecting micro-animations...", "Refining color palette contrast..."],\n  "files": []\n}`;
+        await processBuildStep("Kamu adalah UX/UI POLISHER.", polisherPrompt);
+        S.agentStatus.polisher = 'done';
+        addBuildLog("✨ [Polisher AI] Desain telah disempurnakan menjadi kelas dunia.", "success");
+        render();
+    };
+
+    const runTester = async () => {
+        S.agentStatus.tester = 'running';
+        addBuildLog("🧪 [Tester AI] Menulis dan menjalankan unit test (E2E) simulasi...", "agent");
+        render();
+        await sleep(1000);
+        const testerPrompt = `Role: E2E TEST ENGINEER.\nProject: ${g.name || 'Proyek'}\nKonteks Workspace: [${workspaceFiles}]\nTUGAS: Buat file testing dasar (misal test.js) yang memvalidasi logika inti dari proyek ini.\n\nFORMAT RESPONS (Valid JSON):\n{\n  "logs": ["Mocking user interactions...", "Validating component rendering... All tests passed."],\n  "files": [\n    {"path": "tests/app.test.js", "content": "// Test Suite"}\n  ]\n}`;
+        await processBuildStep("Kamu adalah E2E TEST ENGINEER.", testerPrompt);
+        S.agentStatus.tester = 'done';
+        addBuildLog("🧪 [Tester AI] Validasi kualitas lulus tanpa cela.", "success");
+        render();
+    };
+
+    await Promise.all([runQa(), runSecurity(), runPolisher(), runTester()]);
     await sleep(1500);
-
-    // 🔐 FASE 4: SECURITY AI
-    S.activeAgent = 'security';
-    S.agentStatus.security = 'running';
-    addBuildLog("🔐 [Security AI] Mengaudit keseluruhan kode. Mencari celah keamanan XSS & SQL Injection...", "agent");
-    render();
-    await sleep(1000);
-
-    const secPrompt = `Role: SECURITY AUDITOR.
-Project: ${g.name || 'Proyek'}
-Konteks Workspace: [${workspaceFiles}]
-TUGAS: Analisis kode dari Coder AI. Pastikan aman dari kerentanan. Tulis file konfigurasi keamanan, atau perbarui file yang sudah ada jika perlu. Jika semua sudah aman, outputkan log saja tanpa modifikasi file.
-
-FORMAT RESPONS (Valid JSON):
-{
-  "logs": ["Auditing dependencies...", "Enforcing strict Content-Security-Policy... All Clear."],
-  "files": []
-}`;
-    await processBuildStep("Kamu adalah SECURITY AUDITOR.", secPrompt);
-    S.agentStatus.security = 'done';
-    addBuildLog("🔐 [Security AI] Audit selesai. Kode terjamin aman.", "success");
-    render();
-    await sleep(1500);
-
-    // ✨ FASE 5: POLISHER AI
-    S.activeAgent = 'polisher';
-    S.agentStatus.polisher = 'running';
-    addBuildLog("✨ [Polisher AI] Memperhalus UI/UX, menambahkan animasi, dan memastikan desain premium...", "agent");
-    render();
-    await sleep(1000);
-
-    const polisherPrompt = `Role: UX/UI POLISHER.
-Project: ${g.name || 'Proyek'}
-Konteks Workspace: [${workspaceFiles}]
-TUGAS: Perbaiki file CSS/HTML/JS yang sudah ada. Jika ada file CSS, berikan warna yang harmonis, transisi halus, dan animasi micro-interactions.
-
-FORMAT RESPONS (Valid JSON):
-{
-  "logs": ["Injecting micro-animations...", "Refining color palette contrast..."],
-  "files": []
-}`;
-    await processBuildStep("Kamu adalah UX/UI POLISHER.", polisherPrompt);
-    S.agentStatus.polisher = 'done';
-    addBuildLog("✨ [Polisher AI] Desain telah disempurnakan menjadi kelas dunia.", "success");
-    render();
-    await sleep(1500);
-
-    // 🧪 FASE 6: TESTER AI
-    S.activeAgent = 'tester';
-    S.agentStatus.tester = 'running';
-    addBuildLog("🧪 [Tester AI] Menulis dan menjalankan unit test (E2E) simulasi...", "agent");
-    render();
-    await sleep(1000);
-
-    const testerPrompt = `Role: E2E TEST ENGINEER.
-Project: ${g.name || 'Proyek'}
-Konteks Workspace: [${workspaceFiles}]
-TUGAS: Buat file testing dasar (misal test.js) yang memvalidasi logika inti dari proyek ini.
-
-FORMAT RESPONS (Valid JSON):
-{
-  "logs": ["Mocking user interactions...", "Validating component rendering... All tests passed."],
-  "files": [
-    {"path": "tests/app.test.js", "content": "// Test Suite"}
-  ]
-}`;
-    await processBuildStep("Kamu adalah E2E TEST ENGINEER.", testerPrompt);
-    S.agentStatus.tester = 'done';
-    addBuildLog("🧪 [Tester AI] Validasi kualitas lulus tanpa cela.", "success");
-    render();
-    await sleep(1500);
-
-    // 🚀 FASE 7: DEVOPS AI
-    S.activeAgent = 'devops';
-    S.agentStatus.devops = 'running';
-    addBuildLog("🚀 [DevOps AI] Mempersiapkan konfigurasi deployment dan berkas README.md...", "agent");
-    render();
-    await sleep(1000);
-
-    const devopsPrompt = `Role: DEVOPS SPECIALIST.
-Project: ${g.name || 'Proyek'}
-TUGAS: Buat file vercel.json (atau Dockerfile/config lain) dan README.md yang sangat lengkap dan profesional dalam Bahasa Indonesia.
-
-FORMAT RESPONS (Valid JSON):
-{
-  "logs": ["Configuring deployment manifests...", "Generating final project documentation..."],
-  "files": [
-    {"path": "vercel.json", "content": "{\\n  \\"version\\": 2\\n}"},
-    {"path": "README.md", "content": "# ${g.name || 'Proyek'}\\n\\n[Panduan Instalasi]"}
-  ]
-}`;
-
-    await processBuildStep("Kamu adalah DEVOPS SPECIALIST.", devopsPrompt);
-    S.agentStatus.devops = 'done';
-    addBuildLog("🚀 [DevOps AI] File deployment dan README.md berhasil dipersiapkan.", "success");
-    render();
-    await sleep(1000);
 
     S.activeAgent = null;
     S.building = false;
@@ -5712,7 +5641,6 @@ async function runSimulationLoop(){
     const db = g.db || 'SQLite';
     
     // 📐 FASE 1: ARSITEK AI
-    S.activeAgent = 'architect';
     S.agentStatus.architect = 'running';
     addBuildLog("📐 [Arsitek AI] Memulai perancangan arsitektur untuk proyek: " + name + "...", "agent");
     await sleep(2000);
@@ -5773,7 +5701,6 @@ API_KEY=your_api_key_here
     await sleep(2000);
 
     // 💻 FASE 2: CODER AI
-    S.activeAgent = 'coder';
     S.agentStatus.coder = 'running';
     addBuildLog("💻 [Coder AI] Menerima Masterplan. Memulai penulisan modul kode utama...", "agent");
     await sleep(2000);
@@ -6446,136 +6373,81 @@ console.log("Application initialized successfully.");`;
     render();
     await sleep(2000);
 
-    // 🛡️ FASE 3: QA REVIEWER AI
-    S.activeAgent = 'qa';
-    S.agentStatus.qa = 'running';
-    addBuildLog("🛡️ [QA Reviewer AI] Membaca file program. Memulai analisis statis...", "agent");
-    await sleep(1500);
-    
-    addBuildLog("🛡️ [QA Reviewer AI] Memvalidasi kompatibilitas tag script dan framework. Memastikan tidak ada placeholder.", "info");
-    await sleep(1500);
-    
-    addBuildLog("🛡️ [QA Reviewer AI] Hasil pengujian unit: PASS (12/12 test case sukses).", "success");
-    S.agentStatus.qa = 'done';
-    addBuildLog("🛡️ [QA Reviewer AI] Kode berhasil diverifikasi dan disetujui untuk production.", "success");
-    render();
+    // 🛡️ 🔐 ✨ 🧪 FASE 3: QA, SECURITY, POLISHER, TESTER (PARALEL)
+    const runQaSim = async () => {
+        S.agentStatus.qa = 'running';
+        addBuildLog("🛡️ [QA Reviewer AI] Membaca file program. Memulai analisis statis...", "agent");
+        await sleep(1500);
+        addBuildLog("🛡️ [QA Reviewer AI] Memvalidasi kompatibilitas tag script dan framework. Memastikan tidak ada placeholder.", "info");
+        await sleep(1500);
+        addBuildLog("🛡️ [QA Reviewer AI] Hasil pengujian unit: PASS (12/12 test case sukses).", "success");
+        S.agentStatus.qa = 'done';
+        addBuildLog("🛡️ [QA Reviewer AI] Kode berhasil diverifikasi dan disetujui untuk production.", "success");
+        render();
+    };
+
+    const runSecuritySim = async () => {
+        S.agentStatus.security = 'running';
+        addBuildLog("🔐 [Security AI] Mengaudit keseluruhan kode. Mencari celah keamanan XSS & SQL Injection...", "agent");
+        render();
+        await sleep(2000);
+        addBuildLog("🔐 [Security AI] Menambahkan header keamanan (Helmet, CSP) dan sanitasi input.", "info");
+        await sleep(1500);
+        const secHeadersContent = `// SECURITY HEADERS & MIDDLEWARE\n// Generated by DevForge Security AI\n// Zero-Vulnerability Guarantee\nexport const securityConfig = {\n  contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;",\n  xFrameOptions: "DENY",\n  xXssProtection: "1; mode=block",\n  strictTransportSecurity: "max-age=31536000; includeSubDomains"\n};\n`;
+        S.virtualWorkspace['src/security.config.js'] = secHeadersContent;
+        addBuildLog("Manufacturing module: src/security.config.js", "success");
+        S.agentStatus.security = 'done';
+        addBuildLog("🔐 [Security AI] Audit selesai. Vulnerability = 0.", "success");
+        render();
+    };
+
+    const runPolisherSim = async () => {
+        S.agentStatus.polisher = 'running';
+        addBuildLog("🪄 [Polisher AI] Memoles UI/UX dan memeriksa fungsionalitas fitur...", "agent");
+        render();
+        await sleep(2000);
+        addBuildLog("🪄 [Polisher AI] Memperbaiki dead-links, memastikan animasi 60fps, dan interaksi tombol 100% jalan.", "info");
+        await sleep(1500);
+        S.agentStatus.polisher = 'done';
+        addBuildLog("🪄 [Polisher AI] Penyempurnaan aplikasi selesai. Pengalaman pengguna telah dioptimalkan.", "success");
+        render();
+    };
+
+    const runTesterSim = async () => {
+        S.agentStatus.tester = 'running';
+        addBuildLog("🧪 [Tester AI] Melakukan End-to-End Testing (E2E) dan stress test otomatis...", "agent");
+        render();
+        await sleep(2000);
+        addBuildLog("🧪 [Tester AI] Menulis dan menjalankan skenario Playwright/Cypress di memory virtual...", "info");
+        await sleep(1500);
+        const testContent = `// END-TO-END TEST SUITE\n// Generated by DevForge Tester AI\n\ndescribe('Aplikasi Utama', () => {\n  it('seharusnya memuat beranda dengan benar tanpa error', () => {\n    // Simulasi klik navigasi\n  });\n  \n  it('seharusnya menangani input form dengan validasi yang benar', () => {\n    // Simulasi pengisian formulir\n  });\n  \n  // 12 test case tambahan berhasil dilewati\n});\n`;
+        S.virtualWorkspace['tests/e2e/app.spec.js'] = testContent;
+        addBuildLog("Manufacturing module: tests/e2e/app.spec.js", "success");
+        S.agentStatus.tester = 'done';
+        addBuildLog("🧪 [Tester AI] E2E Testing selesai. 14/14 Skenario berhasil lulus uji.", "success");
+        render();
+    };
+
+    const runDevopsSim = async () => {
+        S.agentStatus.devops = 'running';
+        addBuildLog("🚀 [DevOps AI] Mempersiapkan konfigurasi deployment dan berkas README.md...", "agent");
+        render();
+        await sleep(1500);
+        const vercelJsonContent = `{\n  "version": 2,\n  "builds": [\n    { "src": "index.html", "use": "@vercel/static" }\n  ],\n  "routes": [\n    { "src": "/(.*)", "dest": "/index.html" }\n  ]\n}`;
+        const readmeContent = `# ${g.name || 'Proyek'}\n\nProyek ini dibangun secara otonom oleh **DevForge Studio Multi-Agent Orchestration v3.0**.\n\n## Fitur Proyek\n- **Arsitektur Modular:** Kode bersih dan rapi.\n- **Tampilan Premium:** Menggunakan modern CSS Glassmorphism dan Canvas Particle Animation.\n- **Konsol Simulator Agen:** Panel terminal mini interaktif di dalam aplikasi.\n\n## Cara Menjalankan\n1. Ekstrak ZIP proyek.\n2. Buka berkas \\`index.html\\` langsung di browser Anda.\n3. ATAU jalankan dengan server lokal:\n   \\`\\`\\`bash\n   npm install\n   npm run dev\n   \\`\\`\\`\n\n## Pengembang\n- **DevForge Studio Otonom Multi-Agent** (Arsitek AI, Coder AI, QA Reviewer AI, DevOps AI)`;
+        S.virtualWorkspace['vercel.json'] = vercelJsonContent;
+        S.virtualWorkspace['README.md'] = readmeContent;
+        addBuildLog("Manufacturing module: vercel.json", "success");
+        addBuildLog("Manufacturing module: README.md", "success");
+        S.agentStatus.devops = 'done';
+        addBuildLog("🚀 [DevOps AI] Berkas deployment dan README.md berhasil ditulis.", "success");
+        render();
+    };
+
+    await Promise.all([runQaSim(), runSecuritySim(), runPolisherSim(), runTesterSim(), runDevopsSim()]);
     await sleep(2000);
 
-    // 🔐 FASE 4: SECURITY AI
-    S.activeAgent = 'security';
-    S.agentStatus.security = 'running';
-    addBuildLog("🔐 [Security AI] Mengaudit keseluruhan kode. Mencari celah keamanan XSS & SQL Injection...", "agent");
-    render();
-    await sleep(2000);
-    addBuildLog("🔐 [Security AI] Menambahkan header keamanan (Helmet, CSP) dan sanitasi input.", "info");
-    await sleep(1500);
-    const secHeadersContent = `// SECURITY HEADERS & MIDDLEWARE
-// Generated by DevForge Security AI
-// Zero-Vulnerability Guarantee
-export const securityConfig = {
-  contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;",
-  xFrameOptions: "DENY",
-  xXssProtection: "1; mode=block",
-  strictTransportSecurity: "max-age=31536000; includeSubDomains"
-};
-`;
-    S.virtualWorkspace['src/security.config.js'] = secHeadersContent;
-    addBuildLog("Manufacturing module: src/security.config.js", "success");
-    S.agentStatus.security = 'done';
-    addBuildLog("🔐 [Security AI] Audit selesai. Vulnerability = 0.", "success");
-    render();
-    await sleep(2000);
-
-    // 🪄 FASE 5: POLISHER AI
-    S.activeAgent = 'polisher';
-    S.agentStatus.polisher = 'running';
-    addBuildLog("🪄 [Polisher AI] Memoles UI/UX dan memeriksa fungsionalitas fitur...", "agent");
-    render();
-    await sleep(2000);
-    addBuildLog("🪄 [Polisher AI] Memperbaiki dead-links, memastikan animasi 60fps, dan interaksi tombol 100% jalan.", "info");
-    await sleep(1500);
-    S.agentStatus.polisher = 'done';
-    addBuildLog("🪄 [Polisher AI] Penyempurnaan aplikasi selesai. Pengalaman pengguna telah dioptimalkan.", "success");
-    render();
-    await sleep(2000);
-
-    // 🧪 FASE 6: TESTER AI
-    S.activeAgent = 'tester';
-    S.agentStatus.tester = 'running';
-    addBuildLog("🧪 [Tester AI] Melakukan End-to-End Testing (E2E) dan stress test otomatis...", "agent");
-    render();
-    await sleep(2000);
-    addBuildLog("🧪 [Tester AI] Menulis dan menjalankan skenario Playwright/Cypress di memory virtual...", "info");
-    await sleep(1500);
-    const testContent = `// END-TO-END TEST SUITE
-// Generated by DevForge Tester AI
-
-describe('Aplikasi Utama', () => {
-  it('seharusnya memuat beranda dengan benar tanpa error', () => {
-    // Simulasi klik navigasi
-  });
-  
-  it('seharusnya menangani input form dengan validasi yang benar', () => {
-    // Simulasi pengisian formulir
-  });
-  
-  // 12 test case tambahan berhasil dilewati
-});
-`;
-    S.virtualWorkspace['tests/e2e/app.spec.js'] = testContent;
-    addBuildLog("Manufacturing module: tests/e2e/app.spec.js", "success");
-    S.agentStatus.tester = 'done';
-    addBuildLog("🧪 [Tester AI] E2E Testing selesai. 14/14 Skenario berhasil lulus uji.", "success");
-    render();
-    await sleep(2000);
-
-    // 🚀 FASE 7: DEVOPS AI
-    S.activeAgent = 'devops';
-    S.agentStatus.devops = 'running';
-    addBuildLog("🚀 [DevOps AI] Mempersiapkan konfigurasi deployment dan berkas README.md...", "agent");
-    await sleep(1500);
-
-    const vercelJsonContent = `{
-  "version": 2,
-  "builds": [
-    { "src": "index.html", "use": "@vercel/static" }
-  ],
-  "routes": [
-    { "src": "/(.*)", "dest": "/index.html" }
-  ]
-}`;
-
-    const readmeContent = `# ${g.name || 'Proyek'}
-
-Proyek ini dibangun secara otonom oleh **DevForge Studio Multi-Agent Orchestration v3.0**.
-
-## Fitur Proyek
-- **Arsitektur Modular:** Kode bersih dan rapi.
-- **Tampilan Premium:** Menggunakan modern CSS Glassmorphism dan Canvas Particle Animation.
-- **Konsol Simulator Agen:** Panel terminal mini interaktif di dalam aplikasi.
-
-## Cara Menjalankan
-1. Ekstrak ZIP proyek.
-2. Buka berkas \`index.html\` langsung di browser Anda.
-3. ATAU jalankan dengan server lokal:
-   \`\`\`bash
-   npm install
-   npm run dev
-   \`\`\`
-
-## Pengembang
-- **DevForge Studio Otonom Multi-Agent** (Arsitek AI, Coder AI, QA Reviewer AI, DevOps AI)`;
-
-    S.virtualWorkspace['vercel.json'] = vercelJsonContent;
-    S.virtualWorkspace['README.md'] = readmeContent;
-    addBuildLog("Manufacturing module: vercel.json", "success");
-    addBuildLog("Manufacturing module: README.md", "success");
-
-    S.agentStatus.devops = 'done';
-    addBuildLog("🚀 [DevOps AI] Berkas deployment dan README.md berhasil ditulis.", "success");
-    render();
-    await sleep(1500);
-
+    // SELESAI
     // SELESAI
     S.activeAgent = null;
     S.building = false;
