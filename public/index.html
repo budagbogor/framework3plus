@@ -3394,7 +3394,9 @@ function virtualWorkspaceToTree(workspace) {
 
 async function execTerminalCmd(cmd) {
     if (S.building) {
-        addBuildLog("⚠️ Tunggu hingga AI selesai membangun proyek terlebih dahulu.", "amber");
+        const msg = "⚠️ Tunggu hingga AI selesai membangun proyek terlebih dahulu.";
+        addBuildLog(msg, "amber");
+        alert(msg);
         return;
     }
 
@@ -3402,7 +3404,9 @@ async function execTerminalCmd(cmd) {
 
     if (cmd === 'install') {
         if (!hasFiles) {
-            addBuildLog("❌ Virtual workspace masih kosong. Jalankan pembangunan otonom terlebih dahulu.", "error");
+            const msg = "❌ Virtual workspace masih kosong. Jalankan pembangunan otonom terlebih dahulu.";
+            addBuildLog(msg, "error");
+            alert(msg);
             return;
         }
 
@@ -3421,12 +3425,17 @@ async function execTerminalCmd(cmd) {
                 addBuildLog("💡 Klik '🚀 dev' untuk memulai server lokal.", "info");
                 render();
             } catch (err) {
-                addBuildLog(`❌ Error eksekusi: ${err}`, "error");
+                const msg = `❌ Error eksekusi: ${err}`;
+                addBuildLog(msg, "error");
+                alert(msg);
             }
         } else {
             addBuildLog("📦 Inisialisasi Environment WebContainer...", "agent");
             const wc = await initWebContainer();
-            if (!wc) return;
+            if (!wc) {
+                alert("❌ Gagal memuat WebContainer API. Pastikan browser Anda mendukung fitur ini.");
+                return;
+            }
             
             addBuildLog("⚙️  Menulis file ke dalam memori browser...", "info");
             const tree = virtualWorkspaceToTree(S.virtualWorkspace);
@@ -3443,7 +3452,9 @@ async function execTerminalCmd(cmd) {
             
             const exitCode = await installProcess.exit;
             if (exitCode !== 0) {
-                addBuildLog("❌ Instalasi gagal.", "error");
+                const msg = "❌ Instalasi gagal. Silakan cek log terminal.";
+                addBuildLog(msg, "error");
+                alert(msg);
             } else {
                 addBuildLog("✅ Instalasi selesai dengan sukses.", "success");
                 addBuildLog("💡 Klik '🚀 dev' untuk memulai server lokal.", "info");
@@ -3454,16 +3465,24 @@ async function execTerminalCmd(cmd) {
 
     } else if (cmd === 'dev') {
         if (!hasFiles) {
-            addBuildLog("❌ Virtual workspace masih kosong. Jalankan pembangunan otonom terlebih dahulu.", "error");
+            const msg = "❌ Virtual workspace masih kosong. Jalankan pembangunan otonom terlebih dahulu.";
+            addBuildLog(msg, "error");
+            alert(msg);
             return;
         }
         if (!S.isInstalled) {
-            addBuildLog("⚠️ Jalankan 'install' terlebih dahulu!", "amber");
+            const msg = "⚠️ Jalankan 'install' terlebih dahulu!";
+            addBuildLog(msg, "amber");
+            alert(msg);
             return;
         }
         if (S.isDevRunning) {
             addBuildLog("ℹ️ Dev server sudah berjalan. Klik '🌐 Preview' untuk membukanya.", "info");
-            if (window.webcontainerUrl) openLivePreview(window.webcontainerUrl);
+            if (window.webcontainerUrl) {
+                openLivePreview(window.webcontainerUrl);
+            } else {
+                alert("⏳ Server sedang booting. Harap tunggu tulisan 'Dev server siap!' di terminal.");
+            }
             return;
         }
 
@@ -5213,14 +5232,20 @@ function openLivePreview(urlOverride, forceNewTab = false) {
     // Cegah fallback blob jika workspace punya package.json (butuh WebContainer)
     if (workspace['package.json']) {
         if (!S.isInstalled) {
-            addBuildLog("Proyek ini menggunakan Node.js/React. Silakan klik tombol '📦 install' terlebih dahulu, lalu klik '🚀 dev'.", "amber");
+            const msg = "Proyek ini menggunakan Node.js/React. Silakan klik tombol '📦 install' terlebih dahulu, lalu klik '🚀 dev'.";
+            addBuildLog(msg, "amber");
+            alert(msg);
             return;
         }
         if (!S.isDevRunning) {
-            addBuildLog("Silakan klik tombol '🚀 dev' untuk menyalakan server.", "amber");
+            const msg = "Silakan klik tombol '🚀 dev' untuk menyalakan server.";
+            addBuildLog(msg, "amber");
+            alert(msg);
             return;
         }
-        addBuildLog("Server sedang memulai... Harap tunggu hingga muncul log 'Dev server siap' sebelum membuka Preview.", "info");
+        const msg = "Server sedang memulai... Harap tunggu hingga muncul log 'Dev server siap' di terminal sebelum membuka Preview.";
+        addBuildLog(msg, "info");
+        alert(msg);
         return;
     }
 
@@ -5233,11 +5258,13 @@ function openLivePreview(urlOverride, forceNewTab = false) {
 
     if (!content || content.trim().length === 0) {
         if(Object.keys(workspace).length === 0) {
-            addBuildLog("ERROR: Virtual Workspace masih kosong.", "error");
-            addBuildLog("→ Silakan klik tombol '🚀 Mulai Pembangunan Otonom' terlebih dahulu di tengah layar.", "info");
+            const msg = "ERROR: Virtual Workspace masih kosong. Silakan klik tombol '🚀 Mulai Pembangunan Otonom' terlebih dahulu.";
+            addBuildLog(msg, "error");
+            alert(msg);
         } else {
-            addBuildLog("ERROR: File HTML utama (index.html) ada tapi tidak berisi kode (kosong).", "error");
-            addBuildLog("→ Tunggu hingga AI selesai menuliskan kode ke dalam file tersebut.", "info");
+            const msg = "ERROR: File HTML utama (index.html) tidak ditemukan atau kosong. Harap tunggu AI selesai.";
+            addBuildLog(msg, "error");
+            alert(msg);
         }
         return;
     }
