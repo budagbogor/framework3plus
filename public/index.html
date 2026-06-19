@@ -1649,7 +1649,27 @@ async function quickStart(name){
           if (buildLogEl) buildLogEl.innerHTML = '';
           addBuildLog(`✅ Template instan '${name}' berhasil dimuat tanpa waktu tunggu!`, "success");
           addBuildLog(`💡 File sudah langsung tersedia di Workspace Explorer.`, "info");
-          addBuildLog(`💡 Anda bisa melihat kodenya atau langsung tekan '📦 install' untuk menyalakan WebContainers.`, "agent");
+          
+          if (S.virtualWorkspace['package.json']) {
+              S.autoDeploying = true;
+              render();
+              execTerminalCmd('install').then(() => {
+                  if (S.isInstalled) {
+                      execTerminalCmd('dev').then(() => {
+                          S.autoDeploying = false;
+                          render();
+                      });
+                  } else {
+                      S.autoDeploying = false;
+                      render();
+                  }
+              }).catch(() => {
+                  S.autoDeploying = false;
+                  render();
+              });
+          } else {
+              addBuildLog(`💡 Selesai! Silakan klik tombol '🌐 Preview' untuk melihat hasilnya.`, "info");
+          }
       }, 300);
       
   } catch (err) {
