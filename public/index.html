@@ -5992,7 +5992,7 @@ async function runAutonomousLoop(){
     render();
     await sleep(1000);
 
-    const blueprintPrompt = `You are a SENIOR SYSTEM ARCHITECT with 15 years experience.
+    const blueprintPrompt = `You are an ELITE WORLD-CLASS SYSTEM ARCHITECT (ex-Vercel, ex-Google).
 
 PROJECT BRIEF:
 - Name: ${projectName}
@@ -6001,16 +6001,17 @@ PROJECT BRIEF:
 - Tech Stack: Frontend=${fe} | Backend=${be} | Database=${db} | Deploy=${dep} | UI=${ui}
 
 YOUR TASK:
-1. Write MASTERPLAN.md with: project overview, complete file structure, component breakdown, data models, feature checklist
-2. Write TECH_NOTES.md with: setup steps, env vars, deployment guide for ${dep}, technical decisions
+1. Write MASTERPLAN.md with: world-class architectural design, scalable folder structure, deep UI/UX philosophy, state management logic, and complete feature checklist.
+2. Write TECH_NOTES.md with: deployment guide for ${dep}, security considerations, performance budgets (Lighthouse 100).
 
 CRITICAL RULES:
-- MASTERPLAN.md must list EVERY file to be created, including index.html, style.css, app.js at minimum
-- No vague descriptions — be specific about file names and function names
+- Architecture MUST utilize the absolute latest tech paradigms (e.g. modular design, optimized rendering).
+- MASTERPLAN.md must list EVERY file needed for a highly polished, production-ready app.
+- Never settle for "simple" apps. Design for elegance, speed, and massive scale.
 
 RESPOND ONLY with valid JSON:
 {
-  "logs": ["Analyzing requirements...", "Designing architecture...", "Writing MASTERPLAN.md...", "Writing TECH_NOTES.md..."],
+  "logs": ["Designing world-class architecture...", "Optimizing tech stack...", "Writing MASTERPLAN.md...", "Writing TECH_NOTES.md..."],
   "files": [
     {"path": "MASTERPLAN.md", "content": "# ${projectName} — MASTERPLAN\\n\\n## Overview\\n...detailed content..."},
     {"path": "TECH_NOTES.md", "content": "# Tech Notes\\n\\n...detailed content..."}
@@ -6034,7 +6035,7 @@ RESPOND ONLY with valid JSON:
         await sleep(800);
 
         const masterplan = S.virtualWorkspace['MASTERPLAN.md'] || 'No masterplan yet.';
-        const coderPrompt = `You are a SENIOR FULLSTACK DEVELOPER. Write COMPLETE, PRODUCTION-READY source code.
+        const coderPrompt = `You are an ELITE FULLSTACK 10x DEVELOPER. Write FLAWLESS, INTERACTIVE, WORLD-CLASS source code.
 
 PROJECT:
 - Name: ${projectName}
@@ -6045,24 +6046,24 @@ PROJECT:
 ${masterplan.substring(0, 3000)}
 
 MANDATORY FILES:
-- index.html  (complete HTML: semantic, meta viewport, Google Fonts linked)
-- style.css   (premium: CSS variables, glassmorphism/flat modern, transitions, fully responsive)
-- app.js      (complete vanilla JS: all interactivity, DOM manipulation, data logic)
+- index.html  (Semantic, beautiful meta, Inter/Outfit fonts linked via Google Fonts, Lucide Icons linked via CDN)
+- style.css   (World-class Tailwind/Vanilla CSS: glassmorphism, advanced animations 'pulse/fade/slide', hyper-responsive)
+- app.js      (FULLY FUNCTIONAL STATE MANAGEMENT. Real logic, DOM manipulation, interactive components)
 
-STRICT RULES:
-1. ZERO placeholders. No "// TODO", no "[content here]", no empty functions
-2. App must be VISUALLY COMPLETE when opened in browser — not a blank page
-3. CSS must have :root variables, flexbox/grid, hover states & smooth transitions
-4. Write beautiful UI that would win a design award
-5. No import/export statements in app.js — use vanilla JS only
+ABSOLUTE STRICT RULES:
+1. BANNED: Placeholders, "// TODO", "dummy code", empty functions.
+2. The code MUST contain 100% working interactive features (modals, dropdowns, forms, toggles).
+3. The UI MUST be stunningly beautiful, modern, elegant, lightweight, and powerful.
+4. If writing React, use proper hooks (useState, useEffect) and Lucide-react. If vanilla, write advanced DOM logic.
+5. NO HALF-FINISHED FILES. Write extensive, production-grade logic.
 
 RESPOND ONLY with valid JSON:
 {
-  "logs": ["Writing index.html...", "Writing premium style.css...", "Writing complete app.js..."],
+  "logs": ["Crafting pixel-perfect index.html...", "Writing world-class style.css...", "Implementing advanced logic in app.js..."],
   "files": [
     {"path": "index.html", "content": "<!DOCTYPE html>...COMPLETE HTML..."},
     {"path": "style.css", "content": ":root { ... }...COMPLETE CSS..."},
-    {"path": "app.js", "content": "// Complete logic...COMPLETE JS..."}
+    {"path": "app.js", "content": "// Complete advanced logic...COMPLETE JS..."}
   ]
 }`;
 
@@ -6128,29 +6129,27 @@ RESPOND ONLY with valid JSON:
         await sleep(800);
 
         const wsSnap = getWorkspaceSnapshot();
-        const featurePrompt = `You are a SENIOR COMPONENT ENGINEER. ENHANCE the existing codebase.
+        const featurePrompt = `You are an ELITE FRONTEND ARCHITECT. ENHANCE the app with WORLD-CLASS interactive features.
 
 PROJECT: ${projectName}
 CURRENT WORKSPACE:
 ${wsSnap}
 
-ADD these features if not already present:
-- Mobile navigation with hamburger menu
-- Smooth scroll behavior
-- Dark/light mode toggle (with localStorage persistence)
-- Form validation with real-time feedback (if forms exist)
-- Skeleton loading states
-- Scroll-triggered animations (IntersectionObserver)
+IMPLEMENT ADVANCED FEATURES (if missing):
+- Complex State Interactions (Drawers, Carousels, Interactive Graphs/Charts)
+- Premium Dark/Light mode transitions with persistence
+- Advanced Form Validations with subtle error shake animations
+- Skeleton loading screens & Toast notifications
+- IntersectionObserver driven reveal animations
 
 RULES:
-1. Only output files you actually changed
-2. All code must be complete — no "..." or placeholder comments
-3. Enhance existing code, don't rewrite from scratch
-4. If everything is already complete, output minimal changes
+1. ONLY OUTPUT COMPLETE, FLAWLESS CODE. Never use "..." or placeholders.
+2. Ensure the UX feels like a $1B startup product (ex: Linear, Vercel, Apple).
+3. Every button and link MUST do something visually.
 
 RESPOND ONLY with valid JSON:
 {
-  "logs": ["Adding hamburger menu...", "Implementing dark mode...", "Adding scroll animations..."],
+  "logs": ["Injecting advanced state logic...", "Adding toast notifications...", "Polishing interactive components..."],
   "files": [{"path": "app.js", "content": "// Enhanced...COMPLETE CODE..."}]
 }`;
 
@@ -6170,26 +6169,26 @@ RESPOND ONLY with valid JSON:
         await sleep(800);
 
         const wsSnap = getWorkspaceSnapshot();
-        const contentPrompt = `You are a SENIOR COPYWRITER & CONTENT STRATEGIST.
+        const contentPrompt = `You are an ELITE COPYWRITER & DATA SCIENTIST.
 
 PROJECT: ${projectName} — ${desc}
 CURRENT WORKSPACE:
 ${wsSnap}
 
 TASKS:
-1. Replace ALL placeholder text (Lorem ipsum, [Title Here], etc.) with real content specific to "${projectName}"
-2. Fill data arrays in JS with realistic entries (products, services, team, posts, etc.)
-3. Create content/data.json with structured data for the app's domain
-4. Create CHANGELOG.md with v1.0.0 release notes
+1. NUKING PLACEHOLDERS: Destroy any "Lorem ipsum", "[Title Here]", or generic text.
+2. INJECT HYPER-REALISTIC DATA: Create highly convincing, premium, realistic mock data for all arrays (products, users, charts, transactions, AI logs).
+3. Create content/data.json with a massive, structured database mock.
+4. Ensure tone is professional, engaging, and top-tier quality.
 
 RULES:
-1. Content must be specific to "${projectName}" — not generic filler
-2. Use Indonesian language where appropriate
-3. Fill ALL slots visible in the HTML
+1. The data must make the app look like a live production app.
+2. Use sophisticated terminology.
+3. Fill ALL visible UI elements with this rich data.
 
 RESPOND ONLY with valid JSON:
 {
-  "logs": ["Replacing placeholders...", "Writing realistic data...", "Creating CHANGELOG..."],
+  "logs": ["Generating hyper-realistic mock data...", "Writing engaging copy...", "Seeding data.json..."],
   "files": [
     {"path": "content/data.json", "content": "[{\\"id\\": 1, ...}]"},
     {"path": "CHANGELOG.md", "content": "# Changelog\\n## v1.0.0..."}
@@ -6294,23 +6293,24 @@ RESPOND ONLY with valid JSON:
         render();
         await sleep(800);
 
-        const polisherPrompt = `You are a WORLD-CLASS UI/UX DESIGNER (ex-Apple, ex-Stripe design team).
+        const polisherPrompt = `You are an ABSOLUTE WORLD-CLASS UI/UX ARCHITECT (ex-Stripe, ex-Vercel, ex-Apple).
 
 PROJECT: ${projectName}
 FILES: ${workspaceFiles}
 CODE:
 ${wsSnap4}
 
-TRANSFORM THE UI:
-1. CSS — Add smooth transitions on ALL interactive elements, micro-animations (fadeIn, hover lift, button press), glassmorphism accents, gradient headings
-2. Typography — Import Inter/Plus Jakarta Sans/Outfit from Google Fonts, consistent 8px spacing grid, contrast ratio ≥ 4.5:1
-3. Responsive — Perfect on 320px (mobile), 768px (tablet), 1440px (desktop), touch targets ≥ 44px
+ELEVATE UI TO GOD-TIER:
+1. AESTHETICS: Inject extremely premium styling. Glassmorphism, deep dark modes with vibrant neon accents, or ultra-clean minimalist light modes.
+2. ANIMATIONS: Add jaw-dropping micro-interactions. Hover lifts, scale transforms, pulse animations, fade-ins, stagger effects.
+3. TYPOGRAPHY & ICONS: Ensure Inter/Outfit fonts are perfectly kerned. Replace ugly default icons with beautiful Lucide or Heroicons SVGs.
+4. No boring designs allowed. Make the user go "WOW" upon seeing it.
 
 Output improved style.css (and index.html if structure changes needed).
 
 RESPOND ONLY with valid JSON:
 {
-  "logs": ["Applying micro-animations...", "Enhancing color palette...", "Polishing responsive..."],
+  "logs": ["Applying god-tier UI styles...", "Injecting Vercel-like micro-animations...", "Refining typography & icons..."],
   "files": [{"path": "style.css", "content": "/* World-class CSS */\\n:root { ... }\\n...COMPLETE CSS..."}]
 }`;
 
