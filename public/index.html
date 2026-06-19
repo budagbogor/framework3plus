@@ -3461,12 +3461,15 @@ async function execTerminalCmd(cmd) {
             const tree = virtualWorkspaceToTree(S.virtualWorkspace);
             await wc.mount(tree);
             
-            addBuildLog("📦 $ npm install", "agent");
-            const installProcess = await wc.spawn('npm', ['install']);
+            addBuildLog("📦 $ npm install --no-progress", "agent");
+            const installProcess = await wc.spawn('npm', ['install', '--no-progress', '--no-audit', '--no-fund']);
             
             installProcess.output.pipeTo(new WritableStream({
                 write(data) {
-                    addBuildLog(data.trim(), "info");
+                    const clean = data.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '').trim();
+                    if (clean && !/^[\|\/\-\\]$/.test(clean)) {
+                        addBuildLog(clean, "shell");
+                    }
                 }
             }));
             
@@ -3567,7 +3570,10 @@ async function execTerminalCmd(cmd) {
             const devProcess = await window.webcontainerInstance.spawn('npm', ['run', 'dev']);
             devProcess.output.pipeTo(new WritableStream({
                 write(data) {
-                    addBuildLog(data.trim(), "info");
+                    const clean = data.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '').trim();
+                    if (clean && !/^[\|\/\-\\]$/.test(clean)) {
+                        addBuildLog(clean, "shell");
+                    }
                 }
             }));
             
