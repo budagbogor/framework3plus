@@ -4,6 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DevForge — Smart Framework Generator</title>
+<script>
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+  var errNode = document.createElement('div');
+  errNode.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;z-index:999999;padding:20px;font-family:monospace;white-space:pre-wrap;';
+  errNode.innerText = 'JS Error: ' + msg + '\nLine: ' + lineNo + '\nCol: ' + columnNo + '\nStack: ' + (error && error.stack);
+  document.body.appendChild(errNode);
+  return false;
+};
+window.addEventListener('unhandledrejection', function(event) {
+  var errNode = document.createElement('div');
+  errNode.style.cssText = 'position:fixed;top:100px;left:0;right:0;background:darkred;color:white;z-index:999999;padding:20px;font-family:monospace;white-space:pre-wrap;';
+  errNode.innerText = 'Promise Error: ' + event.reason;
+  document.body.appendChild(errNode);
+});
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://js.puter.com/v2/"></script>
@@ -1439,8 +1454,8 @@ const S = {mode:null, step:0, answers:{}, generating:false, generated:null, acti
 };
 
 // Tauri Bridge
-const invoke = window.__TAURI__ ? window.__TAURI__.core.invoke : null;
-const listen = window.__TAURI__ ? window.__TAURI__.event.listen : null;
+const invoke = (window.__TAURI__ && window.__TAURI__.core) ? window.__TAURI__.core.invoke : null;
+const listen = (window.__TAURI__ && window.__TAURI__.event) ? window.__TAURI__.event.listen : null;
 
 if (listen) {
     listen('terminal-output', (event) => {
@@ -3287,9 +3302,50 @@ function dlMasterplan() {
 }
 
 async function initWebContainer() {
-    // WebContainer API memerlukan CDN khusus StackBlitz dan header COEP/COOP.
-    // Karena keterbatasan hosting statis, fungsi ini digantikan oleh openLivePreview() (Blob URL).
-    return true;
+    if (window.webcontainerInstance) return window.webcontainerInstance;
+    try {
+        addBuildLog("⏳ Memuat WebContainer API...", "info");
+        const module = await import('https://esm.sh/@webcontainer/api');
+        const WebContainer = module.WebContainer;
+        
+        addBuildLog("⏳ Booting WebContainer environment...", "info");
+        window.webcontainerInstance = await WebContainer.boot();
+        addBuildLog("✅ WebContainer siap beroperasi!", "success");
+        
+        window.webcontainerInstance.on('server-ready', (port, url) => {
+            addBuildLog(`✅ Dev server siap di port ${port}!`, "success");
+            addBuildLog(`   ➜ URL: ${url}`, "info");
+            S.isDevRunning = true;
+            window.webcontainerUrl = url;
+            render();
+            openLivePreview(url);
+        });
+        
+        return window.webcontainerInstance;
+    } catch (e) {
+        addBuildLog(`❌ Gagal inisialisasi WebContainer: ${e.message}`, "error");
+        return null;
+    }
+}
+
+function virtualWorkspaceToTree(workspace) {
+    const tree = {};
+    for (const path in workspace) {
+        const parts = path.split('/');
+        let current = tree;
+        for (let i = 0; i < parts.length; i++) {
+            const part = parts[i];
+            if (i === parts.length - 1) {
+                current[part] = { file: { contents: workspace[path] } };
+            } else {
+                if (!current[part]) {
+                    current[part] = { directory: {} };
+                }
+                current = current[part].directory;
+            }
+        }
+    }
+    return tree;
 }
 
 async function execTerminalCmd(cmd) {
@@ -3305,32 +3361,52 @@ async function execTerminalCmd(cmd) {
             addBuildLog("❌ Virtual workspace masih kosong. Jalankan pembangunan otonom terlebih dahulu.", "error");
             return;
         }
-        addBuildLog("📦 $ npm install", "agent");
-        addBuildLog("", "info");
-        addBuildLog("⚙️  Menganalisis package.json...", "info");
-        await sleep(600);
-        const pkg = S.virtualWorkspace['package.json'];
-        let deps = ['vite', 'react', 'react-dom'];
-        if (pkg) {
+
+        if (S.isNative && typeof invoke !== 'undefined') {
+            addBuildLog("📦 Menjalankan 'npm install' secara native...", "agent");
             try {
-                const parsed = JSON.parse(pkg);
-                deps = [
-                    ...Object.keys(parsed.dependencies || {}),
-                    ...Object.keys(parsed.devDependencies || {})
-                ].slice(0, 8);
-                if (deps.length === 0) deps = ['vite'];
-            } catch(e) {}
+                const targetCwd = S.workspacePath && S.generated && S.generated.name ? `${S.workspacePath}/${S.generated.name}` : ".";
+                const isWin = navigator.userAgent.includes('Win');
+                const execCmd = isWin ? 'cmd' : 'npm';
+                const execArgs = isWin ? ['/c', 'npm', 'install'] : ['install'];
+                
+                await invoke('execute_command', { cmd: execCmd, args: execArgs, cwd: targetCwd });
+                
+                S.isInstalled = true;
+                addBuildLog("✅ Instalasi native selesai.", "success");
+                addBuildLog("💡 Klik '🚀 dev' untuk memulai server lokal.", "info");
+                render();
+            } catch (err) {
+                addBuildLog(`❌ Error eksekusi: ${err}`, "error");
+            }
+        } else {
+            addBuildLog("📦 Inisialisasi Environment WebContainer...", "agent");
+            const wc = await initWebContainer();
+            if (!wc) return;
+            
+            addBuildLog("⚙️  Menulis file ke dalam memori browser...", "info");
+            const tree = virtualWorkspaceToTree(S.virtualWorkspace);
+            await wc.mount(tree);
+            
+            addBuildLog("📦 $ npm install", "agent");
+            const installProcess = await wc.spawn('npm', ['install']);
+            
+            installProcess.output.pipeTo(new WritableStream({
+                write(data) {
+                    addBuildLog(data.trim(), "info");
+                }
+            }));
+            
+            const exitCode = await installProcess.exit;
+            if (exitCode !== 0) {
+                addBuildLog("❌ Instalasi gagal.", "error");
+            } else {
+                addBuildLog("✅ Instalasi selesai dengan sukses.", "success");
+                addBuildLog("💡 Klik '🚀 dev' untuk memulai server lokal.", "info");
+                S.isInstalled = true;
+                render();
+            }
         }
-        for (const dep of deps) {
-            addBuildLog(`   + ${dep}`, "info");
-            await sleep(120);
-        }
-        await sleep(400);
-        addBuildLog("", "info");
-        addBuildLog(`✅ ${deps.length} packages installed (simulated — project berjalan via Preview langsung).`, "success");
-        addBuildLog("💡 Klik '🚀 dev' untuk memulai server lokal.", "info");
-        S.isInstalled = true;
-        render();
 
     } else if (cmd === 'dev') {
         if (!hasFiles) {
@@ -3343,22 +3419,45 @@ async function execTerminalCmd(cmd) {
         }
         if (S.isDevRunning) {
             addBuildLog("ℹ️ Dev server sudah berjalan. Klik '🌐 Preview' untuk membukanya.", "info");
+            if (window.webcontainerUrl) openLivePreview(window.webcontainerUrl);
             return;
         }
-        addBuildLog("🚀 $ npm run dev", "agent");
-        addBuildLog("", "info");
-        addBuildLog("   VITE v5.0.0  ready in 312 ms", "info");
-        await sleep(300);
-        addBuildLog("", "info");
-        addBuildLog("   ➜  Local:   http://localhost:5173/", "success");
-        addBuildLog("   ➜  Network: http://192.168.1.1:5173/", "info");
-        addBuildLog("", "info");
-        addBuildLog("✅ Dev server siap! Membuka preview di tab baru...", "success");
-        S.isDevRunning = true;
-        render();
-        await sleep(400);
-        // Buka Live Preview dari virtual workspace
-        openLivePreview();
+
+        if (S.isNative && typeof invoke !== 'undefined') {
+            addBuildLog("🚀 Menjalankan 'npm run dev' secara native...", "agent");
+            try {
+                const targetCwd = S.workspacePath && S.generated && S.generated.name ? `${S.workspacePath}/${S.generated.name}` : ".";
+                const isWin = navigator.userAgent.includes('Win');
+                const execCmd = isWin ? 'cmd' : 'npm';
+                const execArgs = isWin ? ['/c', 'npm', 'run', 'dev'] : ['run', 'dev'];
+                
+                invoke('execute_command', { cmd: execCmd, args: execArgs, cwd: targetCwd }).catch(err => {
+                    addBuildLog(`❌ Error eksekusi dev: ${err}`, "error");
+                });
+                
+                S.isDevRunning = true;
+                addBuildLog("✅ Dev server native dimulai! Membuka browser preview...", "success");
+                render();
+                await sleep(1500);
+                openLivePreview();
+            } catch (err) {
+                addBuildLog(`❌ Error eksekusi: ${err}`, "error");
+            }
+        } else {
+            addBuildLog("🚀 $ npm run dev", "agent");
+            if (!window.webcontainerInstance) {
+                addBuildLog("❌ WebContainer tidak ditemukan. Mohon ulangi proses install.", "error");
+                return;
+            }
+            const devProcess = await window.webcontainerInstance.spawn('npm', ['run', 'dev']);
+            devProcess.output.pipeTo(new WritableStream({
+                write(data) {
+                    addBuildLog(data.trim(), "info");
+                }
+            }));
+            
+            // Server ready akan ditangani di event listener on('server-ready') yang ada di initWebContainer
+        }
     }
 }
 
@@ -4987,7 +5086,15 @@ function closeAIPanel(){
 
 setTimeout(updateNavAIBtn, 100);
 
-function openLivePreview() {
+function openLivePreview(urlOverride) {
+    if (urlOverride || window.webcontainerUrl) {
+        const targetUrl = urlOverride || window.webcontainerUrl;
+        addBuildLog(`Membuka WebContainer URL: ${targetUrl}`, "info");
+        const w = window.open(targetUrl, '_blank');
+        if(!w) alert('Mohon izinkan pop-up di browser Anda untuk melihat preview WebContainer.');
+        return;
+    }
+
     const workspace = S.virtualWorkspace || {};
     let content = workspace['index.html'] || workspace['public/index.html'] || workspace['src/index.html'];
 
