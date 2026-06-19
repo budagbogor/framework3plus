@@ -1165,7 +1165,7 @@ export default function DesktopTool() {
 
 // 5. AI CHATBOT TEMPLATE
 const chatbotApp = `import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, User, Sparkles, Command, Paperclip, ChevronDown, Plus, Trash2 } from 'lucide-react';
+import { Bot, Send, User, Sparkles, Command, Paperclip, ChevronDown, Plus, Trash2, Settings } from 'lucide-react';
 
 const getBotResponse = (input) => {
   const text = input.toLowerCase();
