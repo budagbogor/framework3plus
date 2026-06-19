@@ -12,7 +12,7 @@ const makePkg = (name, deps = {}, devDeps = {}, scripts = {}) => JSON.stringify(
   version: "1.0.0",
   private: true,
   scripts: {
-    dev: "vite",
+    dev: "vite --host",
     build: "vite build",
     preview: "vite preview",
     ...scripts

@@ -5175,14 +5175,14 @@ function openLivePreview(urlOverride, forceNewTab = false) {
     // Cegah fallback blob jika workspace punya package.json (butuh WebContainer)
     if (workspace['package.json']) {
         if (!S.isInstalled) {
-            alert("Proyek ini menggunakan Node.js/React.\nSilakan klik tombol '📦 install' di terminal terlebih dahulu, lalu klik '🚀 dev'.");
+            addBuildLog("Proyek ini menggunakan Node.js/React. Silakan klik tombol '📦 install' terlebih dahulu, lalu klik '🚀 dev'.", "amber");
             return;
         }
         if (!S.isDevRunning) {
-            alert("Silakan klik tombol '🚀 dev' di terminal untuk menyalakan server.");
+            addBuildLog("Silakan klik tombol '🚀 dev' untuk menyalakan server.", "amber");
             return;
         }
-        alert("Server sedang memulai...\nHarap tunggu hingga log terminal menampilkan pesan 'Dev server siap' sebelum membuka Preview.");
+        addBuildLog("Server sedang memulai... Harap tunggu hingga muncul log 'Dev server siap' sebelum membuka Preview.", "info");
         return;
     }
 
@@ -5630,7 +5630,7 @@ function renderBuilderPanel(){
                     </div>
                     <div style="flex:1; display:flex; position:relative; overflow:hidden;">
                         <div class="term-body" id="buildTerminal" style="width:100%; height:100%; padding:20px; overflow-y:auto; font-family:var(--mono); font-size:13px; line-height:1.6; color: rgba(255,255,255,0.85);">${logs || '<div style="opacity:0.3">Waiting for logs...</div>'}</div>
-                        <iframe id="previewIframe" style="display:none; width:100%; height:100%; border:none; background:#fff;"></iframe>
+                        <iframe id="previewIframe" allow="cross-origin-isolated" style="display:none; width:100%; height:100%; border:none; background:#fff;"></iframe>
                     </div>
                 </div>
                 
