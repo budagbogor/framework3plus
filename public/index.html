@@ -3498,7 +3498,9 @@ async function execTerminalCmd(cmd) {
                 let pkgJson = await window.webcontainerInstance.fs.readFile('package.json', 'utf-8');
                 let pkg = JSON.parse(pkgJson);
                 let modified = false;
-                if (pkg.scripts && pkg.scripts.dev) {
+                if (!pkg.scripts) pkg.scripts = {};
+                
+                if (pkg.scripts.dev) {
                     if (pkg.scripts.dev.includes('vite') && !pkg.scripts.dev.includes('--host')) {
                         pkg.scripts.dev = pkg.scripts.dev.replace('vite', 'vite --host');
                         modified = true;
@@ -3507,7 +3509,14 @@ async function execTerminalCmd(cmd) {
                         pkg.scripts.dev = pkg.scripts.dev.replace('next dev', 'next dev -H 0.0.0.0');
                         modified = true;
                     }
+                } else if (pkg.scripts.start) {
+                    pkg.scripts.dev = pkg.scripts.start;
+                    modified = true;
+                } else {
+                    pkg.scripts.dev = "npx -y serve -p 3000 .";
+                    modified = true;
                 }
+                
                 if (modified) {
                     await window.webcontainerInstance.fs.writeFile('package.json', JSON.stringify(pkg, null, 2));
                     addBuildLog("⚙️ Menyesuaikan konfigurasi server agar dapat diakses...", "info");
@@ -3522,6 +3531,12 @@ async function execTerminalCmd(cmd) {
                     addBuildLog(data.trim(), "info");
                 }
             }));
+            
+            devProcess.exit.then(code => {
+                S.isDevRunning = false;
+                addBuildLog(`❌ Dev server berhenti tiba-tiba (kode ${code}). Periksa log terminal di atas.`, "error");
+                render();
+            });
             
             // Server ready akan ditangani di event listener on('server-ready') yang ada di initWebContainer
         }
