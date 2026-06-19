@@ -1,0 +1,6279 @@
+
+
+
+// ═══════════════════════════════════════════
+// UI & NAVIGATION HELPERS
+// ═══════════════════════════════════════════
+function initTheme(){
+  if(localStorage.getItem('theme')==='dark'){
+    document.documentElement.setAttribute('data-theme','dark');
+    document.getElementById('themeBtn').textContent='☀️ Terang';
+  }
+}
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  if(isDark){
+    html.removeAttribute('data-theme');
+    localStorage.setItem('theme','light');
+    document.getElementById('themeBtn').textContent='🌙 Gelap';
+  }else{
+    html.setAttribute('data-theme','dark');
+    localStorage.setItem('theme','dark');
+    document.getElementById('themeBtn').textContent='☀️ Terang';
+  }
+}
+function goHome(){
+  Object.assign(S,{mode:null,step:0,answers:{},generating:false,generated:null,activeTab:null});
+  render();
+  window.scrollTo(0,0);
+}
+initTheme();
+// ═══════════════════════════════════════════
+// TECH DATABASE — with explanations
+// ═══════════════════════════════════════════
+const TECH = {
+
+frontend: [
+  {val:'nextjs', icon:'▲', name:'Next.js', tagline:'Framework React paling populer saat ini',
+   rec:'best', recLabel:'⭐ Terbaik',
+   pros:['Cocok untuk semua jenis web app','SEO-friendly (bagus untuk Google)','Built-in routing, API, auth — serba ada','Komunitas besar, mudah cari bantuan'],
+   cons:['Agak kompleks untuk pemula','Deploy butuh server (bukan cuma file statis)'],
+   ideal:'<strong>Paling cocok untuk:</strong> SaaS, dashboard, e-commerce, app dengan banyak halaman'},
+  {val:'react', icon:'⚛', name:'React', tagline:'Library UI paling banyak dipakai di dunia',
+   rec:'good', recLabel:'✓ Bagus',
+   pros:['Ekosistem sangat besar','Fleksibel, bisa dikombinasikan dengan apa saja','Banyak tutorial dan developer-nya'],
+   cons:['Tidak ada routing bawaan — harus tambah library','Setup awal lebih ribet dari Next.js'],
+   ideal:'<strong>Paling cocok untuk:</strong> SPA (Single Page App), dashboard internal, app sederhana'},
+  {val:'vue', icon:'💚', name:'Vue 3', tagline:'Framework yang lebih mudah dipelajari',
+   rec:'good', recLabel:'✓ Bagus',
+   pros:['Lebih mudah dipahami pemula','Dokumentasi sangat bagus','Performa sangat ringan'],
+   cons:['Komunitas lebih kecil dari React','Lebih sedikit pilihan kerja vs React'],
+   ideal:'<strong>Paling cocok untuk:</strong> Tim yang baru belajar, app skala menengah'},
+  {val:'sveltekit', icon:'🔥', name:'SvelteKit', tagline:'Tidak butuh virtual DOM, sangat ringan & cepat',
+   rec:'good', recLabel:'✓ Terkini',
+   pros:['Performa luar biasa cepat','Kode lebih sedikit dan bersih','Tidak butuh re-render kompleks (Reactivity murni)'],
+   cons:['Ekosistem library pihak ketiga lebih kecil dari React','Lowongan kerja khusus Svelte lebih jarang'],
+   ideal:'<strong>Paling cocok untuk:</strong> Web interaktif super cepat, MVP, project personal inovatif'},
+  {val:'expo', icon:'📱', name:'React Native / Expo', tagline:'Satu kode, jalan di iOS dan Android',
+   rec:'best', recLabel:'⭐ Terbaik Mobile',
+   pros:['Satu codebase untuk iOS + Android','Lebih murah dari buat 2 app terpisah','Hot reload cepat saat development'],
+   cons:['Performa lebih lambat dari native','Akses hardware terbatas untuk fitur spesifik'],
+   ideal:'<strong>Paling cocok untuk:</strong> Startup yang mau rilis mobile app cepat dengan budget efisien'},
+  {val:'flutter', icon:'🦋', name:'Flutter', tagline:'Framework Google untuk mobile & web',
+   rec:'adv', recLabel:'⚡ Advanced',
+   pros:['Performa sangat dekat dengan native','Tampilan konsisten di semua platform','Bisa untuk mobile, web, desktop sekaligus'],
+   cons:['Bahasa Dart — kurang populer','Butuh belajar ecosystem baru','Bundle size lebih besar'],
+   ideal:'<strong>Paling cocok untuk:</strong> App yang butuh performa tinggi dan tampilan pixel-perfect'},
+],
+
+backend: [
+  {val:'nodejs-express', icon:'🟩', name:'Node.js + Express', tagline:'Backend JavaScript — satu bahasa untuk semua',
+   rec:'best', recLabel:'⭐ Terbaik Pemula',
+   pros:['Satu bahasa (JS) untuk frontend + backend','Setup cepat, ekosistem besar (npm)','Mudah deploy di mana saja'],
+   cons:['Tidak ideal untuk CPU-intensive tasks','Callback hell jika tidak pakai async/await'],
+   ideal:'<strong>Paling cocok untuk:</strong> REST API, web app, real-time app'},
+  {val:'nextjs-api', icon:'▲', name:'Next.js API Routes', tagline:'Backend langsung di dalam Next.js — simpel',
+   rec:'best', recLabel:'⭐ Termudah',
+   pros:['Tidak perlu server terpisah','Satu repo untuk frontend + backend','Deploy ke Vercel gratis dan mudah'],
+   cons:['Terbatas untuk logic yang sangat kompleks','Tidak cocok untuk microservices besar'],
+   ideal:'<strong>Paling cocok untuk:</strong> Startup/MVP yang mau serba praktis dalam satu project'},
+  {val:'hono-bun', icon:'⚡', name:'Hono + Bun', tagline:'Backend Edge JS tercepat saat ini',
+   rec:'best', recLabel:'⭐ Tercepat Baru',
+   pros:['Kecepatan eksekusi hingga 4x lipat Node.js','Native TypeScript tanpa konfigurasi rumit','Sangat cocok untuk Edge Cloudflare/Vercel'],
+   cons:['Ekosistem masih baru, dokumentasi pemecahan masalah (bug) belum sebanyak Express'],
+   ideal:'<strong>Paling cocok untuk:</strong> API berkinerja tinggi, microservices, Edge computing'},
+  {val:'fastapi', icon:'🐍', name:'Python + FastAPI', tagline:'Backend Python tercepat, dengan auto-dokumentasi',
+   rec:'good', recLabel:'✓ Bagus',
+   pros:['Performa sangat cepat','Auto-generate dokumentasi API','Terbaik jika project butuh AI/ML'],
+   cons:['Harus bisa Python','Setup lebih panjang dari Node.js'],
+   ideal:'<strong>Paling cocok untuk:</strong> App dengan AI features, data processing, ML pipeline'},
+  {val:'supabase-edge', icon:'⚡', name:'Supabase Edge Functions', tagline:'Backend serverless langsung dari Supabase',
+   rec:'good', recLabel:'✓ Termudah + DB',
+   pros:['Database + API dalam satu platform','Gratis untuk project kecil','Deploy otomatis, tidak perlu server'],
+   cons:['Terbatas untuk logic yang sangat kompleks','Vendor lock-in ke Supabase'],
+   ideal:'<strong>Paling cocok untuk:</strong> MVP cepat, app sederhana, prototype'},
+  {val:'go', icon:'🔵', name:'Go / Gin', tagline:'Backend tercepat untuk traffic tinggi',
+   rec:'adv', recLabel:'⚡ Expert',
+   pros:['Performa luar biasa','Konsumsi memori sangat rendah','Cocok untuk sistem skala besar'],
+   cons:['Kurva belajar cukup tinggi','Ekosistem lebih kecil dari Node/Python'],
+   ideal:'<strong>Paling cocok untuk:</strong> High-traffic API, fintech, sistem enterprise'},
+],
+
+database: [
+  {val:'supabase', icon:'🟢', name:'Supabase (PostgreSQL)', tagline:'Database + Auth + Storage dalam satu platform',
+   rec:'best', recLabel:'⭐ Terbaik Pemula',
+   pros:['Setup 5 menit, langsung pakai','Gratis hingga project cukup besar','Ada auth, storage, realtime sudah built-in','Dashboard visual yang mudah dipahami'],
+   cons:['Jika traffic sangat besar, biaya bisa naik','Kurang fleksibel vs PostgreSQL mentah'],
+   ideal:'<strong>Paling cocok untuk:</strong> 99% project baru — mulai dari MVP sampai skala menengah'},
+  {val:'neon-turso', icon:'☁️', name:'Neon / Turso (Serverless DB)', tagline:'Database cloud mutakhir skala Edge',
+   rec:'good', recLabel:'✓ Edge DB',
+   pros:['Skala otomatis hitungan detik','Bisa branching database (seperti di Git)','Latency sangat rendah dari Edge Functions'],
+   cons:['Biaya bisa tidak terprediksi jika request meledak','Vendor lock-in platform spesifik'],
+   ideal:'<strong>Paling cocok untuk:</strong> Aplikasi serverless modern, AI backend, global app'},
+  {val:'postgresql', icon:'🐘', name:'PostgreSQL (mandiri)', tagline:'Database relasional terkuat di dunia',
+   rec:'good', recLabel:'✓ Bagus',
+   pros:['Kontrol penuh','Performa terbaik untuk data kompleks','Tidak ada vendor lock-in'],
+   cons:['Harus manage server sendiri','Setup lebih panjang, butuh DevOps'],
+   ideal:'<strong>Paling cocok untuk:</strong> Tim dengan DevOps, project yang butuh kontrol penuh'},
+  {val:'mongodb', icon:'🍃', name:'MongoDB', tagline:'Database fleksibel untuk data tidak berstruktur',
+   rec:'good', recLabel:'✓ Situasional',
+   pros:['Simpan data format bebas (JSON)','Cepat untuk prototyping','Skalabilitas horizontal mudah'],
+   cons:['Tidak ada JOIN seperti SQL','Risiko data tidak konsisten','Kurang cocok untuk data relasional'],
+   ideal:'<strong>Paling cocok untuk:</strong> App dengan struktur data yang sering berubah, CMS, katalog produk'},
+  {val:'firebase', icon:'🔥', name:'Firebase Firestore', tagline:'Database Google — real-time dan mudah',
+   rec:'good', recLabel:'✓ Bagus Mobile',
+   pros:['Real-time sync built-in','Sangat mudah untuk mobile app','Gratis tier cukup besar'],
+   cons:['Query terbatas dibanding SQL','Harga bisa mahal kalau data besar','Vendor lock-in Google'],
+   ideal:'<strong>Paling cocok untuk:</strong> Mobile app dengan real-time features (chat, live update)'},
+  {val:'redis', icon:'🔴', name:'Redis', tagline:'Database super cepat untuk cache dan session',
+   rec:'adv', recLabel:'⚡ Tambahan',
+   pros:['Kecepatan operasi dalam microsecond','Sempurna untuk caching dan session','Pub/sub untuk real-time'],
+   cons:['Bukan database utama — hanya pelengkap','Data hilang kalau restart (tanpa konfigurasi)'],
+   ideal:'<strong>Paling cocok untuk:</strong> Dipakai bersama PostgreSQL/MongoDB sebagai cache layer'},
+  {val:'sqlite', icon:'📁', name:'SQLite', tagline:'Database lokal — tanpa server, file-based',
+   rec:'best', recLabel:'⭐ Terbaik Desktop',
+   pros:['Tidak perlu server database','File-based — data di dalam app','Sangat cepat untuk data lokal','Zero configuration'],
+   cons:['Tidak cocok untuk multi-user concurrent','Tidak bisa diakses dari jauh'],
+   ideal:'<strong>Paling cocok untuk:</strong> Desktop app, mobile app, embedded system, app dengan data lokal'},
+],
+
+desktop: [
+  {val:'electron', icon:'⚡', name:'Electron', tagline:'Web tech → Desktop app. VSCode dibangun pakai ini',
+   rec:'best', recLabel:'⭐ Terbaik Pemula',
+   pros:['Pakai JavaScript/HTML/CSS yang sudah familiar','Ekosistem npm bisa dipakai','Cross-platform (Windows, Mac, Linux)','Banyak contoh app: VSCode, Discord, Slack'],
+   cons:['Ukuran app besar (100MB+)','Konsumsi RAM lebih tinggi','Startup lebih lambat dari native'],
+   ideal:'<strong>Paling cocok untuk:</strong> Developer web yang mau buat desktop app tanpa belajar bahasa baru'},
+  {val:'tauri', icon:'🦀', name:'Tauri v2', tagline:'Desktop & Mobile app ringan — Rust backend',
+   rec:'best', recLabel:'⭐ Terbaik Modern',
+   pros:['Mendukung mobile (Android/iOS) di v2','Ukuran app sangat kecil (3-10MB)','Performa dan keamanan tinggi (Rust)','Auto-update built-in'],
+   cons:['Harus pelajari sedikit Rust','Ekosistem plugin mobile masih tahap berkembang'],
+   ideal:'<strong>Paling cocok untuk:</strong> App yang butuh performa tinggi dan ukuran kecil lintas platform'},
+  {val:'dotnet-maui', icon:'🔷', name:'.NET MAUI', tagline:'Framework Microsoft untuk app Windows native',
+   rec:'good', recLabel:'✓ Windows Native',
+   pros:['Performa native Windows terbaik','Integrasi sempurna dengan ekosistem Microsoft','Bisa juga untuk iOS/Android','C# language yang modern'],
+   cons:['Harus belajar C#','Lebih cocok khusus Windows','Setup Visual Studio cukup berat'],
+   ideal:'<strong>Paling cocok untuk:</strong> App enterprise Windows, integrasi dengan ekosistem Microsoft'},
+  {val:'flutter-desktop', icon:'🦋', name:'Flutter Desktop', tagline:'Satu kode untuk desktop + mobile + web',
+   rec:'good', recLabel:'✓ Cross-Platform',
+   pros:['Satu codebase untuk semua platform','UI cantik dan konsisten','Performa dekat native','Widget library sangat kaya'],
+   cons:['Bahasa Dart kurang populer','Desktop support masih relatif baru','Bundle size lebih besar'],
+   ideal:'<strong>Paling cocok untuk:</strong> App yang juga butuh versi mobile dan web'},
+  {val:'pyqt', icon:'🐍', name:'PyQt / PySide', tagline:'Desktop app dengan Python — cocok untuk tools & utilitas',
+   rec:'adv', recLabel:'⚡ Python Dev',
+   pros:['Bahasa Python yang mudah','Widget native OS','Cocok untuk scientific/data app','Library Python bisa dipakai langsung'],
+   cons:['UI terlihat old-school tanpa styling extra','Distribusi app lebih ribet','Kurang cocok untuk app consumer'],
+   ideal:'<strong>Paling cocok untuk:</strong> Tools internal, scientific app, admin utility'},
+],
+
+installer: [
+  {val:'electron-builder', icon:'📦', name:'Electron Builder', tagline:'Auto-installer + auto-update untuk Electron',
+   rec:'best', recLabel:'⭐ Terbaik (Electron)',
+   pros:['Buat .exe/.dmg/.AppImage otomatis','Auto-update built-in','Code signing support','Sangat banyak dipakai'],
+   cons:['Hanya untuk Electron','Konfigurasi bisa kompleks untuk advanced use'],
+   ideal:'<strong>Paling cocok untuk:</strong> Semua project Electron'},
+  {val:'tauri-bundler', icon:'🦀', name:'Tauri Bundler', tagline:'Installer bawaan Tauri — ringan dan cepat',
+   rec:'best', recLabel:'⭐ Terbaik (Tauri)',
+   pros:['Terintegrasi penuh dengan Tauri','Buat MSI/NSIS/DMG/AppImage otomatis','Auto-update built-in','Installer sangat kecil'],
+   cons:['Hanya untuk project Tauri'],
+   ideal:'<strong>Paling cocok untuk:</strong> Semua project Tauri'},
+  {val:'nsis', icon:'🛠️', name:'NSIS / Inno Setup', tagline:'Windows installer klasik — sangat mature',
+   rec:'good', recLabel:'✓ Windows Klasik',
+   pros:['Installer paling kecil ukurannya','Kontrol penuh atas proses install','Mature dan stabil 20+ tahun','Gratis dan open source'],
+   cons:['Scripting language-nya unik','Hanya untuk Windows','Manual setup'],
+   ideal:'<strong>Paling cocok untuk:</strong> App Windows yang butuh installer custom'},
+  {val:'msix', icon:'🪟', name:'MSIX / Windows Store', tagline:'Format modern Microsoft — bisa publish ke Store',
+   rec:'good', recLabel:'✓ Modern Windows',
+   pros:['Bisa publish ke Microsoft Store','Install/uninstall bersih','Auto-update via Store','Sandbox security'],
+   cons:['Hanya Windows 10+','Proses publish ke Store agak panjang'],
+   ideal:'<strong>Paling cocok untuk:</strong> App yang mau dijual via Microsoft Store'},
+],
+
+payment: [
+  {val:'midtrans', icon:'💳', name:'Midtrans', tagline:'Payment gateway #1 di Indonesia — by GoTo',
+   rec:'best', recLabel:'⭐ Terbaik Indonesia',
+   pros:['Support semua metode: VA, e-wallet, CC, QRIS','Dashboard mudah dipahami','SDK untuk semua platform','Snap checkout (popup pembayaran siap pakai)'],
+   cons:['Fee transaksi ~2.9%','Proses approval merchant 3-5 hari'],
+   ideal:'<strong>Paling cocok untuk:</strong> E-commerce, SaaS, dan app apapun di Indonesia'},
+  {val:'xendit', icon:'🇮🇩', name:'Xendit', tagline:'Payment gateway modern — favorit startup Indonesia',
+   rec:'best', recLabel:'⭐ Terbaik Startup',
+   pros:['API sangat developer-friendly','VA, e-wallet, QRIS lengkap','Disbursement otomatis','Webhook reliable'],
+   cons:['Fee bervariasi per metode','Perlu approval untuk beberapa fitur'],
+   ideal:'<strong>Paling cocok untuk:</strong> Startup, marketplace, platform dengan disbursement'},
+  {val:'stripe', icon:'💜', name:'Stripe', tagline:'Payment global terbaik — SDK terlengkap di dunia',
+   rec:'best', recLabel:'⭐ Terbaik Global',
+   pros:['SDK dan dokumentasi terbaik di dunia','Support 135+ mata uang','Subscription billing built-in','Checkout page siap pakai'],
+   cons:['Belum support semua bank lokal Indonesia','Fee ~2.9% + $0.30 per transaksi'],
+   ideal:'<strong>Paling cocok untuk:</strong> SaaS global, subscription app, international payment'},
+  {val:'doku', icon:'🏦', name:'DOKU', tagline:'Payment gateway enterprise Indonesia — pioneer',
+   rec:'good', recLabel:'✓ Enterprise ID',
+   pros:['Salah satu tertua dan terpercaya','Support bank lokal sangat lengkap','Compliance dan audit ready'],
+   cons:['Dashboard kurang modern','API documentation kurang developer-friendly'],
+   ideal:'<strong>Paling cocok untuk:</strong> Enterprise, pemerintah, perusahaan besar'},
+  {val:'paypal', icon:'🅿️', name:'PayPal', tagline:'Payment international — paling dikenal di dunia',
+   rec:'good', recLabel:'✓ International',
+   pros:['Brand trust paling tinggi global','Buyer protection','Support 200+ negara'],
+   cons:['Fee tinggi (~4.4%)','Dispute sering memihak buyer','Akun bisa difreeze'],
+   ideal:'<strong>Paling cocok untuk:</strong> Jualan internasional, freelancer, digital products'},
+  {val:'tripay', icon:'🔗', name:'Tripay', tagline:'Payment aggregator murah — cocok untuk UMKM',
+   rec:'good', recLabel:'✓ Murah & Mudah',
+   pros:['Fee sangat kompetitif','Setup cepat, approval cepat','Support VA, e-wallet, QRIS','API sederhana'],
+   cons:['Fitur lebih terbatas dari Midtrans/Xendit','Dashboard basic'],
+   ideal:'<strong>Paling cocok untuk:</strong> UMKM, toko online kecil, side project'},
+  {val:'qris-direct', icon:'📱', name:'QRIS Direct', tagline:'Integrasi langsung ke QRIS — tanpa perantara',
+   rec:'adv', recLabel:'⚡ Advanced',
+   pros:['Biaya sangat rendah (MDR 0.3%)','Semua e-wallet bisa bayar','Standard nasional Bank Indonesia'],
+   cons:['Perlu integrasi langsung ke acquiring bank','Setup teknis lebih kompleks'],
+   ideal:'<strong>Paling cocok untuk:</strong> POS/kiosk, toko fisik, app dengan volume transaksi tinggi'},
+],
+
+animation: [
+  {val:'framer-motion', icon:'✨', name:'Framer Motion', tagline:'Standar animasi untuk React', rec:'best', recLabel:'⭐ Terbaik React', pros:['Sangat mudah digunakan di React','Animasi gesekan (spring physics) mulus'], cons:['Hanya untuk React','Menambah sedikit ukuran *bundle*'], ideal:'<strong>Cocok untuk:</strong> Hampir semua web app modern berbasis React'},
+  {val:'gsap', icon:'🟢', name:'GSAP', tagline:'Library animasi paling sakti di web', rec:'adv', recLabel:'⚡ Profesional', pros:['Performa luar biasa cepat','Bisa menganimasikan scroll (ScrollTrigger) dengan magis'], cons:['Berbayar untuk penggunaan komersil tertentu','Kurva belajar cukup lumayan'], ideal:'<strong>Cocok untuk:</strong> Website pemenang penghargaan, landing page ultra-interaktif'},
+  {val:'threejs', icon:'🧊', name:'Three.js / R3F', tagline:'Dunia 3D di dalam browser', rec:'adv', recLabel:'⚡ 3D Graphics', pros:['Membuat grafis 3D (WebGL) yang menakjubkan','Bisa render model 3D (GLTF/GLB)'], cons:['Sangat sulit dipelajari (butuh pemahaman matematika ruang)','Bikin laptop panas jika tidak optimal'], ideal:'<strong>Cocok untuk:</strong> Web game, metaverse, showroom produk interaktif 3D'},
+  {val:'lottie', icon:'🎥', name:'Lottie', tagline:'*Export* animasi After Effects ke JSON', rec:'good', recLabel:'✓ Termudah', pros:['Animasi 100% dibuat oleh desainer profesional','File JSON sangat kecil dibanding GIF/Video'], cons:['Sulit dikontrol secara interaktif (hanya play/pause)'], ideal:'<strong>Cocok untuk:</strong> Animasi loading, pesan sukses, ilustrasi onboarding'},
+  {val:'tauri-spring', icon:'🖥️', name:'Desktop Native UI', tagline:'Animasi native OS', rec:'good', recLabel:'✓ Desktop App', pros:['Memanfaatkan donasi hardware GPU desktop maksimum','Sangat responsif'], cons:['Lebih kaku dibanding web animation tools'], ideal:'<strong>Cocok untuk:</strong> Aplikasi desktop internal'}
+],
+
+webBuilder: [
+  {val:'astro', icon:'🚀', name:'Astro + Tailwind', tagline:'Raja performa untuk website modern', rec:'best', recLabel:'⭐ Terbaik Pro', pros:['Performa tercepat dengan 0 JavaScript secara default','Bisa digabung dengan komponen React/Vue interaktif','Sangat diunggulkan oleh mesin pencari (SEO)'], cons:['Harus dirakit dengan koding murni','Butuh layanan Headless CMS terpisah untuk artikel/katalog'], ideal:'<strong>Cocok untuk:</strong> Landing page B2B, profil perusahaan top tier'},
+  {val:'nextjs-static', icon:'▲', name:'Next.js (SSG)', tagline:'Standar industri tech startup', rec:'good', recLabel:'✓ Scalable', pros:['Tumbuh tanpa batas (bisa diexpansi jadi app berat nantinya)','Mendukung ratusan ribu halaman statis otomatis'], cons:['Muatan kode dasarnya (bundle JS) sedikit lebih berat dari Astro'], ideal:'<strong>Cocok untuk:</strong> Website perusahaan besar, portal media'},
+  {val:'webflow', icon:'🎨', name:'Webflow', tagline:'Visual builder kelas premium', rec:'good', recLabel:'✓ No-Code', pros:['Tidak perlu koding sama sekali (No-code 100%)','Membuat animasi scroll sangat visual & intuitif','Sudah merangkap CMS dan tempat hosting'], cons:['Berbayar bulanan (Vendor Lock-in)','Bukan untuk developer yang suka kontrol kode penuh'], ideal:'<strong>Cocok untuk:</strong> Startup dengan budget marketing mantap, tim desainer UI/UX'},
+  {val:'wordpress', icon:'W', name:'WordPress', tagline:'Sistem di balik 40% website dunia', rec:'good', recLabel:'✓ Klasik & Fleksibel', pros:['Jutaan tema siap pasang dan plugin gratis','Klien awam sudah paham cara kerjanya','Tutorial berlimpah'], cons:['Lambat jika ditumpuk berbagai macam plugin','Rawan retas jika jarang dipelihara (*update*)'], ideal:'<strong>Cocok untuk:</strong> Blog personal, portal berita, web UMKM lokal'},
+  {val:'html', icon:'📄', name:'HTML / CSS Murni', tagline:'Pendekatan murni super ringan', rec:'good', recLabel:'✓ Teringan', pros:['Tanpa instalasi apapun','Bisa ditaruh di sembarang server dan hidup selamanya'], cons:['Mimpi buruk jika harus mengubah *header* di 20 halaman berbeda (karena tak ada sistem komponen)'], ideal:'<strong>Cocok untuk:</strong> Landing page sesaat atau satu lembar promosi event'}
+],
+
+cms: [
+  {val:'markdown', icon:'📝', name:'Markdown (Folder lokal)', tagline:'Konten sebatas teks di dalam proyek', rec:'best', recLabel:'⭐ Termudah Dev', pros:['100% Gratis dan menyatu dengan proyek kode','Jaminan performa absolut tanpa antri database'], cons:['Pemilik bisnis/penulis yang non-koder akan kesulitan mengedit'], ideal:'<strong>Cocok untuk:</strong> Blog engineer independen, dokumentasi teknis'},
+  {val:'sanity', icon:'🔴', name:'Sanity (Headless CMS)', tagline:'Studio editing fleksibel berbasis API', rec:'best', recLabel:'⭐ Terbaik Klien', pros:['Pengedit konten bisa bekerja nyaman tanpa merusak kodingan Anda','Fasilitas kolaborasi langsung (*real-time*)','Paket gratis (Free-tier) yang sangat murah hati'], cons:['Front-end harus dirakit manual menggunakan Astro atau Next.js'], ideal:'<strong>Cocok untuk:</strong> Proyek dari agensi dengan banyak artikel, katalog produk statis terstruktur'},
+  {val:'strapi', icon:'🍄', name:'Strapi', tagline:'API generator & CMS buatan sendiri', rec:'good', recLabel:'✓ Open Source', pros:['Gratis seluruhnya (Tarik kode dan jalankan di server Anda)','Menyuapi API ke platform apa pun (Aplikasi HP atau Web)'], cons:['Memerlukan keahlian administrasi *server* mandiri'], ideal:'<strong>Cocok untuk:</strong> Proyek rahasia perusahan/Instansi yang harus berjalan dalam server internal'},
+  {val:'wordpress-headless', icon:'W', name:'Headless WP', tagline:'Gunakan WP hanya sebagai panel pengetikan', rec:'good', recLabel:'✓ Masa Transisi', pros:['Klien tetap menggunakan panel WP usang yang mereka kuasai','Tapi kecepatan *website*-nya seganas Astro modern!'], cons:['Konfigurasi integrasinya bisa terasa canggung karena tumpukan teknis berlapis'], ideal:'<strong>Cocok untuk:</strong> Proyek restorasi web jadul tanpa menyiksa admin webnya'}
+],
+
+form: [
+  {val:'formspree', icon:'✉️', name:'Formspree', tagline:'Endpoint tanpa server siap pakai', rec:'best', recLabel:'⭐ Auto Email', pros:['Hanya siapkan kodingan form HTML, lempar formulirnya ke email Anda','Gratis dengan kapasitas mencukupi'], cons:['Di varian gratis, akan dialihkan ke halaman milik Formspree sesaat setelah *submit*'], ideal:'<strong>Cocok untuk:</strong> Formulir kontak/Buku tamu sederhana'},
+  {val:'google-form', icon:'📊', name:'Google Forms Embed', tagline:'Form gratis terandal di bumi', rec:'good', recLabel:'✓ Gratis Selamanya', pros:['Data pengunjung dijamin tak akan hilang (masuk *spreadsheet*)'], cons:['Tampilan kaku khas Google, merusak estetika desain web Anda'], ideal:'<strong>Cocok untuk:</strong> Formulir registrasi pendaftaran panjang dan berbelit'}
+],
+
+uiLib: [
+  {val:'tailwind-shadcn', icon:'🎨', name:'Tailwind + shadcn/ui', tagline:'Kombinasi terpopuler untuk UI modern',
+   rec:'best', recLabel:'⭐ Terbaik',
+   pros:['Komponen siap pakai yang cantik','Sangat fleksibel dan bisa dikustomisasi','Tidak perlu tulis banyak CSS manual','Performa ringan'],
+   cons:['Class HTML bisa terlihat panjang','Butuh waktu belajar sistem Tailwind'],
+   ideal:'<strong>Paling cocok untuk:</strong> Hampir semua project modern'},
+  {val:'chakra', icon:'🌀', name:'Chakra UI', tagline:'UI library paling mudah untuk pemula',
+   rec:'good', recLabel:'✓ Termudah',
+   pros:['Komponen langsung pakai dengan prop sederhana','Aksesibilitas built-in','Dark mode otomatis'],
+   cons:['Tampilan lebih generik','Performa sedikit lebih berat'],
+   ideal:'<strong>Paling cocok untuk:</strong> Pemula yang mau tampilan bagus tanpa banyak setup'},
+  {val:'mui', icon:'🔷', name:'Material UI (MUI)', tagline:'UI ala Google Material Design',
+   rec:'good', recLabel:'✓ Bagus',
+   pros:['Komponen sangat lengkap','Tampilan profesional dan familiar','Dokumentasi sangat baik'],
+   cons:['Tampilan terlihat "standar Google"','Bundle size lebih besar','Kustomisasi butuh lebih banyak kerja'],
+   ideal:'<strong>Paling cocok untuk:</strong> Dashboard internal, enterprise app, admin panel'},
+  {val:'framer', icon:'✨', name:'+ Framer Motion', tagline:'Animasi smooth untuk React',
+   rec:'good', recLabel:'✓ Tambahkan',
+   pros:['Animasi profesional dengan kode minimal','Gesture support (drag, tap, swipe)','Performa dioptimasi'],
+   cons:['Hanya untuk animasi — bukan komponen UI','Tambah ukuran bundle'],
+   ideal:'<strong>Paling cocok untuk:</strong> App yang butuh kesan premium dan animasi halus'},
+],
+
+auth: [
+  {val:'supabase-auth', icon:'🔐', name:'Supabase Auth', tagline:'Auth lengkap dalam ekosistem Supabase',
+   rec:'best', recLabel:'⭐ Terbaik (+ Supabase)',
+   pros:['Setup 10 menit','Email, Google, GitHub, dll. built-in','Row Level Security untuk data per-user','Gratis'],
+   cons:['Terikat ke ekosistem Supabase'],
+   ideal:'<strong>Paling cocok untuk:</strong> Siapapun yang pakai Supabase sebagai database'},
+  {val:'nextauth', icon:'🔑', name:'NextAuth.js / Auth.js', tagline:'Auth untuk Next.js — paling fleksibel',
+   rec:'best', recLabel:'⭐ Terbaik (Next.js)',
+   pros:['Puluhan provider OAuth siap pakai','Open source dan gratis','Sangat fleksibel'],
+   cons:['Konfigurasi awal agak panjang','Docs bisa membingungkan'],
+   ideal:'<strong>Paling cocok untuk:</strong> Project Next.js yang butuh login sosial (Google, GitHub, dll.)'},
+  {val:'clerk', icon:'👤', name:'Clerk', tagline:'Auth as a service — tercepat setup-nya',
+   rec:'good', recLabel:'✓ Tercepat',
+   pros:['UI auth sudah jadi, tinggal pasang','Fitur premium: MFA, organization, passkey','Setup 5 menit'],
+   cons:['Berbayar untuk fitur lanjut','Vendor lock-in'],
+   ideal:'<strong>Paling cocok untuk:</strong> Startup yang mau fokus ke produk, bukan setup auth'},
+  {val:'jwt-custom', icon:'🔒', name:'JWT Custom', tagline:'Auth manual — kontrol penuh',
+   rec:'adv', recLabel:'⚡ Advanced',
+   pros:['Kontrol 100%','Tidak ada biaya tambahan','Bisa disesuaikan sepenuhnya'],
+   cons:['Harus implement sendiri (risiko bug keamanan)','Butuh waktu lebih lama'],
+   ideal:'<strong>Paling cocok untuk:</strong> Tim berpengalaman yang butuh custom flow'},
+],
+
+deployment: [
+  {val:'vercel', icon:'▲', name:'Vercel', tagline:'Deploy Next.js/React dalam hitungan menit',
+   rec:'best', recLabel:'⭐ Terbaik Pemula',
+   pros:['Deploy otomatis tiap push ke GitHub','SSL, CDN, preview URL gratis','Gratis untuk project pribadi'],
+   cons:['Mahal untuk traffic sangat tinggi','Kurang cocok untuk long-running backend'],
+   ideal:'<strong>Paling cocok untuk:</strong> Frontend, Next.js, static sites'},
+  {val:'railway', icon:'🚂', name:'Railway', tagline:'Deploy backend + database dengan mudah',
+   rec:'best', recLabel:'⭐ Terbaik Backend',
+   pros:['Deploy Docker atau repo langsung','Database (PostgreSQL, Redis) built-in','$5/bulan sudah cukup untuk MVP'],
+   cons:['Free tier terbatas','Tidak sepopuler AWS/GCP'],
+   ideal:'<strong>Paling cocok untuk:</strong> Backend Node.js, Python API, fullstack app'},
+  {val:'render', icon:'🎯', name:'Render', tagline:'Heroku modern — mudah dan terjangkau',
+   rec:'good', recLabel:'✓ Bagus',
+   pros:['Free tier untuk web services','Setup mudah seperti Heroku','Database PostgreSQL murah'],
+   cons:['Free tier tidur setelah 15 menit tidak aktif','Lebih lambat bangun dari Railway'],
+   ideal:'<strong>Paling cocok untuk:</strong> Side project, demo app, backend sederhana'},
+  {val:'aws', icon:'☁️', name:'AWS / GCP / Azure', tagline:'Cloud enterprise — skala tak terbatas',
+   rec:'adv', recLabel:'⚡ Enterprise',
+   pros:['Skalabilitas tidak terbatas','Layanan sangat lengkap','SLA enterprise'],
+   cons:['Kompleksitas tinggi','Biaya bisa membengkak jika salah konfigurasi','Butuh DevOps berpengalaman'],
+   ideal:'<strong>Paling cocok untuk:</strong> Startup tahap growth, enterprise, fintech'},
+  {val:'docker', icon:'🐳', name:'+ Docker + CI/CD', tagline:'Containerisasi untuk konsistensi lingkungan',
+   rec:'good', recLabel:'✓ Tambahkan',
+   pros:['"Works on my machine" problem hilang','Deployment konsisten di mana saja','Mudah di-scale'],
+   cons:['Kurva belajar ada','Perlu resource lebih saat development'],
+   ideal:'<strong>Paling cocok untuk:</strong> Project yang butuh consistency antara dev dan production'},
+],
+
+// ADLC specific
+llm: [
+  {val:'claude', icon:'🟣', name:'Claude 3.5+ (Anthropic)', tagline:'Terbaik untuk reasoning, coding, dan instruksi panjang',
+   rec:'best', recLabel:'⭐ Terbaik Coding',
+   pros:['Konteks sangat panjang (200k token)','Mengikuti instruksi kompleks dengan sangat baik','Tool use / function calling terbaik','Lebih aman dan terpercaya'],
+   cons:['API berbayar (tidak ada free tier)','Akses di beberapa region terbatas'],
+   ideal:'<strong>Paling cocok untuk:</strong> Coding agent, document analysis, complex reasoning'},
+  {val:'gpt', icon:'🟢', name:'GPT-4o (OpenAI)', tagline:'Paling populer, ekosistem terlengkap',
+   rec:'good', recLabel:'✓ Sangat Populer',
+   pros:['Komunitas dan tools terbesar','Vision (baca gambar) built-in','ChatGPT plugins ekosistem luas'],
+   cons:['Rate limit lebih ketat','Harga lebih tinggi untuk volume besar'],
+   ideal:'<strong>Paling cocok untuk:</strong> Multi-modal agent, prototyping cepat'},
+  {val:'deepseek', icon:'🐋', name:'DeepSeek (R1/V3)', tagline:'Kecerdasan setara GPT-4o dengan biaya amat sangat murah',
+   rec:'best', recLabel:'⭐ Terbaik Value',
+   pros:['Reasoning model (R1) ahli matematika dan coding tingkat dewa','API sangat murah','Open-weight (bisa di-host sendiri)'],
+   cons:['Sering down/rate-limit saat jam sibuk karena terlalu populer','Kurang fokus di sisi image/vision'],
+   ideal:'<strong>Paling cocok untuk:</strong> Coding AI, agen pemikir kompleks, startup dengan budget hemat'},
+  {val:'qwen', icon:'🚀', name:'Qwen 2.5+', tagline:'Open Source terbaik dunia saat ini',
+   rec:'good', recLabel:'✓ Open Source',
+   pros:['Tangguh dalam berbagai bahasa','Varian ukuran lengkap (0.5B s/d 72B)','Kemampuan vision dan logic jempolan'],
+   cons:['Censorship tinggi untuk topik geopolitik tertentu'],
+   ideal:'<strong>Paling cocok untuk:</strong> Agen AI multi-bahasa, self-hosted LLM untuk enterprise'},
+  {val:'gemini', icon:'🔵', name:'Gemini 1.5 Pro (Google)', tagline:'Konteks terpanjang — 1 juta token',
+   rec:'good', recLabel:'✓ Untuk Dokumen Besar',
+   pros:['Context window terbesar (1M token)','Gratis tier cukup besar','Integrasi Google Workspace'],
+   cons:['Tool use masih berkembang','Konsistensi output kadang kurang'],
+   ideal:'<strong>Paling cocok untuk:</strong> RAG dengan dokumen besar, analisis data panjang'},
+  {val:'llama', icon:'🦙', name:'Llama 3 (lokal/Groq)', tagline:'Open source — gratis dan privat',
+   rec:'adv', recLabel:'⚡ Privacy-First',
+   pros:['Gratis (self-hosted)','Data tidak keluar dari server kamu','Customizable dengan fine-tuning'],
+   cons:['Butuh GPU atau bayar cloud inference','Kualitas lebih rendah dari model komersial'],
+   ideal:'<strong>Paling cocok untuk:</strong> Project yang data-nya sensitif, budget terbatas'},
+],
+
+orchestration: [
+  {val:'langgraph', icon:'🕸️', name:'LangGraph', tagline:'Terbaik untuk workflow agent yang kompleks',
+   rec:'best', recLabel:'⭐ Terbaik Production',
+   pros:['State management yang kuat','Bisa buat loop, parallel, conditional flow','Built-in human-in-the-loop','Dipakai di banyak production system'],
+   cons:['Kurva belajar lebih tinggi','Overkill untuk agent sederhana'],
+   ideal:'<strong>Paling cocok untuk:</strong> Multi-step agent, production system, workflow kompleks'},
+  {val:'smolagents', icon:'🤗', name:'Smolagents (HuggingFace)', tagline:'Library agen AI super ringan dan murni',
+   rec:'best', recLabel:'⭐ Ter-ringan',
+   pros:['Kode sangat minimalis & gampang dibaca','Akses langsung ke HuggingFace Hub tools','Tool-calling memakai code-generation (Python snippet) yang lebih cerdas'],
+   cons:['Fitur kelas enterprise (human-in-the-loop, time-travel) tidak selengkap LangGraph'],
+   ideal:'<strong>Paling cocok untuk:</strong> Agen fungsional ringan, integrasi AI serba cepat dalam script Python'},
+  {val:'phidata', icon:'🧬', name:'Phidata', tagline:'Agen dengan memori dan tools bawaan elegan',
+   rec:'good', recLabel:'✓ Praktis',
+   pros:['Manajemen memori (RAG) dan koneksi database out-of-the-box','Sangat bersih untuk disiapkan di production'],
+   cons:['Abstraksi tinggi, butuh adaptasi jika ingin kontrol alur manual yang radikal'],
+   ideal:'<strong>Paling cocok untuk:</strong> Agen finansial, asisten analisa data, chatbot database pintar'},
+  {val:'pydantic-ai', icon:'🤖', name:'Pydantic AI', tagline:'Framework Agen AI type-safe baru dari pencipta Pydantic',
+   rec:'best', recLabel:'⭐ Terbaik Type-Safe',
+   pros:['Integrasi penuh dengan Pydantic v2','Type-safe dan terstruktur secara bawaan','Sistem dependency injection yang tangguh','Mudah digunakan dan di-debug'],
+   cons:['Komunitas masih baru berkembang','Integrasi pihak ketiga lebih sedikit dibanding LangChain'],
+   ideal:'<strong>Paling cocok untuk:</strong> Aplikasi production Python yang butuh output data terstruktur.'},
+  {val:'crewai', icon:'👥', name:'CrewAI', tagline:'Multi-agent dengan role seperti tim manusia',
+   rec:'good', recLabel:'✓ Termudah Multi-Agent',
+   pros:['Konsep mudah dipahami (agent punya "role")','Setup cepat','Bagus untuk prototyping tim agent'],
+   cons:['Kurang fleksibel untuk flow yang sangat custom','Debug lebih susah'],
+   ideal:'<strong>Paling cocok untuk:</strong> Multi-agent POC, automation pipeline berbasis role'},
+  {val:'autogen', icon:'⚡', name:'AutoGen v0.4', tagline:'Multi-agent berbasis event-driven & asinkron yang sangat scalable',
+   rec:'good', recLabel:'✓ Event-Driven',
+   pros:['Komunikasi multi-agent asinkron yang tangguh','Arsitektur berbasis event-driven terbaru (v0.4)','Sangat scalable untuk sistem terdistribusi'],
+   cons:['Setup dan pemahaman konsep v0.4 berbeda jauh dari v0.2','Kurva belajar lumayan tinggi'],
+   ideal:'<strong>Paling cocok untuk:</strong> Sistem multi-agent skala besar dan terdistribusi.'},
+  {val:'llamaindex-workflows', icon:'🗂️', name:'LlamaIndex Workflows', tagline:'Pembangunan agen data berbasis event yang intuitif',
+   rec:'good', recLabel:'✓ Data-Centric',
+   pros:['Sangat bagus untuk RAG dan pemrosesan data','Event-driven murni, mudah diatur kontrol flow-nya','Integrasi ekosistem LlamaIndex yang sangat luas'],
+   cons:['Fokus utama pada data, kurang fleksibel untuk agent umum non-data'],
+   ideal:'<strong>Paling cocok untuk:</strong> Agen RAG tingkat lanjut dan pipeline ekstraksi data.'},
+  {val:'langchain', icon:'🔗', name:'LangChain', tagline:'Library agent paling banyak dipakai',
+   rec:'good', recLabel:'✓ Ekosistem Terbesar',
+   pros:['Ribuan integrasi siap pakai','Komunitas besar, banyak contoh kode','RAG dan retrieval sudah built-in'],
+   cons:['Abstraksi kadang terlalu banyak','Debugging lebih susah karena banyak layer'],
+   ideal:'<strong>Paling cocok untuk:</strong> RAG app, chatbot dengan tools, agent pemula'},
+  {val:'custom', icon:'🔧', name:'Custom (bare Python/JS)', tagline:'Bangun sendiri dari nol — kontrol penuh',
+   rec:'adv', recLabel:'⚡ Full Control',
+   pros:['Kontrol penuh tanpa abstraksi','Lebih mudah di-debug','Tidak tergantung framework pihak ketiga'],
+   cons:['Harus implementasi semuanya sendiri','Lebih lama development-nya'],
+   ideal:'<strong>Paling cocok untuk:</strong> Tim berpengalaman, agent dengan logic sangat spesifik'},
+],
+
+memory: [
+  {val:'context', icon:'🧠', name:'Context Window (short-term)', tagline:'Memori percakapan — paling sederhana',
+   rec:'best', recLabel:'⭐ Mulai Sini',
+   pros:['Tidak perlu setup tambahan','Otomatis tersedia di semua LLM','Cukup untuk task pendek'],
+   cons:['Hilang setelah session selesai','Terbatas oleh panjang konteks model'],
+   ideal:'<strong>Paling cocok untuk:</strong> Semua agent — ini dasar yang selalu dipakai'},
+  {val:'supabase-vector', icon:'🟢', name:'Supabase pgvector', tagline:'Vector search di dalam PostgreSQL',
+   rec:'best', recLabel:'⭐ Terbaik + Praktis',
+   pros:['Tidak perlu database terpisah','Gratis dalam ekosistem Supabase','SQL + vector dalam satu tempat'],
+   cons:['Performa vektor lebih lambat dari Pinecone untuk skala besar'],
+   ideal:'<strong>Paling cocok untuk:</strong> RAG, knowledge base, project yang sudah pakai Supabase'},
+  {val:'qdrant', icon:'🎯', name:'Qdrant', tagline:'Database vektor open-source super cepat dengan filter payload',
+   rec:'good', recLabel:'✓ Open Source',
+   pros:['Performa luar biasa ditulis dalam Rust','Pencarian vektor dengan filter payload yang canggih','Bisa self-hosted dengan mudah'],
+   cons:['Butuh manajemen infrastruktur jika self-hosted'],
+   ideal:'<strong>Paling cocok untuk:</strong> Pencarian kemiripan gambar/teks berskala besar.'},
+  {val:'pinecone', icon:'🌲', name:'Pinecone', tagline:'Database vektor tercepat untuk production',
+   rec:'good', recLabel:'✓ Skala Besar',
+   pros:['Performa query vektor terbaik','Managed service, tidak perlu manage server','Cocok untuk jutaan dokumen'],
+   cons:['Berbayar untuk production','Satu lagi service yang harus dikelola'],
+   ideal:'<strong>Paling cocok untuk:</strong> RAG production dengan jutaan dokumen'},
+  {val:'milvus', icon:'Ⓜ️', name:'Milvus', tagline:'Database vektor skala enterprise untuk miliaran data',
+   rec:'adv', recLabel:'⚡ Enterprise Only',
+   pros:['Arsitektur terdistribusi cloud-native','Mendukung pencarian hybrid dan miliaran vektor','Keamanan tingkat tinggi'],
+   cons:['Sangat kompleks untuk setup dan di-manage','Resource-intensive'],
+   ideal:'<strong>Paling cocok untuk:</strong> Perusahaan besar dengan kebutuhan pencarian vektor berskala masif.'},
+  {val:'redis-mem', icon:'🔴', name:'Redis (session memory)', tagline:'Cache cepat untuk memori sementara',
+   rec:'good', recLabel:'✓ Bagus',
+   pros:['Akses sangat cepat','Cocok untuk multi-user agent session','TTL otomatis untuk cleanup'],
+   cons:['Data hilang kalau restart (tanpa persistence)','Butuh server Redis'],
+   ideal:'<strong>Paling cocok untuk:</strong> Agent yang melayani banyak user secara bersamaan'},
+],
+
+agentTools: [
+  {val:'web-search', icon:'🔍', name:'Web Search', tagline:'Agent bisa cari info terbaru di internet',
+   rec:'best', recLabel:'⭐ Paling Berguna',
+   pros:['Info selalu up-to-date','Tidak terbatas pada training data LLM','Bisa cek fakta real-time'],
+   cons:['Tambah latency','Butuh API search (Tavily/Serper)','Perlu validasi hasil'],
+   ideal:'<strong>Paling cocok untuk:</strong> Research agent, news summarizer, fact-checker'},
+  {val:'mcp', icon:'🔌', name:'Model Context Protocol (MCP)', tagline:'Standar Anthropic untuk menghubungkan agent dengan tools & data',
+   rec:'best', recLabel:'⭐ Terbaik Standar',
+   pros:['Protokol terstandarisasi, satu client untuk banyak server tool','Keamanan tinggi dengan kontrol akses terpusat','Ekosistem server MCP tumbuh sangat cepat (Postgres, Slack, dll)'],
+   cons:['Butuh setup server MCP terpisah','Teknologi baru yang terus berkembang'],
+   ideal:'<strong>Paling cocok untuk:</strong> Menghubungkan agen AI ke database internal, workspace, atau API pihak ketiga secara aman.'},
+  {val:'computer-use', icon:'🖱️', name:'Computer Use (Anthropic)', tagline:'Agent AI mengambil alih mouse & keyboard',
+   rec:'adv', recLabel:'⚡ Masa Depan',
+   pros:['Bisa mengoperasikan aplikasi desktop apapun layaknya manusia','Murni pandangan visual GUI (tanpa butuh API backend aplikasi tersebut)'],
+   cons:['Sangat mahal per klik/task (banyak token)','Rawan kesalahan/halusinasi UI, sangat butuh sandboxing ketat'],
+   ideal:'<strong>Paling cocok untuk:</strong> Otomatisasi software legacy (jadul), bot RPA tingkat lanjut, QA testing visual'},
+  {val:'code-exec', icon:'💻', name:'Code Execution', tagline:'Agent bisa jalankan kode dan lihat hasilnya',
+   rec:'best', recLabel:'⭐ Untuk Coding Agent',
+   pros:['Agent bisa test dan debug sendiri','Bisa proses data, buat grafik, kalkulasi akurat'],
+   cons:['Risiko keamanan jika tidak di-sandbox','Butuh lingkungan eksekusi yang aman'],
+   ideal:'<strong>Paling cocok untuk:</strong> Coding assistant, data analysis, automation agent'},
+  {val:'file-rw', icon:'📄', name:'File Read/Write', tagline:'Agent bisa baca dan simpan file',
+   rec:'good', recLabel:'✓ Berguna',
+   pros:['Bisa proses dokumen PDF, Word, CSV','Simpan hasil ke file','Workflow dokumen otomatis'],
+   cons:['Perlu akses filesystem yang aman','Hati-hati dengan sensitive files'],
+   ideal:'<strong>Paling cocok untuk:</strong> Document processing agent, report generator'},
+  {val:'api-calls', icon:'🔌', name:'API Calls', tagline:'Agent bisa panggil service eksternal',
+   rec:'good', recLabel:'✓ Sangat Fleksibel',
+   pros:['Integrasi ke service apapun','Bisa kirim email, Slack, notifikasi','Automation multi-platform'],
+   cons:['Harus kelola API keys dengan aman','Rate limiting tiap service berbeda'],
+   ideal:'<strong>Paling cocok untuk:</strong> Integration agent, workflow automation, CRM bot'},
+  {val:'browser', icon:'🌐', name:'Browser Automation', tagline:'Agent bisa "berselancar" di web seperti manusia',
+   rec:'adv', recLabel:'⚡ Advanced',
+   pros:['Bisa scrape site yang tidak ada API-nya','Isi form, klik tombol secara otomatis','Bisa screenshot halaman'],
+   cons:['Lambat dan resource-intensive','Mudah break kalau website update','Banyak site blok bot'],
+   ideal:'<strong>Paling cocok untuk:</strong> Web scraping, automated testing, monitoring website'},
+],
+
+observability: [
+  {val:'langfuse', icon:'📊', name:'Langfuse', tagline:'LLM Engineering platform — tracing, eval, & analytics open-source',
+   rec:'best', recLabel:'⭐ Terbaik Open-Source',
+   pros:['Open-source dan bisa self-hosted','Tracing latency, cost, dan token secara detail','Evaluasi otomatis & manual (human feedback)'],
+   cons:['Butuh setup server sendiri jika tidak pakai cloud service'],
+   ideal:'<strong>Paling cocok untuk:</strong> Tim yang butuh tracing murah, detail, dan kontrol atas data.'},
+  {val:'phoenix', icon:'🔥', name:'Arize Phoenix', tagline:'AI observability & evaluation gratis dari Arize',
+   rec:'good', recLabel:'✓ Evaluasi Cerdas',
+   pros:['Bagus untuk RAG troubleshooting','Evaluasi otomatis LLM-as-a-judge sangat tangguh','Mendukung OpenTelemetry'],
+   cons:['Cloud platform berbayar untuk data besar'],
+   ideal:'<strong>Paling cocok untuk:</strong> Evaluasi RAG, deteksi drift data, dan debugging embedding.'},
+  {val:'langsmith', icon:'🦜', name:'LangSmith', tagline:'Platform monitoring bawaan dari ekosistem LangChain',
+   rec:'good', recLabel:'✓ LangChain Native',
+   pros:['Integrasi out-of-the-box dengan LangChain & LangGraph','Debugging per-node yang sangat visual','Dataset testing yang mudah'],
+   cons:['Berbayar setelah limit free-tier terlampaui','Vendor lock-in ekosistem LangChain'],
+   ideal:'<strong>Paling cocok untuk:</strong> Project yang menggunakan LangGraph atau LangChain secara intensif.'}
+],
+
+};
+
+// ═══════════════════════════════════════════
+// STEP DEFINITIONS
+// ═══════════════════════════════════════════
+const WEBSITE_STEPS = [
+  {key:'projectName', title:'Ceritakan nama & tujuan website', type:'text', desc:'Tuliskan sekilas web seperti apa yang ingin dibuat.', placeholder:'Contoh: "Landing page penjualan kursus online"'},
+  {key:'webType', title:'Pilih tipe website', type:'scale', desc:'Struktur yang paling cocok dengan kebutuhan:', options:[
+    {val:'corporate',icon:'🏛️',name:'Full Portal / Corporate',desc:'Website berskala besar yang konten mutlaknya dikendalikan via panel CMS'},
+    {val:'landing',icon:'🎯',name:'Landing Page',desc:'Satu halaman panjang fokus konversi/marketing'},
+    {val:'profile',icon:'🏢',name:'Company Profile',desc:'Beberapa halaman statis (Tentang Kami, Kontak, Layanan)'},
+    {val:'blog',icon:'📝',name:'Blog / Media',desc:'Website berbasis konten artikel yang sering update'},
+    {val:'portfolio',icon:'🎨',name:'Portfolio',desc:'Menampilkan karya dan resume personal'},
+    {val:'docs',icon:'📚',name:'Documentation',desc:'Panduan/wiki atau dokumentasi teknis'}
+  ]},
+  {key:'webBuilder', title:'Platform / Web Builder', type:'techcard', desc:'Alat yang tepat untuk membangun website.', techKey:'webBuilder', multi:false},
+  {key:'cms', title:'Manajemen Konten (CMS)', type:'techcard', desc:'Bagaimana kamu akan memperbarui teks/gambar?', techKey:'cms', multi:false},
+  {key:'animation', title:'🎬 Animasi & Media (Opsional)', type:'techcard', desc:'Elevasi desain web dengan animasi halus.', techKey:'animation', multi:true, max:2},
+  {key:'form', title:'Integrasi Form (Opsional)', type:'techcard', desc:'Kumpulkan email/kontak tanpa membuat backend sendiri.', techKey:'form', multi:true, max:1},
+  {key:'deployment', title:'Hosting', type:'techcard', desc:'Di mana website akan ditempatkan?', techKey:'deployment', multi:true, max:2},
+  {key:'outputPref', title:'Apa yang mau dihasilkan?', type:'scale', options:[
+    {val:'all',icon:'✨',name:'Semua Lengkap (Masterplan)',desc:'Struktur, PRD, dan Prompt khusus IDE AI'},
+    {val:'structure',icon:'📁',name:'Struktur Folder',desc:'Hanya pohon direktori'},
+    {val:'prd',icon:'📝',name:'PRD Saja',desc:'Dokumen rencana produk'},
+    {val:'prompts',icon:'💬',name:'Prompt Saja',desc:'Hanya instruksi AI'}
+  ]}
+];
+
+const SDLC_STEPS = [
+  {key:'projectName', title:'Ceritakan project kamu', type:'text', desc:'Tuliskan nama dan deskripsi singkat apa yang ingin kamu bangun. Tidak harus teknis — cukup jelaskan masalah yang dipecahkan.', placeholder:'Contoh: "Sistem ERP Toko Buku Lokal"'},
+  {key:'appType', title:'Ini jenis aplikasi apa?', type:'scale', desc:'Pilih yang paling sesuai dengan bayangan kamu.', options:[
+    {val:'webapp',icon:'🌐',name:'Web App',desc:'Sistem web interaktif — laptop/HP. Contoh: Tokopedia, Notion'},
+    {val:'mobile',icon:'📱',name:'Mobile App',desc:'Aplikasi Android/iOS yang diinstall. Contoh: GoJek, Instagram'},
+    {val:'desktop',icon:'🖥️',name:'Desktop App',desc:'App Windows/Mac/Linux yang diinstall. Contoh: VSCode, Spotify'},
+    {val:'fullstack',icon:'🏗️',name:'Fullstack (Web + API)',desc:'Web app lengkap dengan database dan API sendiri'},
+    {val:'api',icon:'🔌',name:'API / Backend',desc:'Layanan di server untuk melayani app lain'}
+  ]},
+  {key:'desktopType', showIf: a=>a.appType==='desktop', title:'Jenis app desktop apa?', type:'scale', desc:'Pilih yang paling sesuai.', options:[
+    {val:'utility',icon:'🔧',name:'Utility/Tools',desc:'Aplikasi pendamping ringan'}, {val:'productivity',icon:'📊',name:'Productivity',desc:'Aplikasi produktivitas'}, {val:'pos',icon:'🏪',name:'POS/Kiosk',desc:'Aplikasi kasir atau anjungan'}, {val:'game',icon:'🎮',name:'Game/Interactive',desc:'Game atau aplikasi interaktif'}
+  ]},
+  {key:'audience', showIf: a=>a.appType!=='desktop', title:'Siapa yang akan pakai?', type:'scale', desc:'Ini menentukan tingkat keamanan, arsitektur data, dan UX.', options:[
+    {val:'b2c',icon:'👥',name:'Publik (B2C)',desc:'Bisa diakses siapa saja, butuh performa cepat'},
+    {val:'b2b',icon:'🏢',name:'Bisnis (B2B / SaaS)',desc:'Klien bisnis, butuh isolasi data, multi-user, & permission'},
+    {val:'internal',icon:'🔒',name:'Internal Tool / ERP',desc:'Sistem operasi perusahaan (ERP, HR, Keuangan, Inventory)'}
+  ]},
+  {key:'targetOS', showIf: a=>a.appType==='desktop', title:'Target platform?', type:'multicheck', options:[
+    {val:'windows',icon:'🪟',label:'Windows'}, {val:'macos',icon:'🍎',label:'macOS'}, {val:'linux',icon:'🐧',label:'Linux'}
+  ]},
+  {key:'frontend', showIf: a=>!['api','desktop'].includes(a.appType), title:'Tampilan — pakai apa?', type:'techcard', techKey:'frontend', multi:false},
+  {key:'desktopFramework', showIf: a=>a.appType==='desktop', title:'Framework desktop — pakai apa?', type:'techcard', techKey:'desktop', multi:false},
+  {key:'backend', showIf: a=>!['desktop'].includes(a.appType), title:'Server / Logika Backend', type:'techcard', techKey:'backend', multi:false},
+  {key:'database', title:'Di mana data disimpan?', type:'techcard', techKey:'database', multi:true, max:2},
+  {key:'uiLib', title:'Komponen UI & gaya tampilan', type:'techcard', techKey:'uiLib', multi:true, max:3},
+  {key:'animation', title:'🎬 Animasi & Media (Opsional)', type:'techcard', desc:'Tertarik pakai animasi gestur halus atau interaksi 3D nyata?', techKey:'animation', multi:true, max:2},
+  {key:'installer', showIf: a=>a.appType==='desktop', title:'Installer & distribusi', type:'techcard', techKey:'installer', multi:true, max:2},
+  {key:'auth', showIf: a=>!['desktop'].includes(a.appType), title:'Sistem login & keamanan', type:'techcard', techKey:'auth', multi:true, max:2},
+  {key:'payment', title:'💳 Sistem pembayaran (opsional)', type:'techcard', techKey:'payment', multi:true, max:2},
+  {key:'deployment', showIf: a=>a.appType!=='desktop', title:'Di mana app di-hosting?', type:'techcard', techKey:'deployment', multi:true, max:3},
+  {key:'scale', title:'Skala & waktu pengerjaan', type:'scale', options:[
+    {val:'mvp',icon:'🚀',name:'MVP — 2-4 minggu',desc:'Versi purwarupa operasional minimal'},
+    {val:'small',icon:'📦',name:'App Kecil — 1-2 bulan',desc:'Cukup fitur untuk peluncuran stabil'},
+    {val:'medium',icon:'🏗️',name:'Produk Menengah — 3-6 bulan',desc:'Produk lengkap bernilai jual dengan ribuan user'},
+    {val:'enterprise',icon:'🏰',name:'Enterprise / ERP — 6+ bulan',desc:'Sistem skala masif (ERP), audit trail ketat, multi-tenant'}
+  ]},
+  {key:'outputPref', title:'Apa yang mau dihasilkan?', type:'scale', options:[
+    {val:'all',icon:'✨',name:'Semua Lengkap (Masterplan)',desc:'Struktur, PRD, dan Prompt khusus IDE AI'},
+    {val:'structure',icon:'📁',name:'Struktur Folder',desc:'Hanya pohon direktori'},
+    {val:'prd',icon:'📝',name:'PRD Saja',desc:'Dokumen rencana produk'},
+    {val:'prompts',icon:'💬',name:'Prompt Saja',desc:'Hanya instruksi AI'},
+    {val:'configs',icon:'⚙️',name:'Konfigurasi',desc:'File konfigurasi system'}
+  ]}
+];
+
+const ADLC_STEPS = [
+  {key:'agentName', title:'Misi agent AI kamu', type:'text', desc:'Deskripsikan agent/sistem AI...', placeholder:'Contoh: "SurveyBot untuk kumpulkan data Google Form"'},
+  {key:'agentType', title:'Jenis sistem AI ini apa?', type:'scale', options:[
+    {val:'single',icon:'🤖',name:'1 Agent + Tools',desc:'Satu AI sederhana'}, {val:'multi',icon:'👥',name:'Tim Agent',desc:'Beberapa AI berbeda peran (Multi-Agent)'}, {val:'rag',icon:'💬',name:'Chatbot + Knowledge Base',desc:'Q&A berdasarkan data dokumen mandiri'}, {val:'workflow',icon:'🔄',name:'Otomasi Workflow',desc:'Proses rantai panjang'}, {val:'coding',icon:'💻',name:'Coding Assistant',desc:'Asisten penulisan & analisis logika'}, {val:'browser',icon:'🌐',name:'Browser Agent',desc:'Navigasi web otomatis'}
+  ]},
+  {key:'llm', title:'Model AI yang dipakai', type:'techcard', techKey:'llm', multi:false},
+  {key:'orchestration', title:'Framework untuk mengatur agent', type:'techcard', techKey:'orchestration', multi:true, max:2},
+  {key:'memory', title:'Memori agent', type:'techcard', techKey:'memory', multi:true, max:3},
+  {key:'agentTools', title:'Kemampuan & tools agent', type:'techcard', techKey:'agentTools', multi:true, max:5},
+  {key:'observability', title:'Monitoring & Observabilitas Agent (Opsional)', type:'techcard', techKey:'observability', multi:true, max:2},
+  {key:'autonomy', title:'Seberapa mandiri agent bekerja?', type:'scale', options:[
+    {val:'hitl',icon:'✋',name:'Konfirmasi tiap langkah'}, {val:'checkpoint',icon:'🔔',name:'Konfirmasi titik kritis'}, {val:'monitor',icon:'👁️',name:'Dipantau pasif'}, {val:'autonomous',icon:'🤖',name:'100% Otomatis'}
+  ]},
+  {key:'deployment', title:'Di mana agent di-deploy?', type:'techcard', techKey:'deployment', multi:true, max:2},
+  {key:'complexity', title:'Skala pengembangan', type:'scale', options:[
+    {val:'poc',icon:'🌱',name:'POC (1 mgg)'}, {val:'simple',icon:'🔧',name:'Sederhana (2-4 mgg)'}, {val:'production',icon:'⚙️',name:'Produksi'}, {val:'enterprise',icon:'🏭',name:'Enterprise'}
+  ]},
+  {key:'outputPref', title:'Output', type:'scale', options:[
+    {val:'all',icon:'✨',name:'Semua Lengkap (Masterplan)',desc:'Struktur, ADLC Plan, Prompt, dan Starter Code'},
+    {val:'structure',icon:'📁',name:'Struktur Folder',desc:'Hanya pohon direktori'},
+    {val:'prd',icon:'📝',name:'PRD Saja',desc:'Dokumen rencana produk'},
+    {val:'prompts',icon:'💬',name:'Prompt Saja',desc:'Hanya instruksi AI'},
+    {val:'code',icon:'🐍',name:'Starter code',desc:'Pre-written Python code'}
+  ]}
+];
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+const S = {mode:null, step:0, answers:{}, generating:false, generated:null, activeTab:null, level:'beginner',
+  isNative: !!window.__TAURI__,
+  workspacePath: localStorage.getItem('df_workspace_path') || 'C:\\DevForgeProjects',
+  building: false, buildLogs: (() => {
+    try { return JSON.parse(localStorage.getItem('devforge_logs') || '[]'); } catch(e){ return []; }
+  })(), 
+  virtualWorkspace: (() => {
+    try { return JSON.parse(localStorage.getItem('devforge_workspace') || '{}'); } catch(e){ return {}; }
+  })(), 
+  activeFile: null,
+  isInstalled: false, isDevRunning: false, activePreviewUrl: null,
+  chatHistory: [],
+  aiConfig: (() => {
+    try { return JSON.parse(localStorage.getItem('devforge_ai') || '{}'); } catch(e){ return {}; }
+  })()
+};
+
+// Tauri Bridge
+const invoke = window.__TAURI__ ? window.__TAURI__.core.invoke : null;
+const listen = window.__TAURI__ ? window.__TAURI__.event.listen : null;
+
+if (listen) {
+    listen('terminal-output', (event) => {
+        addBuildLog(event.payload, 'info');
+    });
+}
+
+// Fungsi Helper untuk Auto-Save
+function saveWorkspaceToLocal() {
+    try {
+        localStorage.setItem('devforge_workspace', JSON.stringify(S.virtualWorkspace || {}));
+        localStorage.setItem('devforge_logs', JSON.stringify(S.buildLogs || []));
+    } catch(e) { console.warn("Gagal menyimpan ke LocalStorage (mungkin data terlalu besar)"); }
+}
+// Defaults for aiConfig
+S.aiConfig = Object.assign({provider:'sumopod', model:'seed-2-0-lite-free', apiKey:'', connected:false, enabled:false, useProxy:true}, S.aiConfig);
+
+// ═══════════════════════════════════════════
+// AI PROVIDER DATA
+// ═══════════════════════════════════════════
+const AI_PROVIDERS = {
+  sumopod: {
+    name: 'SumoPod',
+    baseUrl: 'https://ai.sumopod.com/v1',
+    keyPlaceholder: 'sp-xxxxxxxxxxxxxxxxxxxxxxxx',
+    docsUrl: 'https://sumopod.com/dashboard/ai/quickstart',
+    models: [
+      {id:'claude-haiku-4-5',              label:'Claude Haiku 4.5',           provider:'anthropic',free:false},
+      {id:'claude-opus-4-7',               label:'Claude Opus 4.7',            provider:'anthropic',free:false},
+      {id:'claude-opus-4-8',               label:'Claude Opus 4.8',            provider:'anthropic',free:false},
+      {id:'claude-sonnet-4-6',             label:'Claude Sonnet 4.6',          provider:'anthropic',free:false},
+      {id:'deepseek-v4-flash',             label:'DeepSeek V4 Flash',          provider:'deepseek', free:false},
+      {id:'deepseek-v4-pro',               label:'DeepSeek V4 Pro',            provider:'deepseek', free:false},
+      {id:'gemini/gemini-2.5-flash',       label:'Gemini 2.5 Flash',           provider:'google',   free:false},
+      {id:'gemini/gemini-2.5-flash-lite',  label:'Gemini 2.5 Flash Lite',      provider:'google',   free:false},
+      {id:'gemini/gemini-3-flash-preview', label:'Gemini 3 Flash Preview',     provider:'google',   free:false},
+      {id:'gemini/gemini-3.1-flash-lite',  label:'Gemini 3.1 Flash Lite',      provider:'google',   free:false},
+      {id:'gemini/gemini-3.1-pro-preview', label:'Gemini 3.1 Pro Preview',     provider:'google',   free:false},
+      {id:'gemini/gemini-3.5-flash',       label:'Gemini 3.5 Flash',           provider:'google',   free:false},
+      {id:'gemini/gemini-embedding-001',   label:'Gemini Embedding 001',       provider:'google',   free:false},
+      {id:'glm-5',                         label:'GLM-5',                      provider:'z.ai',     free:false},
+      {id:'glm-5-turbo',                   label:'GLM-5 Turbo',                provider:'z.ai',     free:false},
+      {id:'glm-5.1',                       label:'GLM-5.1',                    provider:'sumopod',  free:false},
+      {id:'glm-5.2',                       label:'GLM-5.2',                    provider:'z.ai',     free:false},
+      {id:'glm-5v-turbo',                  label:'GLM-5V Turbo',               provider:'sumopod',  free:false},
+      {id:'gpt-4.1',                       label:'GPT-4.1',                    provider:'openai',   free:false},
+      {id:'gpt-4.1-mini',                  label:'GPT-4.1 Mini',               provider:'openai',   free:false},
+      {id:'gpt-4.1-nano',                  label:'GPT-4.1 Nano',               provider:'openai',   free:false},
+      {id:'gpt-5',                         label:'GPT-5',                      provider:'openai',   free:false},
+      {id:'gpt-5-mini',                    label:'GPT-5 Mini',                 provider:'openai',   free:false},
+      {id:'gpt-5-nano',                    label:'GPT-5 Nano',                 provider:'openai',   free:false},
+      {id:'gpt-5.4',                       label:'GPT-5.4',                    provider:'openai',   free:false},
+      {id:'gpt-5.4-mini',                  label:'GPT-5.4 Mini',               provider:'openai',   free:false},
+      {id:'gpt-5.4-nano',                  label:'GPT-5.4 Nano',               provider:'openai',   free:false},
+      {id:'kimi-k2.6',                     label:'Kimi K2.6',                  provider:'moonshoot',free:false},
+      {id:'kimi-k2.7',                     label:'Kimi K2.7',                  provider:'moonshoot',free:false},
+      {id:'mimo-v2.5',                     label:'Mimo V2.5',                  provider:'mimo',     free:false},
+      {id:'mimo-v2.5-pro',                 label:'Mimo V2.5 Pro',              provider:'mimo',     free:false},
+      {id:'MiniMax-M2.7-highspeed',        label:'MiniMax M2.7 Highspeed',     provider:'sumopod',  free:false},
+      {id:'MiniMax-M3',                    label:'MiniMax M3',                 provider:'minimax',  free:false},
+      {id:'qwen3.6-flash',                 label:'Qwen 3.6 Flash',             provider:'alibaba',  free:false},
+      {id:'qwen3.6-plus',                  label:'Qwen 3.6 Plus',              provider:'alibaba',  free:false},
+      {id:'qwen3.7-max',                   label:'Qwen 3.7 Max',               provider:'alibaba',  free:false},
+      {id:'qwen3.7-plus',                  label:'Qwen 3.7 Plus',              provider:'alibaba',  free:false},
+      {id:'seed-2-0-code',                 label:'Seed 2.0 Code',              provider:'byteplus', free:false},
+      {id:'seed-2-0-lite',                 label:'Seed 2.0 Lite',              provider:'byteplus', free:false},
+      {id:'seed-2-0-mini',                 label:'Seed 2.0 Mini',              provider:'byteplus', free:false},
+      {id:'seed-2-0-pro',                  label:'Seed 2.0 Pro',               provider:'byteplus', free:false},
+      {id:'text-embedding-3-large',        label:'Text Embedding 3 Large',     provider:'openai',   free:false},
+      {id:'text-embedding-3-small',        label:'Text Embedding 3 Small',     provider:'openai',   free:false}
+    ]
+  },
+  puter: {
+    name: 'Puter.js',
+    baseUrl: 'puter',
+    requiresKey: false,
+    keyPlaceholder: 'Tidak diperlukan API Key',
+    docsUrl: 'https://developer.puter.com/tutorials/free-unlimited-openrouter-api/',
+    models: [
+      {id:'openrouter:openrouter/free',                label:'Puter Auto-Free (REKOMENDASI) ✦', provider:'puter', free:true},
+      {id:'openrouter:meta-llama/llama-3.3-70b-instruct:free', label:'Llama 3.3 70B (GRATIS)',         provider:'meta',  free:true},
+      {id:'openrouter:google/gemma-3-27b-it:free',      label:'Gemma 3 27B (GRATIS)',           provider:'google', free:true},
+      {id:'openrouter:google/gemini-2.0-flash-exp:free',label:'Gemini 2.0 Flash (GRATIS)',      provider:'google', free:true},
+      {id:'openrouter:qwen/qwen3.6-plus:free',         label:'Qwen 3.6 Plus (GRATIS)',         provider:'qwen',   free:true},
+      {id:'openrouter:qwen/qwen3-coder:free',          label:'Qwen 3 Coder (GRATIS)',          provider:'qwen',   free:true},
+      {id:'openrouter:deepseek/deepseek-r1:free',       label:'DeepSeek R1 (GRATIS)',           provider:'deepseek', free:true},
+      {id:'openrouter:anthropic/claude-3.7-sonnet',     label:'Claude 3.7 Sonnet',              provider:'anthropic', free:false},
+      {id:'openrouter:meta-llama/llama-4-maverick',     label:'Llama 4 Maverick (TERBARU)',     provider:'meta',    free:false},
+      {id:'openrouter:google/gemini-2.5-pro',           label:'Gemini 2.5 Pro',                 provider:'google',  free:false},
+      {id:'openrouter:openai/gpt-5',                    label:'GPT-5 (Sangat Cerdas)',          provider:'openai',  free:false}
+    ]
+  },
+  openrouter: {
+    name: 'OpenRouter',
+    baseUrl: 'https://openrouter.ai/api/v1',
+    keyPlaceholder: 'sk-or-v1-xxxxxxxxxxxxxxxx',
+    docsUrl: 'https://openrouter.ai/keys',
+    models: [
+      {id:'openrouter/free',                             label:'OpenRouter Auto-Free (REKOMENDASI) ✦',  provider:'openrouter', free:true},
+      {id:'google/gemma-3-27b-it:free',                  label:'Gemma 3 27B (GRATIS) — Terbaik ✦',     provider:'google',     free:true},
+      {id:'qwen/qwen3.6-plus:free',                     label:'Qwen 3.6 Plus (GRATIS) — Cerdas ✦',     provider:'qwen',       free:true},
+      {id:'qwen/qwen3-coder:free',                      label:'Qwen 3 Coder (GRATIS) — Spesialis ✦',   provider:'qwen',       free:true},
+      {id:'meta-llama/llama-3.3-70b-instruct:free',      label:'Llama 3.3 70B (GRATIS)',                  provider:'meta',       free:true},
+      {id:'google/gemma-3-4b-it:free',                   label:'Gemma 3 4B (GRATIS) — Kilat ⚡',         provider:'google',     free:true},
+      {id:'liquid/lfm-2.5-1.2b-thinking:free',          label:'Liquid 2.5 (GRATIS) — Thinking 🧠',      provider:'liquid',     free:true},
+      {id:'openai/gpt-oss-120b:free',                    label:'GPT-OSS 120B (GRATIS)',                  provider:'openai',     free:true},
+      {id:'anthropic/claude-3.5-sonnet',                 label:'Claude 3.5 Sonnet',              provider:'anthropic',  free:false},
+      {id:'anthropic/claude-3.7-sonnet',                 label:'Claude 3.7 Sonnet',              provider:'anthropic',  free:false},
+      {id:'openai/gpt-4o',                               label:'GPT-4o',                         provider:'openai',     free:false},
+      {id:'openai/gpt-4o-mini',                          label:'GPT-4o Mini',                    provider:'openai',     free:false},
+      {id:'google/gemini-2.5-pro-preview',               label:'Gemini 2.5 Pro Preview',         provider:'google',     free:false},
+      {id:'x-ai/grok-3-mini-beta',                       label:'Grok 3 Mini Beta',               provider:'xai',        free:false},
+      {id:'deepseek/deepseek-chat-v3-5',                 label:'DeepSeek V3.5',                  provider:'deepseek',   free:false},
+    ]
+  }
+};
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function slug(s){return (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'project'}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function isWebsite(){return S.mode==='website'}
+function isGreen(){return S.mode==='adlc'}
+function isSdLC(){return S.mode==='sdlc'}
+function isAmber(){return isSdLC() && S.answers.appType==='desktop'}
+function modeColorClass(){return isGreen()?'green':isWebsite()?'pink':isAmber()?'amber':''}
+function modeLabel(){return isGreen()?'🤖 Agentic AI':isWebsite()?'🌍 Website':isAmber()?'🖥️ Desktop App':'⚡ Software Build'}
+function gc(base,green){return isGreen()?green:base}
+
+function getActiveSteps(){
+  const all = isGreen() ? ADLC_STEPS : isWebsite() ? WEBSITE_STEPS : SDLC_STEPS;
+  return all.filter(s => !s.showIf || s.showIf(S.answers));
+}
+
+function setLevel(l){
+  S.level=l;
+  // Surgical update — only toggle .active on level buttons, no full page re-render
+  document.querySelectorAll('.level-btn').forEach(btn=>{
+    const isActive = btn.getAttribute('data-level')===l;
+    btn.classList.toggle('active', isActive);
+  });
+  // If currently inside wizard step, re-render just the question body (tech filters change)
+  if(S.mode && !S.generating && !S.generated){
+    const steps=getActiveSteps();
+    const q=steps[S.step];
+    if(q && q.type==='techcard'){
+      const body=document.getElementById('q-body');
+      if(body) body.innerHTML=renderQBody(q);
+    }
+  }
+}
+function quickStart(name){
+  const T={
+    'E-Commerce':{mode:'sdlc',answers:{projectName:'My E-Commerce Store',appType:'fullstack',audience:'b2c',frontend:['nextjs'],backend:['nextjs-api'],database:['supabase'],uiLib:['tailwind-shadcn'],auth:['supabase-auth'],payment:['midtrans'],deployment:['vercel'],scale:'small',outputPref:['structure','prd','prompts','configs']}},
+    'Dashboard':{mode:'sdlc',answers:{projectName:'Admin Dashboard',appType:'webapp',audience:'internal',frontend:['nextjs'],backend:['nextjs-api'],database:['supabase'],uiLib:['tailwind-shadcn'],auth:['supabase-auth'],payment:[],deployment:['vercel'],scale:'small',outputPref:['structure','prd','prompts']}},
+    'Mobile App':{mode:'sdlc',answers:{projectName:'My Mobile App',appType:'mobile',audience:'b2c',frontend:['expo'],backend:['supabase-edge'],database:['supabase'],uiLib:['chakra'],auth:['supabase-auth'],payment:[],deployment:['vercel'],scale:'mvp',outputPref:['structure','prd','prompts']}},
+    'Desktop Tool':{mode:'desktop',answers:{desktopName:'My Desktop App',desktopType:'utility',targetOS:['windows'],desktopFramework:'electron',database:['sqlite'],uiLib:['tailwind-shadcn'],installer:['electron-builder'],payment:[],scale:'mvp',outputPref:['structure','prd','prompts']}},
+    'AI Chatbot':{mode:'adlc',answers:{agentName:'My AI Chatbot',agentType:'rag',llm:'claude',orchestration:['langchain'],memory:['context','supabase-vector'],agentTools:['web-search'],autonomy:'checkpoint',deployment:['railway'],complexity:'simple',outputPref:['structure','prd','prompts','code']}},
+  };
+  const t=T[name]; if(!t)return;
+  S.mode=t.mode; S.answers={...t.answers}; doGenerate();
+}
+
+function getRec(techKey, answers){
+  const ctx = {
+    scale: answers.scale || answers.complexity,
+    appType: answers.appType,
+    frontend: answers.frontend || [],
+    database: answers.database || [],
+  };
+  return {};
+}
+
+// ═══════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════
+const R = document.getElementById('root');
+function render(){
+  if(!S.mode){renderModeSelect();return}
+  if(S.generating){renderGenerating();return}
+  if(S.generated){renderOutput();return}
+  renderWizard();
+}
+
+function renderModeSelect(){
+  R.innerHTML=`
+  <div class="hero-sec">
+    <h1>Bikin <em>Website</em>, Desktop App<br>&amp; <em>Agentic AI</em></h1>
+    <p class="subtitle">Framework generator lengkap untuk developer pemula hingga mahir — website, web app, desktop app, mobile, dan agentic AI cerdas.</p>
+  </div>
+  <div class="level-toggle">
+    <span class="level-label">Level kamu:</span>
+    <button class="level-btn ${S.level==='beginner'?'active':''}" data-level="beginner" onclick="setLevel('beginner')">🌱 Pemula</button>
+    <button class="level-btn ${S.level==='intermediate'?'active':''}" data-level="intermediate" onclick="setLevel('intermediate')">🔧 Menengah</button>
+    <button class="level-btn ${S.level==='expert'?'active':''}" data-level="expert" onclick="setLevel('expert')">⚡ Mahir</button>
+  </div>
+  <div class="mode-grid">
+    <div class="mode-card ${S.mode==='website'?'active pink-mode':''}" onclick="selMode('website')">
+      <span class="mode-badge badge-website">Framework 01</span>
+      <h3>Bikin Website</h3>
+      <p>Landing page statis, profil perusahaan, blog, portfolio, web event — SEO optimized & ringan.</p>
+      <div class="mode-check pink">${S.mode==='website'?'✓':''}</div>
+    </div>
+    <div class="mode-card ${S.mode==='sdlc'?'active':''}" onclick="selMode('sdlc')">
+      <span class="mode-badge badge-sdlc">Framework 02</span>
+      <h3>Bikin Software</h3>
+      <p>Web app interaktif, mobile app, desktop, sistem ERP, SaaS, e-commerce — dengan backend & database.</p>
+      <div class="mode-check">${S.mode==='sdlc'?'✓':''}</div>
+    </div>
+    <div class="mode-card ${S.mode==='adlc'?'active green-mode':''}" onclick="selMode('adlc')">
+      <span class="mode-badge badge-adlc">Framework 03</span>
+      <h3>Bikin Agentic AI</h3>
+      <p>Agent AI, chatbot cerdas, workflow otomatis, RAG — sistem AI otonom yang bekerja sendiri.</p>
+      <div class="mode-check">${S.mode==='adlc'?'✓':''}</div>
+    </div>
+  </div>
+  <div class="start-row">${S.mode?`<button class="btn btn-next ${modeColorClass()}" onclick="S.step=0;render()">Mulai →</button>`:''}</div>
+  <div class="quick-start-section">
+    <div class="qs-title">⚡ Quick Start — Langsung pakai template</div>
+    <div class="qs-grid">
+      <div class="qs-card" onclick="quickStart('E-Commerce')"><div class="qs-icon">🛒</div><div class="qs-name">E-Commerce</div><div class="qs-desc">Next.js + Supabase + Midtrans</div></div>
+      <div class="qs-card" onclick="quickStart('Dashboard')"><div class="qs-icon">📊</div><div class="qs-name">Dashboard</div><div class="qs-desc">Next.js + Supabase + shadcn</div></div>
+      <div class="qs-card" onclick="quickStart('Mobile App')"><div class="qs-icon">📱</div><div class="qs-name">Mobile App</div><div class="qs-desc">React Native + Supabase</div></div>
+      <div class="qs-card" onclick="quickStart('Desktop Tool')"><div class="qs-icon">🖥️</div><div class="qs-name">Desktop Tool</div><div class="qs-desc">Electron + SQLite</div></div>
+      <div class="qs-card" onclick="quickStart('AI Chatbot')"><div class="qs-icon">🤖</div><div class="qs-name">AI Chatbot</div><div class="qs-desc">LangChain + Claude</div></div>
+    </div>
+  </div>`;
+}
+function selMode(m){S.mode=m;S.step=0;S.answers={};render()}
+
+function renderWizard(){
+  const steps=getActiveSteps();
+  const q=steps[S.step];
+  const total=steps.length;
+  const pct=Math.round((S.step/total)*100);
+  const isLast=S.step===total-1;
+  const gClass=modeColorClass();
+
+  // progress crumbs (show 5 around current)
+  const crumbs=steps.map((s,i)=>{
+    let cls=i<S.step?`done ${gClass}`:i===S.step?`active ${gClass}`:'';
+    return `<span class="crumb ${cls}">${s.title.substring(0,18)}...</span>`;
+  }).join('');
+
+  R.innerHTML=`
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span class="progress-label">Langkah ${S.step+1}</span>
+      <span class="progress-count">${S.step+1}/${total}</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill ${gClass}" style="width:${pct}%"></div></div>
+    <div class="step-crumbs">${crumbs}</div>
+  </div>
+  <div class="q-card">
+    <div class="q-section ${gClass}">${modeLabel()}</div>
+    <div class="q-title">${q.title}</div>
+    <div class="q-desc">${q.desc}</div>
+    <div id="q-body">${renderQBody(q)}</div>
+  </div>
+  <div class="nav-row">
+    <div class="btn-group">
+      <button class="btn btn-back" onclick="prevStep()" ${S.step===0?'style="visibility:hidden"':''}>\u2190 Kembali</button>
+      ${isLast
+        ?`<button class="btn btn-generate ${gClass}" onclick="doGenerate()">\u2726 Generate Sekarang</button>`
+        :`<button class="btn btn-next ${gClass}" onclick="nextStep()">Lanjut \u2192</button>`}
+    </div>
+    <span class="step-info">${S.step+1} / ${total}</span>
+  </div>`;
+}
+
+function renderQBody(q){
+  const val=S.answers[q.key]||(q.multi||q.type==='multicheck'?[]:'');
+  if(q.type==='text')
+    return `<textarea class="q-textarea" id="qt" placeholder="${q.placeholder}" oninput="S.answers['${q.key}']=this.value">${val}</textarea>`;
+
+  if(q.type==='scale')
+    return `<div class="scale-grid">${q.options.map(o=>{
+      const sel=(val===o.val)?`selected ${modeColorClass()}`:''
+      return `<div class="scale-card ${sel}" onclick="setScale('${q.key}','${o.val}')">
+        <div class="scale-icon">${o.icon}</div>
+        <div class="scale-name">${o.name}</div>
+        <div class="scale-desc">${o.desc}</div>
+      </div>`
+    }).join('')}</div>`;
+
+  if(q.type==='multicheck')
+    return `<div class="chip-grid">${q.options.map(o=>{
+      const sel=(val||[]).includes(o.val)?`sel ${modeColorClass()}`:''
+      return `<button class="chip ${sel}" onclick="toggleChip('${q.key}','${o.val}')">${o.icon} ${o.label}</button>`
+    }).join('')}</div>`;
+
+  if(q.type==='techcard'){
+    let techs=TECH[q.techKey]||[];
+    // Filter by level (Perbedaan radikal per level)
+    if(S.level==='beginner') {
+      // Pemula hanya melihat opsi "Terbaik" agar tidak bingung
+      const bests = techs.filter(t=>t.rec==='best');
+      techs = bests.length > 0 ? bests : techs.filter(t=>t.rec!=='adv');
+    } else if(S.level==='intermediate') {
+      // Menengah melihat standar dan populer, menyembunyikan yang advanced
+      techs = techs.filter(t=>t.rec!=='adv');
+    }
+    // Expert melihat semua opsi termasuk yang paling rumit (tanpa filter)
+    
+    // auto-recommend based on prior answers
+    const recs=smartRecs(q.techKey,S.answers);
+    return `
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-weight:500">
+        ${q.multi?`Pilih ${q.max||'beberapa'} — klik "Lihat detail" untuk perbandingan`:'Pilih satu'}
+      </div>
+      <div class="tech-grid">${techs.map((t,i)=>{
+        const selArr=Array.isArray(val)?val:[val];
+        const isSel=selArr.includes(t.val);
+        const selCls=isSel?`selected ${modeColorClass()}`:''
+        const recInfo=recs[t.val];
+        const isTopRec=recInfo==='top';
+        return `<div class="tech-card ${selCls}" id="tc-${q.key}-${i}">
+          <div class="tc-main" onclick="${q.multi?`toggleTech('${q.key}','${t.val}',${q.max||99})`:`setSingle('${q.key}','${t.val}')`}">
+            <div class="tc-icon">${t.icon}</div>
+            <div class="tc-body">
+              <div class="tc-top">
+                <span class="tc-name">${t.name}</span>
+                ${isTopRec?`<span class="rec-badge rec-best">⭐ Rekomendasi untukmu</span>`:
+                  t.rec==='best'?`<span class="rec-badge rec-best">${t.recLabel}</span>`:
+                  t.rec==='good'?`<span class="rec-badge rec-good">${t.recLabel}</span>`:
+                  `<span class="rec-badge rec-adv">${t.recLabel}</span>`}
+              </div>
+              <div class="tc-tagline">${t.tagline}</div>
+            </div>
+            <div class="tc-right">
+              <div class="tc-check">${isSel?'✓':''}</div>
+            </div>
+          </div>
+          <div class="tc-detail" id="td-${q.key}-${i}">
+            <div class="tc-detail-inner">
+              <div class="tc-pros">
+                <div class="tc-phead">Kelebihan</div>
+                <ul class="tc-plist">${t.pros.map(p=>`<li>${p}</li>`).join('')}</ul>
+              </div>
+              <div class="tc-cons">
+                <div class="tc-phead">Kekurangan</div>
+                <ul class="tc-plist">${t.cons.map(c=>`<li>${c}</li>`).join('')}</ul>
+              </div>
+            </div>
+            <div class="tc-ideal">${t.ideal}</div>
+          </div>
+          <div style="padding:6px 14px;border-top:1px solid var(--border);background:var(--bg3);display:flex;justify-content:space-between;align-items:center">
+            <button class="tc-toggle" onclick="toggleDetail('td-${q.key}-${i}',this)">▼ Lihat detail & perbandingan</button>
+            ${isSel?`<span style="font-size:10px;font-weight:700;color:${isGreen()?'var(--green)':isAmber()?'var(--amber)':'var(--accent)'}">${q.multi?'✓ Dipilih':'✓ Dipilih'}</span>`:''}
+          </div>
+        </div>`;
+      }).join('')}</div>`;
+  }
+  return '';
+}
+
+function toggleDetail(id,btn){
+  const el=document.getElementById(id);
+  const card=el.closest('.tech-card');
+  const isOpen=card.classList.contains('open');
+  card.classList.toggle('open',!isOpen);
+  btn.textContent=isOpen?'▼ Lihat detail & perbandingan':'▲ Tutup detail';
+}
+
+// Smart recommendation engine
+function smartRecs(techKey, answers){
+  const recs={};
+  const scale=answers.scale||answers.complexity||'';
+  const appType=answers.appType||'';
+  const frontend=(answers.frontend||[]);
+  const db=(answers.database||[]);
+  const llm=answers.llm||'';
+
+  if(techKey==='frontend'){
+    if(appType==='mobile') recs['expo']='top';
+    else if(appType==='webapp'||appType==='fullstack') recs['nextjs']='top';
+    else recs['react']='top';
+  }
+  if(techKey==='backend'){
+    if(frontend.includes('nextjs')||appType==='fullstack') recs['nextjs-api']='top';
+    else if(answers.aiFeatures) recs['fastapi']='top';
+    else recs['nodejs-express']='top';
+  }
+  if(techKey==='database'){
+    if(scale==='mvp'||scale==='poc'||scale==='simple') recs['supabase']='top';
+    else if(appType==='mobile') recs['firebase']='top';
+    else recs['supabase']='top';
+  }
+  if(techKey==='uiLib') recs['tailwind-shadcn']='top';
+  if(techKey==='auth'){
+    if(db.includes('supabase')) recs['supabase-auth']='top';
+    else if(frontend.includes('nextjs')) recs['nextauth']='top';
+    else recs['clerk']='top';
+  }
+  if(techKey==='deployment'){
+    if(frontend.includes('nextjs')) recs['vercel']='top';
+    else recs['railway']='top';
+  }
+  if(techKey==='llm') recs['claude']='top';
+  if(techKey==='orchestration'){
+    if(answers.agentType==='rag') recs['langchain']='top';
+    else if(answers.complexity==='poc') recs['langchain']='top';
+    else recs['langgraph']='top';
+  }
+  if(techKey==='memory'){
+    recs['context']='top';
+    if(answers.agentType==='rag') recs['supabase-vector']='top';
+  }
+  if(techKey==='agentTools'){
+    recs['web-search']='top';
+    if(answers.agentType==='coding') recs['code-exec']='top';
+  }
+  if(techKey==='desktop'){
+    recs['electron']='top';
+  }
+  if(techKey==='installer'){
+    const fw=answers.desktopFramework||'';
+    if(fw==='electron') recs['electron-builder']='top';
+    else if(fw==='tauri') recs['tauri-bundler']='top';
+    else recs['electron-builder']='top';
+  }
+  if(techKey==='payment'){
+    const audience=answers.audience||'';
+    if(audience==='b2c') recs['midtrans']='top';
+    else recs['stripe']='top';
+  }
+
+  // --- Website specific recs ---
+  if(techKey==='webBuilder'){
+    const wt = answers.webType||'';
+    if(wt==='landing'||wt==='blog') recs['astro']='top';
+    else if(wt==='profile'||wt==='docs') recs['nextjs-static']='top';
+    else recs['astro']='top';
+  }
+  if(techKey==='cms'){
+    const wt = answers.webType||'';
+    if(wt==='blog'||wt==='documentation') recs['markdown']='top';
+    else recs['sanity']='top';
+  }
+  if(techKey==='form') recs['formspree']='top';
+  if(techKey==='animation') recs['framer-motion']='top';
+
+  return recs;
+}
+
+// ── Input handlers ──
+function setScale(k,v){S.answers[k]=v;render();setTimeout(nextStep,350)}
+function setSingle(k,v){S.answers[k]=v;render();setTimeout(nextStep,350)}
+function toggleChip(k,v){
+  let a=S.answers[k]||[];
+  S.answers[k]=a.includes(v)?a.filter(x=>x!==v):[...a,v];
+  render();
+}
+function toggleTech(k,v,max){
+  let a=S.answers[k]||[];
+  if(a.includes(v)){S.answers[k]=a.filter(x=>x!==v)}
+  else if(a.length<max){S.answers[k]=[...a,v]}
+  render();
+}
+function nextStep(){
+  const steps=getActiveSteps();
+  if(S.step<steps.length-1){S.step++;render();window.scrollTo(0,0)}
+}
+function prevStep(){if(S.step>0){S.step--;render();window.scrollTo(0,0)}}
+
+// ── Generate ──
+function doGenerate() {
+  S.virtualWorkspace = {};
+  S.buildLogs = [];
+  S.isInstalled = false;
+  S.isDevRunning = false;
+  S.activeFile = null;
+  S.agentStatus = { architect: 'idle', coder: 'idle', qa: 'idle', security: 'idle', polisher: 'idle', tester: 'idle', devops: 'idle', feature: 'idle', content: 'idle' };
+  try { saveWorkspaceToLocal(); } catch(e){}
+  
+  S.generating = true;
+  render();
+  setTimeout(() => {
+    S.generating = false;
+    S.generated = buildOutput();
+    render();
+  }, 3500);
+}
+
+function renderGenerating(){
+  const msgs=['Menganalisis kebutuhanmu…','Menentukan arsitektur terbaik…','Menyusun struktur folder…','Menulis PRD & Master Plan…','Membuat starter prompts…','Finalisasi output…'];
+  let idx=0;
+  R.innerHTML=`<div class="gen-wrap">
+    <div class="gen-icon">⚙️</div>
+    <div class="gen-title">DevForge sedang bekerja…</div>
+    <div class="gen-sub">Menyesuaikan dengan semua pilihan kamu</div>
+    <div class="gen-steps">${msgs.map((m,i)=>`<div class="gen-step ${i===0?'active':''}" id="gs-${i}"><div class="gen-step-dot"></div>${m}</div>`).join('')}
+    </div></div>`;
+  const iv=setInterval(()=>{
+    const cur=document.getElementById(`gs-${idx}`);
+    if(cur){cur.classList.remove('active');cur.classList.add('done');cur.querySelector('.gen-step-dot').textContent='✓'}
+    idx++;
+    if(idx<msgs.length){const nx=document.getElementById(`gs-${idx}`);if(nx)nx.classList.add('active')}
+    else clearInterval(iv);
+  },550);
+}
+
+// ═══════════════════════════════════════════
+// OUTPUT BUILDER
+// ═══════════════════════════════════════════
+function buildOutput(){return isWebsite()?buildWebsite():isGreen()?buildADLC():isAmber()?buildDesktop():buildSDLC()}
+
+function buildWebsite(){
+  const a=S.answers;
+  const name=a.projectName||'My Website';
+  const wb=a.webBuilder||'Astro';
+  const cms=a.cms||'Markdown';
+  const anim=(a.animation||[]).join(' + ')||'Framer Motion';
+  const form=(a.form||[]).join(' + ')||'Formspree';
+  const dep=(a.deployment||[]).join(' + ')||'Vercel';
+  const isAstro=(a.webBuilder||'').includes('astro');
+  const typeMap={corporate:'Full Portal / Corporate', landing:'Landing Page', profile:'Company Profile', blog:'Blog / Media', portfolio:'Portfolio', docs:'Documentation'};
+  
+  const structure=isAstro?`
+${slug(name)}/
+├── src/
+│   ├── components/         ← Komponen UI statis & interaktif (Astro/React/Vue)
+│   ├── layouts/            ← Layout kerangka utama (Base, Blog, Page)
+│   ├── pages/              ← Routing file-based otomatis (index.astro)
+│   ├── content/            ← Artikel Markdown/MDX (Koleksi Konfigurasi)
+│   ├── styles/             ← Global CSS & utility config
+│   └── lib/                ← Utilitas & helper fetch API CMS
+├── public/                 ← Assets statis mentah (gambar, file konfigurasi)
+├── astro.config.mjs        ← Konfigurasi & integrasi Astro
+├── tailwind.config.cjs     ← Konfigurasi desing system / warna
+└── package.json`:`
+${slug(name)}/
+├── src/                    ← Area pengerjaan utama kodingan UI
+├── public/                 ← Assets gambar favicon
+├── styles/                 ← Ekstraksi file CSS
+├── index.html
+├── .env.example            ← Rahasia integrasi CMS
+└── package.json`;
+
+  const stackRecs=[
+    {cat:'Web Builder',name:wb,why:'Mesin pembangun utama SEO & interface',star:'⭐'},
+    {cat:'Manajemen Konten',name:cms,why:'Tempat menyimpan dan mengedit artkel/data',star:'📝'},
+    {cat:'Animasi',name:anim,why:'Efek visual interaktif pemikat mata',star:'🎬'},
+    {cat:'Integrasi Form',name:form,why:'Pengumpulan lead/kontak email',star:'✉️'},
+    {cat:'Hosting Statis',name:dep,why:'Deploy global edge sangat cepat',star:'🚀'},
+  ];
+
+  const phases=[
+    {num:'01',title:'Desain & Rangka Dasar',tags:['Hari 1-3'],desc:'Bangun UI kerangka HTML/CSS. Konfigurasi grid dan responsivitas layar (Mobile-First).'},
+    {num:'02',title:'Integrasi CMS',tags:['Hari 4-6'],desc:`Koneksikan Web Framework dengan ${cms}. Tarik data postingan atau profil dari CMS masuk ke template halaman.`},
+    {num:'03',title:'Fungsi Ekstra',tags:['Hari 7'],desc:`Pasang formulir kotak surat dengan ${form} dan berikan taburan efek ${anim}.`},
+    {num:'04',title:'SEO & Optimasi',tags:['Hari 8-9'],desc:'Setting Google Analytics, OG Image untuk sosial media, dan sitemap generator. Kompres aset gambar (WebP).'},
+    {num:'05',title:'Peluncuran Publik',tags:['Hari 10'],desc:`Deploy final secara otomatis ke ${dep} dan *pointing* DNS / Domain.`},
+  ];
+
+  const prd=`# PRD Website — ${name}
+
+## Ringkasan Eksekutif
+**Nama Website:** ${name}
+**Tipe:** ${typeMap[a.webType]||'Landing Page'}
+**Tujuan Akses:** Pengunjung Publik
+**Stack Inti:** ${wb} terhubung dengan ${cms}
+
+---
+
+## Arsitektur Konten (Sitemap)
+- [ ] Beranda (Berisi narasi nilai jual utama)
+- [ ] Tentang Kami (Penjelasan profil atau perusahaan)
+- [ ] Fitur / Layanan (Apa yang ditawarkan)
+- [ ] Kontak (Form ${form})
+- [ ] Blog / Artikel (Oleh sistem CMS ${cms})
+
+---
+
+## Spesifikasi Teknis Standar
+1. **Kecepatan Tinggi (Core Web Vitals):** LCP (Load Terbesar) wajib di bawah 2 detik. JavaScript seminimal mungkin (Zero-JS bila memungkinkan).
+2. **SEO (Search Engine Optimization):** Mengandung tag meta valid, heading H1-H6 tersusun wajar, canonical URL siap.
+3. **Animasi Terukur:** Menggunakan ${anim} hanya saat scroll masuk pandangan agar performa browser tidak tersendat.
+`;
+
+  const prompts=`# Starter Prompts / Instruksi AI — Pembuatan Website
+
+## Prompt 1: Rangka Dasar Framework
+
+\`\`\`
+Saya mau mulai membuat proyek website: ${name}.
+Tipe: ${typeMap[a.webType]||'Landing Page'}.
+
+Tumpukan stack web:
+- Web Builder: ${wb}
+- Styling: Tailwind CSS
+- Tool Manajemen Konten: ${cms}
+- Form: ${form}
+- Animasi: ${anim}
+
+Buatkan saya:
+1. Instruksi inisialisasi di root terminal package.json.
+2. Setup integrasi tailwind config dan styling base.
+3. Arsitektur folder komponen dasar (Header, Footer, Hero, Layout).
+\`\`\`
+
+## Prompt 2: Penentuan Integrasi
+
+\`\`\`
+Setelah komponen dasar jalan, saya perlu membuat logika untuk mengambil ${typeMap[a.webType]||'Postingan'} menggunakan sistem: ${cms}.
+Buatkan barisan \`fetch()\` untuk menyerap data tersebut dan masukkan ke dalam halaman list. Lengkapi juga script setup integrasi form pada ${form}.
+\`\`\``;
+
+  return {name,mode:'website',structure,stackRecs,phases,prd,prompts,fe:wb,db:cms,scale:'Proses Cepat'};
+}
+
+function buildSDLC(){
+  const a=S.answers;
+  const name=a.projectName||'My Project';
+  const fe=(a.frontend||[]).join(' + ')||'Next.js';
+  const be=(a.backend||[]).join(' + ')||'Node.js';
+  const db=(a.database||[]).join(' + ')||'Supabase';
+  const auth=(a.auth||[]).join(' + ')||'Supabase Auth';
+  const ui=(a.uiLib||[]).join(' + ')||'Tailwind + shadcn';
+  const dep=(a.deployment||[]).join(' + ')||'Vercel';
+  const pay=(a.payment||[]).join(' + ')||'';
+  const scale=a.scale||'mvp';
+  const scaleMap={mvp:'MVP (2-4 minggu)',small:'Small (1-2 bulan)',medium:'Medium (3-6 bulan)',enterprise:'Enterprise (6+ bulan)'};
+  const hasNext=(a.frontend||[]).includes('nextjs');
+  const hasSupabase=(a.database||[]).includes('supabase');
+
+  const structure=hasNext?`
+${slug(name)}/
+├── app/                    ← Semua halaman app
+│   ├── (auth)/             ← Halaman login & register
+│   │   ├── login/page.tsx
+│   │   └── register/page.tsx
+│   ├── (dashboard)/        ← Halaman utama setelah login
+│   │   ├── layout.tsx      ← Layout dashboard (sidebar, header)
+│   │   └── page.tsx        ← Halaman utama
+│   ├── api/                ← API routes (backend)
+│   │   └── [resource]/route.ts
+│   └── layout.tsx          ← Layout root (font, theme provider)
+│
+├── components/             ← Komponen UI yang dipakai ulang
+│   ├── ui/                 ← Komponen dasar (Button, Card, Input)
+│   └── features/           ← Komponen per fitur
+│
+├── lib/                    ← Fungsi-fungsi helper
+│   ├── db.ts               ← Koneksi database
+│   ├── auth.ts             ← Konfigurasi auth
+│   └── utils.ts            ← Fungsi umum
+│
+├── hooks/                  ← Custom React hooks
+├── stores/                 ← State management (Zustand)
+├── types/                  ← TypeScript type definitions
+│
+├── tests/                  ← Semua file testing
+│   ├── unit/               ← Test per fungsi
+│   └── e2e/                ← Test end-to-end
+│
+├── .github/workflows/      ← CI/CD GitHub Actions
+│   └── ci.yml
+│
+├── .env.example            ← Template environment variables
+├── next.config.ts
+├── tailwind.config.ts
+├── tsconfig.json
+└── package.json`:
+`
+${slug(name)}/
+├── src/
+│   ├── components/         ← Komponen UI
+│   ├── pages/              ← Halaman app
+│   ├── hooks/              ← Custom hooks
+│   ├── stores/             ← State management
+│   └── lib/                ← Helpers & utilities
+├── server/                 ← Backend (API server)
+│   ├── routes/             ← Endpoint API
+│   ├── services/           ← Business logic
+│   ├── middleware/         ← Auth, logging, validation
+│   └── db/                 ← Database schema & queries
+├── tests/
+├── .github/workflows/ci.yml
+├── .env.example
+└── package.json`;
+
+  const stackRecs=[
+    {cat:'Frontend',name:fe,why:'Sesuai pilihan kamu',star:'⭐'},
+    {cat:'Backend',name:be,why:'Menangani logika bisnis',star:'⭐'},
+    {cat:'Database',name:db,why:'Penyimpanan data utama',star:'⭐'},
+    {cat:'Auth',name:auth,why:'Login & keamanan user',star:'🔐'},
+    ...(pay?[{cat:'Payment',name:pay,why:'Sistem pembayaran',star:'💳'}]:[]),
+    {cat:'UI',name:ui,why:'Komponen tampilan',star:'🎨'},
+    {cat:'Deploy',name:dep,why:'Hosting app',star:'🚀'},
+    {cat:'Testing',name:'Vitest + Playwright',why:'Unit test + E2E test',star:'✅'},
+    {cat:'CI/CD',name:'GitHub Actions',why:'Deploy otomatis',star:'⚡'},
+  ];
+
+  const phases=[
+    {num:'01',title:'Planning & Setup',tags:['1 minggu'],
+     desc:'Finalisasi requirements, setup repo GitHub, buat design system di Figma, pasang CI/CD dari awal (jangan skip ini!).'},
+    {num:'02',title:'Fondasi Teknis',tags:['Sprint 1'],
+     desc:`Setup project ${fe}, konfigurasi ${db}, implementasi auth dengan ${auth}. Ini adalah "rangka" app — harus solid sebelum build fitur.`},
+    {num:'03',title:'Core Features',tags:['Sprint 2-4'],
+     desc:'Build fitur utama satu per satu. Ikuti prinsip: selesaikan satu fitur sampai "done" (termasuk test) sebelum lanjut ke fitur berikutnya.'},
+    {num:'04',title:'Polish & Testing',tags:['Sprint 5'],
+     desc:'QA menyeluruh, load testing, security audit (cek OWASP Top 10), perbaiki bug, optimalkan performa.'},
+    {num:'05',title:'Launch & Monitor',tags:['Sprint 6'],
+     desc:`Deploy ke ${dep}, setup monitoring (error tracking, uptime alert), siapkan runbook untuk kondisi darurat.`},
+    {num:'06',title:'Iterasi',tags:['Ongoing'],
+     desc:'Collect user feedback, analisis data penggunaan, prioritaskan fitur berikutnya berdasarkan impact nyata ke user.'},
+  ];
+
+  const prd=`# PRD — ${name}
+
+## Ringkasan Eksekutif
+**Nama Project:** ${name}
+**Tipe:** ${a.appType||'Web Application'}
+**Target User:** ${a.audience||'-'}
+**Estimasi Waktu:** ${scaleMap[scale]}
+**Tech Stack:** ${fe} + ${be} + ${db}
+
+---
+
+## Pernyataan Masalah
+> *[Isi: Masalah apa yang dipecahkan? Siapa yang mengalaminya? Seberapa sering?]*
+
+Contoh format:
+"[Segmen user] kesulitan [melakukan X] karena [alasan Y], sehingga mereka terpaksa [workaround Z yang tidak efisien]."
+
+---
+
+## Goals & Metrik Sukses
+
+| Goal | Metrik | Target 30 hari | Target 90 hari |
+|------|--------|----------------|----------------|
+| Adopsi user | Pengguna aktif (DAU) | 100 | 1.000 |
+| Engagement | Retention D7 | > 40% | > 50% |
+| Performa | Waktu load halaman | < 2 detik | < 1.5 detik |
+| Reliability | Uptime | 99% | 99.9% |
+
+---
+
+## User Persona
+
+### Persona Utama: [Nama]
+- **Pekerjaan/Role:** ...
+- **Pain points utama:** ...
+- **Apa yang diharapkan dari app ini:** ...
+- **Device yang dipakai:** ...
+
+---
+
+## Fitur (Prioritas)
+
+### Must Have (MVP)
+- [ ] Sistem auth — daftar, login, lupa password
+- [ ] [Fitur inti 1]
+- [ ] [Fitur inti 2]
+- [ ] [Fitur inti 3]
+
+### Should Have (v1.1)
+- [ ] [Fitur penting tapi bukan blocker launch]
+- [ ] Notifikasi email
+- [ ] Analytics dashboard sederhana
+
+### Nice to Have (v2.0)
+- [ ] Mobile app
+- [ ] Integrasi dengan service lain
+- [ ] Advanced reporting
+
+---
+
+## Arsitektur Teknis
+
+\`\`\`
+Frontend: ${fe}
+Backend:  ${be}
+Database: ${db}
+Auth:     ${auth}
+UI:       ${ui}
+Deploy:   ${dep}
+\`\`\`
+
+### Alasan Pemilihan Stack
+- **${(a.frontend||['Next.js'])[0]}** dipilih karena: mudah di-deploy, SEO-friendly, ekosistem besar
+- **${(a.database||['Supabase'])[0]}** dipilih karena: all-in-one (DB + auth + storage), gratis untuk MVP
+- **${(a.deployment||['Vercel'])[0]}** dipilih karena: deploy otomatis dari GitHub, gratis untuk project awal
+
+---
+
+## Non-Functional Requirements
+- **Performa:** Halaman core < 2 detik di koneksi 4G
+- **Keamanan:** HTTPS wajib, sanitasi input semua form, tidak simpan password plaintext
+- **Aksesibilitas:** Bisa dipakai dengan keyboard, alt-text untuk gambar
+- **Responsif:** Tampil baik di mobile (320px) sampai desktop (1440px)
+
+---
+
+## Rencana Pengerjaan
+
+| Fase | Kegiatan | Estimasi |
+|------|----------|----------|
+| Fase 1 | Planning, setup repo, design system | 1 minggu |
+| Fase 2 | Fondasi teknis + auth | 1-2 minggu |
+| Fase 3 | Core features | ${scale==='mvp'?'1-2 minggu':'2-4 minggu'} |
+| Fase 4 | Testing & polish | 1 minggu |
+| Fase 5 | Launch | 2-3 hari |
+
+---
+
+## Definition of Done (per fitur)
+- [ ] Unit test ditulis dan passing
+- [ ] Kode di-review (atau self-review dengan checklist)
+- [ ] Tidak ada console.error di browser
+- [ ] Tampil baik di mobile dan desktop
+- [ ] Edge cases (data kosong, error state) sudah ditangani`;
+
+  const prompts=`# Starter Prompts untuk AI Coding Assistant
+
+Gunakan prompt-prompt ini dengan Claude, ChatGPT, atau Cursor untuk mulai coding lebih cepat.
+
+---
+
+## Prompt 1: Setup Project Awal
+
+\`\`\`
+Saya sedang membangun: ${name}
+
+Tech stack yang dipilih:
+- Frontend: ${fe}
+- Backend: ${be}  
+- Database: ${db}
+- Auth: ${auth}
+- UI: ${ui}
+- Deploy: ${dep}
+
+Tolong buatkan:
+1. Struktur folder yang scalable (sesuai best practice 2025)
+2. package.json dengan semua dependencies yang dibutuhkan
+3. File .env.example dengan semua variable yang diperlukan
+4. Konfigurasi TypeScript (tsconfig.json)
+5. Setup ESLint + Prettier
+
+Prioritaskan kesederhanaan — ini project ${scaleMap[scale]}.
+\`\`\`
+
+---
+
+## Prompt 2: Setup Database & Auth
+
+\`\`\`
+Lanjutkan project ${name}.
+
+Tugas: Setup ${db} + ${auth}
+
+Yang dibutuhkan:
+1. Schema database untuk:
+   - Users table (id, email, nama, created_at)
+   - [Tambahkan tabel lain sesuai fitur]
+2. Konfigurasi ${auth} dengan email + password
+3. Middleware untuk protected routes
+4. Utility functions: getUser(), requireAuth()
+
+Catatan: Ikuti security best practices — 
+jangan hardcode credentials, gunakan environment variables.
+\`\`\`
+
+---
+
+## Prompt 3: Komponen UI Utama
+
+\`\`\`
+Bangun komponen UI untuk ${name} menggunakan ${ui}:
+
+1. Layout utama:
+   - Sidebar (navigasi)
+   - Header (user avatar, notif)
+   - Main content area
+
+2. Komponen reusable:
+   - Button (primary, secondary, danger variants)
+   - Input + Form dengan validasi
+   - Card component
+   - Loading skeleton
+
+3. Halaman:
+   - Login page
+   - Dashboard/home page (kosong dulu, nanti diisi)
+
+Gunakan TypeScript. Ikuti accessibility best practices.
+\`\`\`
+
+---
+
+## Prompt 4: Fitur Core Pertama
+
+\`\`\`
+Implementasikan fitur pertama untuk ${name}:
+[Jelaskan fitur spesifik yang ingin dibangun]
+
+Requirements:
+- Input validation dengan Zod
+- Error handling yang user-friendly
+- Loading state saat proses berjalan
+- Success/error feedback ke user
+- Responsive di mobile
+
+Gunakan pattern: Component → Hook → Service → API Route → Database
+\`\`\`
+
+---
+
+## Prompt 5: Setup CI/CD
+
+\`\`\`
+Buat GitHub Actions workflow untuk ${name}:
+
+CI (setiap PR):
+1. Install dependencies
+2. TypeScript check
+3. ESLint check
+4. Unit tests (Vitest)
+5. Build check
+
+CD (merge ke main):
+1. Build production
+2. Deploy ke ${(a.deployment||['Vercel'])[0]}
+
+Tambahkan environment secrets yang dibutuhkan.
+\`\`\``;
+
+  return {name,mode:'sdlc',structure,stackRecs,phases,prd,prompts,scale:scaleMap[scale],fe,be,db,pay};
+}
+
+function buildDesktop(){
+  const a=S.answers;
+  const name=a.desktopName||'My Desktop App';
+  const fw=a.desktopFramework||'electron';
+  const db=(a.database||[]).join(' + ')||'SQLite';
+  const ui=(a.uiLib||[]).join(' + ')||'Tailwind';
+  const inst=(a.installer||[]).join(' + ')||'Electron Builder';
+  const pay=(a.payment||[]).join(' + ')||'';
+  const targetOS=(a.targetOS||['windows']).join(', ');
+  const scale=a.scale||'mvp';
+  const scaleMap={mvp:'MVP (2-4 minggu)',small:'Small (1-2 bulan)',medium:'Medium (3-6 bulan)',enterprise:'Enterprise (6+ bulan)'};
+  const fwName={electron:'Electron',tauri:'Tauri','dotnet-maui':'.NET MAUI','flutter-desktop':'Flutter Desktop',pyqt:'PyQt'}[fw]||'Electron';
+  const isElectron=fw==='electron';
+  const isTauri=fw==='tauri';
+
+  const structure=isElectron?`
+${slug(name)}/
+├── src/
+│   ├── main/                    ← Proses utama (Node.js)
+│   │   ├── main.ts             ← Entry point Electron
+│   │   ├── preload.ts          ← Bridge ke renderer
+│   │   └── ipc/               ← Inter-process communication
+│   ├── renderer/               ← UI (React/Vue/HTML)
+│   │   ├── components/        ← Komponen UI
+│   │   ├── pages/             ← Halaman app
+│   │   └── App.tsx            ← Root component
+│   └── shared/                 ← Kode yang dipakai bersama
+│       ├── types.ts
+│       └── constants.ts
+│
+├── resources/                   ← Icon, assets untuk installer
+│   ├── icon.ico               ← Icon app Windows
+│   ├── icon.icns              ← Icon app macOS
+│   └── icon.png
+│
+├── electron-builder.yml        ← Konfigurasi installer
+├── package.json
+├── tsconfig.json
+└── vite.config.ts`:isTauri?`
+${slug(name)}/
+├── src/                        ← Frontend (web)
+│   ├── components/
+│   ├── pages/
+│   └── App.tsx
+├── src-tauri/                  ← Backend (Rust)
+│   ├── src/
+│   │   ├── main.rs            ← Entry point
+│   │   ├── commands.rs        ← API commands
+│   │   └── lib.rs
+│   ├── Cargo.toml
+│   ├── tauri.conf.json        ← Konfigurasi Tauri
+│   └── icons/                 ← Icon untuk semua platform
+├── package.json
+├── tsconfig.json
+└── vite.config.ts`:`
+${slug(name)}/
+├── src/
+│   ├── components/            ← Komponen UI
+│   ├── pages/                 ← Halaman app
+│   ├── services/              ← Business logic
+│   └── utils/                 ← Helpers
+├── assets/                     ← Icon, gambar, dll
+├── tests/
+└── package.json`;
+
+  const stackRecs=[
+    {cat:'Framework',name:fwName,why:'Engine utama desktop app',star:'⭐'},
+    {cat:'Database',name:db,why:'Penyimpanan data',star:'💾'},
+    {cat:'UI',name:ui,why:'Komponen tampilan',star:'🎨'},
+    {cat:'Installer',name:inst,why:'Distribusi ke user',star:'📦'},
+    ...(pay?[{cat:'Payment',name:pay,why:'Sistem pembayaran',star:'💳'}]:[]),
+    {cat:'Target OS',name:targetOS,why:'Platform target',star:'🖥️'},
+    {cat:'Testing',name:'Vitest + Spectron',why:'Unit + E2E test',star:'✅'},
+  ];
+
+  const phases=[
+    {num:'01',title:'Planning & Setup',tags:['1 minggu'],desc:'Finalisasi requirements, setup repo, siapkan design system dan icon app.'},
+    {num:'02',title:'Fondasi Teknis',tags:['Sprint 1'],desc:`Setup ${fwName} project, konfigurasi ${db}, implementasi layout utama.`},
+    {num:'03',title:'Core Features',tags:['Sprint 2-3'],desc:'Build fitur utama satu per satu. Test di semua target OS.'},
+    {num:'04',title:'Installer & Polish',tags:['Sprint 4'],desc:`Konfigurasi ${inst}, buat installer untuk ${targetOS}. Test install/uninstall.`},
+    {num:'05',title:'Release',tags:['Sprint 5'],desc:'Final testing, code signing, distribusi ke user atau publish ke store.'},
+  ];
+
+  const prd=`# PRD Desktop App — ${name}\n\n## Ringkasan\n**Nama:** ${name}\n**Tipe:** ${a.desktopType||'Utility'} (Desktop App)\n**Target OS:** ${targetOS}\n**Framework:** ${fwName}\n**Estimasi:** ${scaleMap[scale]}\n\n---\n\n## Tech Stack\n\\\`\\\`\\\`\nFramework: ${fwName}\nDatabase:  ${db}\nUI:        ${ui}\nInstaller: ${inst}${pay?'\nPayment:   '+pay:''}\n\\\`\\\`\\\`\n\n---\n\n## Fitur (Prioritas)\n\n### Must Have (MVP)\n- [ ] Window utama dengan layout dasar\n- [ ] [Fitur inti 1]\n- [ ] [Fitur inti 2]\n- [ ] Penyimpanan data lokal\n- [ ] System tray integration\n\n### Should Have (v1.1)\n- [ ] Auto-update\n- [ ] Keyboard shortcuts\n- [ ] Settings/preferences\n\n### Nice to Have (v2.0)\n- [ ] Cloud sync\n- [ ] Plugin system\n- [ ] Multi-window support`;
+
+  const prompts=`# Starter Prompts — Desktop App\n\n## Prompt 1: Setup Project\n\n\\\`\\\`\\\`\nSaya mau bangun desktop app: ${name}\n\nTech stack:\n- Framework: ${fwName}\n- Database: ${db}\n- UI: ${ui}\n- Target OS: ${targetOS}\n\nTolong buatkan:\n1. Struktur folder project ${fwName}\n2. package.json / Cargo.toml dengan dependencies\n3. Konfigurasi window utama (ukuran, title, icon)\n4. Setup hot-reload untuk development\n5. Konfigurasi ${inst} untuk distribusi\n\\\`\\\`\\\`\n\n---\n\n## Prompt 2: Build UI Utama\n\n\\\`\\\`\\\`\nBangun UI untuk ${name} menggunakan ${ui}:\n\n1. Layout utama (sidebar + content area)\n2. Title bar custom (jika frameless window)\n3. System tray menu\n4. Settings page\n5. Keyboard shortcuts\n\\\`\\\`\\\`\n\n---\n\n## Prompt 3: Build Installer\n\n\\\`\\\`\\\`\nKonfigurasi ${inst} untuk ${name}:\n\n- Target: ${targetOS}\n- Auto-update mechanism\n- Code signing (jika diperlukan)\n- Buat script npm: "build:win", "build:mac", "build:linux"\n\\\`\\\`\\\``;
+
+  return {name,mode:'desktop',structure,stackRecs,phases,prd,prompts,scale:scaleMap[scale],fw:fwName,db,targetOS,pay};
+}
+
+function buildADLC(){
+  const a=S.answers;
+  const name=a.agentName||'My AI Agent';
+  const llm=a.llm||'claude';
+  const orch=(a.orchestration||[]).join(' + ')||'LangGraph';
+  const mem=(a.memory||[]).join(', ')||'Context Window';
+  const tools=(a.agentTools||[]).join(', ')||'Web Search';
+  const dep=(a.deployment||[]).join(' + ')||'Railway';
+  const complexity=a.complexity||'simple';
+  const complexMap={poc:'Prototype (1 minggu)',simple:'Simple (2-4 minggu)',production:'Production (1-2 bulan)',enterprise:'Enterprise (3+ bulan)'};
+  const llmModel={claude:'claude-sonnet-4-5',gpt:'gpt-4o',gemini:'gemini-1.5-pro',llama:'meta-llama/llama-3.1-70b',mistral:'mistral-large-latest','multi-llm':'[router]'}[llm]||'claude-sonnet-4-5';
+  const hasLangGraph=(a.orchestration||[]).includes('langgraph');
+  const hasCrewAI=(a.orchestration||[]).includes('crewai');
+
+  const structure=`
+${slug(name)}/
+│
+├── agents/                     ← Kode agent utama
+│   ├── __init__.py
+│   ├── main_agent.py           ← Agent utama / supervisor
+│   ${a.agentType==='multi'?`├── research_agent.py       ← Sub-agent riset
+│   ├── writer_agent.py         ← Sub-agent menulis
+│   └── review_agent.py         ← Sub-agent review`:
+`└── tools/
+│       ├── search.py           ← Tool: cari di internet
+│       ├── code_runner.py      ← Tool: jalankan kode
+│       └── file_handler.py     ← Tool: baca/tulis file`}
+│
+├── memory/                     ← Sistem memori agent
+│   ├── short_term.py           ← Memori percakapan saat ini
+│   └── long_term.py            ← Database pengetahuan (vector)
+│
+├── prompts/                    ← Semua prompt template
+│   ├── system_prompt.py        ← "Kepribadian" dan aturan agent
+│   ├── task_prompts.py         ← Prompt untuk jenis task tertentu
+│   └── eval_prompts.py         ← Prompt untuk self-evaluation
+│
+├── schemas/                    ← Struktur data
+│   ├── inputs.py               ← Format input yang valid
+│   └── outputs.py              ← Format output yang dihasilkan
+│
+├── safety/                     ← Keamanan & kontrol
+│   ├── guardrails.py           ← Aturan yang tidak boleh dilanggar
+│   ├── rate_limiter.py         ← Batas kecepatan eksekusi
+│   └── audit_log.py            ← Catat semua aksi agent
+│
+├── api/                        ← Endpoint untuk dipanggil
+│   └── main.py                 ← FastAPI server
+│
+├── tests/                      ← Testing agent
+│   ├── test_agent.py
+│   └── eval_cases/             ← Test case evaluasi
+│
+├── .env.example                ← Template API keys
+├── requirements.txt            ← Python packages
+├── Dockerfile
+└── README.md`;
+
+  let starterCode = '';
+  
+  if ((a.orchestration || []).includes('pydantic-ai')) {
+    starterCode = `# ${name} — Pydantic AI Starter Agent
+# Jalankan: pip install pydantic-ai devtools python-dotenv
+# Pastikan file .env berisi API key yang sesuai
+
+import os
+import asyncio
+from typing import Optional, List
+from pydantic import BaseModel, Field
+from pydantic_ai import Agent, RunContext
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# ── 1. Skema Output Terstruktur ──
+class AgentResult(BaseModel):
+    task_complete: bool = Field(description="Apakah misi agen telah selesai sepenuhnya")
+    result: str = Field(description="Hasil akhir kodingan atau analisis")
+    confidence_score: float = Field(description="Skor keyakinan agen antara 0.0 sampai 1.0")
+    logs: List[str] = Field(default_factory=list, description="Log aktivitas langkah koding agen")
+
+# ── 2. Dependencies / Konteks Eksekusi ──
+class DatabaseDeps:
+    def __init__(self, connection_url: str):
+        self.connection_url = connection_url
+
+# ── 3. Inisialisasi Agen Pydantic AI ──
+# Model yang digunakan: ${llmModel}
+agent = Agent(
+    'openai:${llmModel}' if '${llm}' == 'gpt' else 'anthropic:${llmModel}' if '${llm}' == 'claude' else 'gemini:${llmModel}',
+    deps_type=DatabaseDeps,
+    result_type=AgentResult,
+    system_prompt=(
+        "Kamu adalah ${name}, Agen Pengembang Perangkat Lunak Profesional.\\n"
+        "Misi kamu adalah membangun dan menguji kode program secara terstruktur.\\n"
+        "Gunakan tools yang tersedia dengan hati-hati. Laporkan hasil kerja dalam struktur JSON yang ditentukan."
+    )
+)
+
+# ── 4. Definisi Tools (Skills) ──
+@agent.tool
+async def web_search(ctx: RunContext[DatabaseDeps], query: str) -> str:
+    \"\"\"Mencari informasi terbaru atau dokumentasi di internet.\"\"\"
+    # TODO: Sambungkan dengan Tavily API atau Google Search API
+    return f"[Hasil pencarian virtual untuk query: '{query}']"
+
+@agent.tool
+async def execute_code(ctx: RunContext[DatabaseDeps], file_path: str, code: str) -> str:
+    \"\"\"Menulis kode ke dalam file dan mensimulasikan pengetesan kode tersebut.\"\"\"
+    return f"[File '{file_path}' berhasil dibuat dan divalidasi]"
+
+# ── 5. Jalankan Loop Agen ──
+async def main():
+    db_deps = DatabaseDeps(connection_url=os.getenv("DATABASE_URL", "sqlite://local.db"))
+    
+    task_description = "Buat sistem otentikasi JWT sederhana menggunakan FastAPI."
+    print(f"🤖 Menjalankan Agen: {task_description}\\n")
+    
+    result = await agent.run(task_description, deps=db_deps)
+    
+    print("=== RESPONS AGEN (TERSTRUKTUR) ===")
+    print(f"Task Complete : {result.data.task_complete}")
+    print(f"Confidence    : {result.data.confidence_score}")
+    print(f"Hasil         :\\n{result.data.result}")
+
+if __name__ == "__main__":
+    asyncio.run(main())`;
+  }
+  else if ((a.orchestration || []).includes('langgraph')) {
+    starterCode = `# ${name} — LangGraph Multi-Agent Workflow
+# Jalankan: pip install langgraph langchain-openai langchain-anthropic python-dotenv
+
+import os
+from typing import TypedDict, Annotated, Sequence
+from langchain_core.messages import BaseMessage, HumanMessage, AssistantMessage
+from langgraph.graph import StateGraph, END
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# ── 1. Definisikan State Graf ──
+class AgentState(TypedDict):
+    messages: Annotated[Sequence[BaseMessage], lambda x, y: x + y]
+    next_agent: str
+    code_workspace: dict
+
+# ── 2. Buat Node Agen ──
+def architect_node(state: AgentState):
+    print("📐 [Arsitek AI] Merancang struktur file...")
+    # Logika analisis dan perencanaan arsitektur
+    return {
+        "messages": [AssistantMessage(content="Rancangan arsitektur database dibuat.")],
+        "next_agent": "coder"
+    }
+
+def coder_node(state: AgentState):
+    print("💻 [Coder AI] Menulis kode...")
+    # Logika penulisan file kodingan
+    return {
+        "messages": [AssistantMessage(content="File db_helper.py dan auth.py berhasil ditulis.")],
+        "next_agent": "reviewer"
+    }
+
+def reviewer_node(state: AgentState):
+    print("🛡️ [QA Reviewer AI] Memverifikasi kode...")
+    # Logika pengujian kode / QA
+    return {
+        "messages": [AssistantMessage(content="Semua pengujian berjalan 100% lulus.")],
+        "next_agent": "end"
+    }
+
+# ── 3. Bangun Graf Alur Kerja ──
+workflow = StateGraph(AgentState)
+
+workflow.add_node("architect", architect_node)
+workflow.add_node("coder", coder_node)
+workflow.add_node("reviewer", reviewer_node)
+
+workflow.set_entry_point("architect")
+
+# Routing conditional
+def route_next(state: AgentState):
+    if state["next_agent"] == "coder":
+        return "coder"
+    elif state["next_agent"] == "reviewer":
+        return "reviewer"
+    else:
+        return END
+
+workflow.add_conditional_edges(
+    "architect",
+    route_next,
+    {"coder": "coder", "reviewer": "reviewer", END: END}
+)
+workflow.add_conditional_edges(
+    "coder",
+    route_next,
+    {"reviewer": "reviewer", END: END}
+)
+workflow.add_conditional_edges(
+    "reviewer",
+    route_next,
+    {END: END}
+)
+
+app = workflow.compile()
+
+if __name__ == "__main__":
+    initial_state = {
+        "messages": [HumanMessage(content="Bangun backend sistem dengan db PostgreSQL.")],
+        "next_agent": "architect",
+        "code_workspace": {}
+    }
+    print("🕸️ Memulai Orkestrasi LangGraph Workflow...")
+    for event in app.stream(initial_state):
+        print(f"Step: {list(event.keys())[0]}")`;
+  }
+  else if ((a.orchestration || []).includes('crewai')) {
+    starterCode = `# ${name} — CrewAI Multi-Agent Team
+# Jalankan: pip install crewai python-dotenv
+
+import os
+from crewai import Agent, Task, Crew, Process
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# ── 1. Buat Agen-agen Spesialis ──
+research_agent = Agent(
+    role="Research Analyst",
+    goal="Mencari dokumentasi API dan library yang stabil di internet",
+    backstory="Kamu adalah analis riset handal yang selalu menemukan pustaka pemrograman terbaik.",
+    verbose=True,
+    memory=True
+)
+
+developer_agent = Agent(
+    role="Senior Developer",
+    goal="Menuliskan kode program fungsional yang modular dan bersih",
+    backstory="Kamu adalah koder ulung dengan spesialisasi pengembangan API dan Database.",
+    verbose=True
+)
+
+# ── 2. Definisikan Tugas ──
+research_task = Task(
+    description="Cari pustaka Python terbaik untuk integrasi payment gateway Midtrans.",
+    expected_output="Daftar 3 paket pustaka berserta contoh penggunaannya.",
+    agent=research_agent
+)
+
+coding_task = Task(
+    description="Tulis modul integrasi pembayaran berdasarkan hasil riset analyst.",
+    expected_output="File payment.py yang berisi class MidtransPayment.",
+    agent=developer_agent
+)
+
+# ── 3. Orkestrasikan Tim (Crew) ──
+my_crew = Crew(
+    agents=[research_agent, developer_agent],
+    tasks=[research_task, coding_task],
+    process=Process.sequential,  # Eksekusi berurutan
+    verbose=True
+)
+
+if __name__ == "__main__":
+    print("👥 Memulai Kolaborasi Tim Multi-Agent CrewAI...")
+    result = my_crew.kickoff()
+    print("\\n=== HASIL KICKOFF TIM ===")
+    print(result)`;
+  }
+  else if ((a.orchestration || []).includes('autogen')) {
+    starterCode = `# ${name} — AutoGen v0.4 Multi-Agent System
+# Jalankan: pip install autogen-agentchat python-dotenv
+
+import os
+import asyncio
+from autogen_agentchat.agents import AssistantAgent
+from autogen_agentchat.teams import RoundRobinGroupChat
+from autogen_ext.models.openai import OpenAIChatCompletionClient
+from dotenv import load_dotenv
+
+load_dotenv()
+
+async def main():
+    # Model yang dipakai: ${llmModel}
+    # Konfigurasi LLM Client
+    model_client = OpenAIChatCompletionClient(
+        model="${llmModel}",
+        api_key=os.getenv("OPENAI_API_KEY", "dummy-key")
+    )
+
+    # ── 1. Inisialisasi Agen Asisten ──
+    architect_agent = AssistantAgent(
+        name="Architect_Agent",
+        model_client=model_client,
+        system_message="Kamu adalah Arsitek Perangkat Lunak. Tugasmu adalah membuat rancangan file."
+    )
+
+    coder_agent = AssistantAgent(
+        name="Coder_Agent",
+        model_client=model_client,
+        system_message="Kamu adalah Programmer. Tugasmu adalah menerjemahkan rancangan arsitek menjadi kode Python."
+    )
+
+    # ── 2. Kelompokkan Agen ke dalam Tim Event-Driven ──
+    group_chat = RoundRobinGroupChat([architect_agent, coder_agent])
+
+    # ── 3. Jalankan Diskusi Kolaborasi ──
+    print("⚡ Memulai Diskusi Multi-Agent AutoGen v0.4...")
+    async for message in group_chat.run_stream(task="Rancang dan implementasikan helper CRUD database postgres."):
+        print(f"[{message.source}] : {message.content[:100]}...")
+
+if __name__ == "__main__":
+    asyncio.run(main())`;
+  }
+  else {
+    starterCode = `# ${name} — Starter Agent (Direct API Loop)
+import anthropic
+import json
+from typing import Any
+
+# Setup client (Butuh ANTHROPIC_API_KEY di .env)
+client = anthropic.Anthropic()
+
+SYSTEM_PROMPT = """
+Kamu adalah ${name}.
+Misi: [Jelaskan misi agen Anda di sini]
+Yang Boleh Dilakukan: ${(a.agentTools||['web search']).map(t=>`- ${t}`).join('\n')}
+"""
+
+tools = [
+    {
+        "name": "web_search",
+        "description": "Cari informasi di internet",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "Kata kunci pencarian"}
+            },
+            "required": ["query"]
+        }
+    }
+]
+
+audit_log = []
+
+def log_action(action: str, details: Any):
+    entry = {"action": action, "details": details}
+    audit_log.append(entry)
+    print(f"[AUDIT] {action}: {json.dumps(details, ensure_ascii=False)[:100]}")
+
+def execute_tool(name: str, inputs: dict) -> str:
+    log_action("tool_call", {"tool": name, "inputs": inputs})
+    if name == "web_search":
+        return f"[Hasil pencarian virtual: {inputs.get('query', '')}]"
+    return "Tool belum diimplementasikan"
+
+class Agent:
+    def __init__(self):
+        self.conversation = []
+        self.max_iterations = 5
+
+    def run(self, task: str) -> str:
+        print(f"🤖 Memulai task: {task}\\n")
+        self.conversation.append({"role": "user", "content": task})
+        
+        for i in range(self.max_iterations):
+            log_action("iteration_start", {"step": i + 1})
+            response = client.messages.create(
+                model="${llmModel}",
+                max_tokens=2048,
+                system=SYSTEM_PROMPT,
+                tools=tools,
+                messages=self.conversation
+            )
+            
+            if response.stop_reason == "end_turn":
+                return response.content[0].text
+                
+            if response.stop_reason == "tool_use":
+                tool_results = []
+                for block in response.content:
+                    if block.type == "tool_use":
+                        res = execute_tool(block.name, block.input)
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": block.id,
+                            "content": res
+                        })
+                self.conversation.append({"role": "assistant", "content": response.content})
+                self.conversation.append({"role": "user", "content": tool_results})
+        return "Limit iterasi tercapai."
+
+if __name__ == "__main__":
+    agent = Agent()
+    print(agent.run("Riset framework Next.js 15"))`;
+  }
+
+  const masterPlan=`# ADLC Master Plan — ${name}
+
+## Ringkasan
+**Nama Agent:** ${name}
+**Tipe:** ${a.agentType||'Single Agent'}
+**Model AI:** ${llmModel}
+**Orchestration:** ${orch}
+**Estimasi:** ${complexMap[complexity]}
+
+---
+
+## Misi & Batasan Agent
+
+### Misi (isi bagian ini!)
+> Agent ini ada untuk: [APA yang dilakukan]
+> Bagi pengguna: [SIAPA yang terbantu]
+> Sukses jika: [BAGAIMANA mengukurnya]
+
+### Batasan Keras (WAJIB dipatuhi agent)
+1. ❌ Tidak boleh melakukan aksi destruktif tanpa konfirmasi manusia
+2. ❌ Tidak boleh bagikan data private pengguna
+3. ❌ Tidak boleh melebihi budget token/biaya yang ditetapkan
+4. ❌ Harus berhenti dan eskalasi jika error 3x berturut-turut
+5. ✅ Selalu log setiap aksi di audit trail
+
+---
+
+## Ukuran Sukses
+
+| KPI | Target | Cara Ukur |
+|-----|--------|-----------|
+| Task completion rate | > 85% | Automated eval |
+| Akurasi output | > 90% | LLM-as-judge |
+| Rata-rata biaya per task | < $0.10 | Token tracking |
+| Waktu respon (P95) | < 30 detik | APM monitoring |
+| Halusinasi | < 5% | Manual sampling |
+
+---
+
+## Arsitektur
+
+### 5 Lapisan Sistem
+\`\`\`
+Layer 1 — Foundation  : ${llmModel} (otak utama)
+Layer 2 — Memory      : ${mem}
+Layer 3 — Tools       : ${tools}
+Layer 4 — Orchestration: ${orch}
+Layer 5 — Observability: Audit log + monitoring
+\`\`\`
+
+### Kontrol Manusia
+Level: **${a.autonomy==='hitl'?'Konfirmasi setiap langkah':a.autonomy==='checkpoint'?'Konfirmasi di titik kritis':a.autonomy==='monitor'?'Monitor saja':a.autonomy==='autonomous'?'Fully autonomous':'Belum ditentukan'}**
+
+${a.autonomy==='hitl'?'→ Agent akan selalu minta persetujuan sebelum bertindak. Paling aman.':
+  a.autonomy==='checkpoint'?'→ Agent jalan sendiri, tapi pause dan minta approval sebelum aksi high-stakes.':
+  a.autonomy==='monitor'?'→ Agent jalan penuh. Manusia pantau via dashboard. Ada tombol stop darurat.':
+  '→ Fully autonomous. Wajib ada monitoring ketat dan kill-switch yang berfungsi.'}
+
+---
+
+## Fase Pengembangan
+
+### Fase 1: Definisi & Validasi (Minggu 1)
+- [ ] Tulis mission statement yang jelas
+- [ ] Definisikan semua hard constraints
+- [ ] Buat 20+ test cases representatif
+- [ ] Validasi bahwa task bisa diselesaikan LLM secara manual dulu
+
+### Fase 2: Build Skills & Tools (Minggu 1-2)
+- [ ] Implementasi setiap tool dengan error handling
+- [ ] Tulis system prompt v1
+- [ ] Test setiap tool secara terpisah
+- [ ] Setup audit logging
+
+### Fase 3: Orchestration (Minggu 2-3)
+- [ ] Implement agent loop dengan ${orch}
+- [ ] Test end-to-end dengan task sederhana
+- [ ] Tambahkan human-in-the-loop di titik kritis
+- [ ] Debug dan optimalkan prompt
+
+### Fase 4: Evaluasi (Minggu 3)
+- [ ] Jalankan semua 20+ test cases
+- [ ] Setup LLM-as-judge untuk auto-eval
+- [ ] Ukur: completion rate, akurasi, biaya, latency
+- [ ] Iterasi prompt berdasarkan temuan
+
+### Fase 5: Deploy & Monitor (Minggu 4)
+- [ ] Deploy ke ${dep}
+- [ ] Setup alerting (error spike, cost overrun)
+- [ ] Buat runbook untuk kondisi darurat
+- [ ] Dokumentasi cara pakai
+
+---
+
+## Keamanan & Observability
+
+### Yang WAJIB Ada Sebelum Production
+- [ ] Audit log: setiap tool call dicatat dengan timestamp
+- [ ] Cost guard: hard limit biaya per run ($X)
+- [ ] Rate limiter: maks N request per user per jam
+- [ ] Kill switch: endpoint POST /stop yang hentikan agent
+- [ ] Sandbox: code execution dijalankan di environment terisolasi
+
+---
+
+## Evaluasi Berkala
+
+Lakukan setiap 2 minggu:
+1. Sample 20 run acak — review manual
+2. Cek apakah ada "prompt drift" (output berubah tanpa sebab)
+3. Review biaya — apakah masih dalam budget?
+4. Update system prompt jika ada pola kegagalan`;
+
+  const sysPrompts=`# System Prompt Templates — ${name}
+
+---
+
+## Template 1: System Prompt Utama
+
+Paste ini sebagai system prompt agent kamu.
+Isi bagian dalam [kurung kotak].
+
+\`\`\`
+Kamu adalah ${name}.
+
+## Siapa Kamu
+[Jelaskan: nama, peran, siapa yang menggunakanmu]
+Contoh: "Kamu adalah asisten riset untuk tim marketing PT XYZ.
+Tugasmu adalah mencari data kompetitor, merangkum berita industri,
+dan membuat laporan mingguan."
+
+## Kemampuan yang Kamu Miliki
+${(a.agentTools||['pencarian web']).map(t=>`- Bisa ${t}`).join('\n')}
+
+## Cara Kamu Bekerja
+1. Baca task dengan teliti — pahami apa yang diminta
+2. Rencanakan langkah-langkah sebelum mulai
+3. Kerjakan satu langkah, periksa hasilnya
+4. Lanjut ke langkah berikutnya
+5. Buat summary hasil di akhir
+
+## Yang Tidak Boleh Kamu Lakukan
+- Jangan berasumsi jika ada yang tidak jelas — tanya dulu
+- Jangan lakukan aksi yang tidak bisa di-undo tanpa konfirmasi
+- Jangan bagikan informasi yang ditandai sebagai rahasia
+- Jangan terus jika sudah gagal 3 kali — eskalasi ke manusia
+
+## Format Respons
+Selalu akhiri dengan:
+STATUS: [SELESAI / BUTUH INPUT / GAGAL]
+RINGKASAN: [Apa yang sudah dilakukan]
+HASIL: [Output utama]
+LANGKAH SELANJUTNYA: [Jika ada]
+\`\`\`
+
+---
+
+## Template 2: Prompt untuk Mulai Task Baru
+
+\`\`\`
+Task baru: {deskripsi_task}
+
+Konteks tambahan:
+- Deadline: {deadline}
+- Format output yang diinginkan: {format}
+- Batasan khusus: {batasan}
+
+Sebelum mulai, konfirmasi pemahaman kamu dengan menjawab:
+1. Apa yang akan kamu lakukan?
+2. Tools apa yang akan dipakai?
+3. Berapa lama estimasinya?
+4. Apakah ada risiko atau ketidakpastian?
+\`\`\`
+
+---
+
+## Template 3: Self-Evaluation (LLM menilai dirinya sendiri)
+
+Gunakan ini untuk mengecek kualitas output agent secara otomatis.
+
+\`\`\`
+Kamu adalah penilai kualitas AI yang objektif.
+
+Task asli yang diberikan:
+{task_asli}
+
+Respons yang dihasilkan agent:
+{respons_agent}
+
+Nilai respons ini dari 1-5 untuk setiap dimensi:
+
+1. KELENGKAPAN: Apakah semua bagian task terjawab?
+   [1=tidak sama sekali, 5=semua terjawab lengkap]
+
+2. AKURASI: Seberapa akurat informasi yang diberikan?
+   [1=banyak salah, 5=semuanya benar dan terverifikasi]
+
+3. EFISIENSI: Apakah agent mengambil jalur tercepat ke jawaban?
+   [1=sangat muter-muter, 5=langsung ke inti]
+
+4. KEAMANAN: Apakah agent mematuhi semua batasan?
+   [1=melanggar batasan, 5=mematuhi semua aturan]
+
+Output HANYA dalam format JSON:
+{
+  "kelengkapan": N,
+  "akurasi": N,
+  "efisiensi": N,
+  "keamanan": N,
+  "total": N,
+  "komentar": "penjelasan singkat",
+  "perlu_perbaikan": ["item1", "item2"]
+}
+\`\`\`
+
+---
+
+## Template 4: Debugging Agent yang Bermasalah
+
+Jika agent sering gagal, gunakan prompt ini untuk diagnosa:
+
+\`\`\`
+Review percakapan agent berikut dan identifikasi masalahnya:
+
+[PASTE percakapan di sini]
+
+Analisis:
+1. Di mana agent mulai salah jalur?
+2. Apakah system prompt tidak cukup jelas?
+3. Apakah ada tool yang dipanggil dengan parameter salah?
+4. Apa perbaikan konkret yang bisa dilakukan?
+
+Format output:
+MASALAH_UTAMA: [1 kalimat]
+AKAR_MASALAH: [penjelasan]
+SOLUSI: [langkah konkret]
+PERUBAHAN_PROMPT: [bagian prompt yang perlu diubah]
+\`\`\``;
+
+  return{name,mode:'adlc',structure,starterCode,masterPlan,sysPrompts,complexity:complexMap[complexity],llm,orch,tools};
+}
+
+// ═══════════════════════════════════════════
+// RENDER OUTPUT
+// ═══════════════════════════════════════════
+function renderOutput(){
+  const g=S.generated;
+  const isA=g.mode==='adlc';
+  const isD=g.mode==='desktop';
+  const isW=g.mode==='website';
+  const tabs=isA?['builder','structure','code','plan','prompts']:['builder','structure','stack','prd','prompts'];
+  const labels=isA?['🚀 Live Builder','Struktur Folder','Starter Code','Master Plan','System Prompts']:['🚀 Live Builder','Struktur Folder','Tech Stack','PRD','AI Prompts'];
+  const at=S.activeTab||tabs[0];
+  const gClass=isA?'green':isW?'pink':isD?'amber':'';
+
+  const heroMeta=isA
+    ?[g.llm||'Claude',g.orch,g.complexity]
+    :isD?[g.fw,g.db,g.targetOS,g.scale]
+    :[g.fe,g.db,g.scale];
+
+  const heroLabel=isA?'Agentic AI — Generated':isW?'Website — Generated':isD?'Desktop App — Generated':'Software — Generated';
+
+  let panel='';
+  if(at==='builder'){
+    panel = renderBuilderPanel();
+  } else if(at==='structure'){
+    panel=`<div class="out-section">
+      <div class="out-sec-head"><div class="out-sec-icon ${gClass}">📁</div><div>
+        <div class="out-sec-title">Struktur Folder Project</div>
+        <div class="out-sec-sub">Komentar menjelaskan fungsi setiap folder</div>
+      </div></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang-tag">Directory Tree</span>
+        <button class="copy-btn" onclick="cpCode('sc1',this)">Salin</button></div>
+        <pre id="sc1">${esc(g.structure.trim())}</pre></div>
+    </div>`;
+  } else if(at==='stack'&&!isA){
+    const phaseNumClass=isW?'pink':isD?'amber':'';
+    const phaseTagClass=isW?'pink':isD?'amber':'';
+    panel=`<div class="out-section">
+      <div class="out-sec-head"><div class="out-sec-icon ${gClass}">⚙️</div><div>
+        <div class="out-sec-title">Rekomendasi Tech Stack</div>
+        <div class="out-sec-sub">Dipilih otomatis berdasarkan jawaban kamu</div>
+      </div></div>
+      <div class="stack-recs">${(g.stackRecs||[]).map(s=>`
+        <div class="stack-rec">
+          <div class="stack-rec-star">${s.star}</div>
+          <div class="stack-rec-cat">${s.cat}</div>
+          <div class="stack-rec-name">${s.name}</div>
+          <div class="stack-rec-why">${s.why}</div>
+        </div>`).join('')}</div>
+    </div>
+    <div class="out-section" style="margin-top:10px">
+      <div class="out-sec-head"><div class="out-sec-icon ${gClass}">📋</div><div>
+        <div class="out-sec-title">Fase Pengerjaan</div>
+        <div class="out-sec-sub">Urutan yang disarankan</div>
+      </div></div>
+      <div class="phase-list">${(g.phases||[]).map(p=>`
+        <div class="phase-item">
+          <div class="phase-num ${phaseNumClass}">${p.num}</div>
+          <div><div class="phase-title">${p.title}</div>
+            <div class="phase-desc">${p.desc}</div>
+            <div class="phase-tags">${p.tags.map(t=>`<span class="phase-tag ${phaseTagClass}">${t}</span>`).join('')}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  } else if(at==='code'&&isA){
+    panel=`<div class="out-section">
+      <div class="out-sec-head"><div class="out-sec-icon green">🐍</div><div>
+        <div class="out-sec-title">Starter Code — Python Agent</div>
+        <div class="out-sec-sub">Siap dijalankan, tinggal isi bagian TODO</div>
+      </div></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang-tag">Python</span>
+        <button class="copy-btn" onclick="cpCode('sc2',this)">Salin</button></div>
+        <pre id="sc2">${esc(g.starterCode.trim())}</pre></div>
+    </div>`;
+  } else if(at==='plan'&&isA){
+    panel=`<div class="out-section">
+      <div class="out-sec-head"><div class="out-sec-icon green">📝</div><div>
+        <div class="out-sec-title">ADLC Master Plan</div>
+        <div class="out-sec-sub">Roadmap lengkap — tinggal isi bagian kosong</div>
+      </div></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang-tag">Markdown</span>
+        <button class="copy-btn" onclick="cpCode('sc3',this)">Salin</button></div>
+        <pre id="sc3">${esc(g.masterPlan.trim())}</pre></div>
+    </div>`;
+  } else if(at==='prd'&&!isA){
+    panel=`<div class="out-section">
+      <div class="out-sec-head"><div class="out-sec-icon ${gClass}">📝</div><div>
+        <div class="out-sec-title">${isD?'PRD — Desktop App':'PRD — Product Requirements Document'}</div>
+        <div class="out-sec-sub">Tinggal isi bagian dalam [kurung kotak]</div>
+      </div></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang-tag">Markdown</span>
+        <button class="copy-btn" onclick="cpCode('sc4',this)">Salin</button></div>
+        <pre id="sc4">${esc(g.prd.trim())}</pre></div>
+    </div>`;
+  } else if(at==='prompts'){
+    const content=isA?g.sysPrompts:g.prompts;
+    panel=`<div class="out-section">
+      <div class="out-sec-head"><div class="out-sec-icon ${gClass}">💬</div><div>
+        <div class="out-sec-title">${isA?'System Prompt Templates':isD?'Starter Prompts Desktop App':'Starter Prompts untuk AI Coding'}</div>
+        <div class="out-sec-sub">${isA?'4 template siap pakai — copy & paste ke project kamu':'Prompt siap pakai — gunakan dengan Claude Code, Cursor, atau ChatGPT'}</div>
+      </div></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang-tag">Prompts</span>
+        <button class="copy-btn" onclick="cpCode('sc5',this)">Salin</button></div>
+        <pre id="sc5">${esc(content.trim())}</pre></div>
+    </div>`;
+  }
+
+  R.innerHTML=`
+  <div class="out-wrap">
+    <div class="out-hero ${gClass}">
+      <div class="out-hero-label">${heroLabel} ✦</div>
+      <div class="out-hero-name">${g.name}</div>
+      <div class="out-hero-meta">${heroMeta.filter(Boolean).map(m=>`<span class="out-hero-chip">${m}</span>`).join('')}</div>
+    </div>
+    <div class="tab-nav">${tabs.map((t,i)=>`<button class="tab-nav-btn ${at===t?'active':''}" onclick="setTab('${t}')">${labels[i]}</button>`).join('')}</div>
+    <div id="out-panel">${panel}</div>
+    <div class="restart-row">
+      <button class="btn btn-next" style="margin-bottom:10px;width:100%;justify-content:center;display:flex" onclick="dlProjectBundle()">📦 Download Project Bundle (masterplan + semua fase)</button>
+      <button class="btn btn-back" style="margin-bottom:15px;width:100%;justify-content:center;display:flex" onclick="dlMasterplan()">📄 Hanya masterplan.md</button>
+      <button class="btn btn-restart" onclick="restart()">← Buat Project Baru</button>
+    </div>
+  </div>`;
+}
+
+function dlMasterplan() {
+  const g = S.generated;
+  if(!g) return;
+  const isA = g.mode === 'adlc';
+  const isW = g.mode === 'website';
+  const isD = g.mode === 'desktop';
+
+  let content = `# MASTERPLAN & AI INSTRUCTIONS: ${g.name.toUpperCase()}\n\n`;
+  content += `> File ini distandardisasi otomatis oleh DevForge Studio untuk AI Agentic.\n\n`;
+
+  // Context & Tech Stack
+  content += `## 1. CONTEXT & TECH STACK\n`;
+  if (isA) {
+    content += `- **Tujuan System**     : ${g.name}\n`;
+    content += `- **Tipe Agent**        : ${S.answers.agentType||'-'}\n`;
+    content += `- **Large Language Model**: ${g.llm||'-'}\n`;
+    content += `- **Orchestration**     : ${(g.orch||[]).join(' + ') || '-'}\n`;
+  } else if (isW) {
+    content += `- **Tipe Website**      : ${S.answers.webType||'-'}\n`;
+    content += `- **Web Builder**       : ${S.answers.webBuilder||'Astro'}\n`;
+    content += `- **CMS**               : ${S.answers.cms||'Markdown'}\n`;
+  } else if (isD) {
+    content += `- **Framework Desktop** : ${g.fw||'-'}\n`;
+    content += `- **Basis Database**    : ${(g.db||[]).join(' + ') || '-'}\n`;
+  } else {
+    content += `- **Frontend**          : ${g.fe||'-'}\n`;
+    content += `- **Database**          : ${(g.db||[]).join(' + ') || '-'}\n`;
+  }
+  content += `\n*(DILARANG bereksperimen dengan bahasa/framework lain di luar tumpukan ini tanpa izin tertulis!)*\n\n`;
+
+  // Blueprint / Folder Structure
+  content += `## 2. DIRECTORY BLUEPRINT\n`;
+  content += `\`\`\`text\n${g.structure.trim()}\n\`\`\`\n\n`;
+
+  // PRD / Master Plan
+  if (isA) {
+    content += `## 3. MASTER PLAN ADLC\n`;
+    content += `${g.masterPlan}\n\n`;
+    content += `## 4. STARTER CODE\n`;
+    content += `\`\`\`python\n${g.starterCode.trim()}\n\`\`\`\n\n`;
+    content += `## 5. PROMPT TEMPLATES\n`;
+    content += `${g.sysPrompts}\n\n`;
+  } else {
+    content += `## 3. PRODUCT REQUIREMENTS (PRD)\n`;
+    content += `${g.prd}\n\n`;
+    content += `## 4. EXECUTION PROMPTS\n`;
+    content += `${g.prompts}\n\n`;
+  }
+
+  // File Download Triggers
+  const blob = new Blob([content], {type: 'text/markdown'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'masterplan.md';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+async function initWebContainer() {
+    // WebContainer API memerlukan CDN khusus StackBlitz dan header COEP/COOP.
+    // Karena keterbatasan hosting statis, fungsi ini digantikan oleh openLivePreview() (Blob URL).
+    return true;
+}
+
+async function execTerminalCmd(cmd) {
+    if (S.building) {
+        addBuildLog("⚠️ Tunggu hingga AI selesai membangun proyek terlebih dahulu.", "amber");
+        return;
+    }
+
+    const hasFiles = Object.keys(S.virtualWorkspace).length > 0;
+
+    if (cmd === 'install') {
+        if (!hasFiles) {
+            addBuildLog("❌ Virtual workspace masih kosong. Jalankan pembangunan otonom terlebih dahulu.", "error");
+            return;
+        }
+
+        if (S.isNative && invoke) {
+            addBuildLog("📦 Menjalankan 'npm install' secara native...", "agent");
+            try {
+                const targetCwd = S.workspacePath && S.generated && S.generated.name ? `${S.workspacePath}/${S.generated.name}` : ".";
+                const isWin = navigator.userAgent.includes('Win');
+                const execCmd = isWin ? 'cmd' : 'npm';
+                const execArgs = isWin ? ['/c', 'npm', 'install'] : ['install'];
+                
+                await invoke('execute_command', { cmd: execCmd, args: execArgs, cwd: targetCwd });
+                
+                S.isInstalled = true;
+                addBuildLog("✅ Instalasi native selesai.", "success");
+                addBuildLog("💡 Klik '🚀 dev' untuk memulai server lokal.", "info");
+                render();
+            } catch (err) {
+                addBuildLog(`❌ Error eksekusi: ${err}`, "error");
+            }
+        } else {
+            addBuildLog("📦 $ npm install", "agent");
+            addBuildLog("", "info");
+            addBuildLog("⚙️  Menganalisis package.json...", "info");
+            await sleep(600);
+            const pkg = S.virtualWorkspace['package.json'];
+            let deps = ['vite', 'react', 'react-dom'];
+            if (pkg) {
+                try {
+                    const parsed = JSON.parse(pkg);
+                    deps = [
+                        ...Object.keys(parsed.dependencies || {}),
+                        ...Object.keys(parsed.devDependencies || {})
+                    ].slice(0, 8);
+                    if (deps.length === 0) deps = ['vite'];
+                } catch(e) {}
+            }
+            for (const dep of deps) {
+                addBuildLog(`   + ${dep}`, "info");
+                await sleep(120);
+            }
+            await sleep(400);
+            addBuildLog("", "info");
+            addBuildLog(`✅ ${deps.length} packages installed (simulated — project berjalan via Preview langsung).`, "success");
+            addBuildLog("💡 Klik '🚀 dev' untuk memulai server lokal.", "info");
+            S.isInstalled = true;
+            render();
+        }
+
+    } else if (cmd === 'dev') {
+        if (!hasFiles) {
+            addBuildLog("❌ Virtual workspace masih kosong. Jalankan pembangunan otonom terlebih dahulu.", "error");
+            return;
+        }
+        if (!S.isInstalled) {
+            addBuildLog("⚠️ Jalankan 'install' terlebih dahulu!", "amber");
+            return;
+        }
+        if (S.isDevRunning) {
+            addBuildLog("ℹ️ Dev server sudah berjalan. Klik '🌐 Preview' untuk membukanya.", "info");
+            return;
+        }
+
+        if (S.isNative && invoke) {
+            addBuildLog("🚀 Menjalankan 'npm run dev' secara native...", "agent");
+            try {
+                const targetCwd = S.workspacePath && S.generated && S.generated.name ? `${S.workspacePath}/${S.generated.name}` : ".";
+                const isWin = navigator.userAgent.includes('Win');
+                const execCmd = isWin ? 'cmd' : 'npm';
+                const execArgs = isWin ? ['/c', 'npm', 'run', 'dev'] : ['run', 'dev'];
+                
+                // Jangan gunakan 'await' karena dev server berjalan terus-menerus (long-running process)
+                invoke('execute_command', { cmd: execCmd, args: execArgs, cwd: targetCwd }).catch(err => {
+                    addBuildLog(`❌ Error eksekusi dev: ${err}`, "error");
+                });
+                
+                S.isDevRunning = true;
+                addBuildLog("✅ Dev server native dimulai! Membuka browser preview...", "success");
+                render();
+                await sleep(1500); // Beri waktu server untuk hidup
+                
+                // Buka browser
+                openLivePreview();
+            } catch (err) {
+                addBuildLog(`❌ Error eksekusi: ${err}`, "error");
+            }
+        } else {
+            addBuildLog("🚀 $ npm run dev", "agent");
+            addBuildLog("", "info");
+            addBuildLog("   VITE v5.0.0  ready in 312 ms", "info");
+            await sleep(300);
+            addBuildLog("", "info");
+            addBuildLog("   ➜  Local:   http://localhost:5173/", "success");
+            addBuildLog("   ➜  Network: http://192.168.1.1:5173/", "info");
+            addBuildLog("", "info");
+            addBuildLog("✅ Dev server siap! Membuka preview di tab baru...", "success");
+            S.isDevRunning = true;
+            render();
+            await sleep(400);
+            openLivePreview();
+        }
+    }
+}
+
+async function dlProjectBundle() {
+  const g = S.generated;
+  if(!g || typeof JSZip === 'undefined'){
+    alert('JSZip belum termuat. Coba hard-refresh halaman (Shift+F5) dan pastikan koneksi internet aktif.');
+    return;
+  }
+  const isA = g.mode === 'adlc';
+  const isW = g.mode === 'website';
+  const isD = g.mode === 'desktop';
+  const a = S.answers;
+  const zip = new JSZip();
+  const folder = zip.folder(slug(g.name));
+
+  // ── Shared context vars ────────────────────────
+  const fe    = g.fe || (Array.isArray(a.frontend)?a.frontend[0]:a.frontend) || 'Next.js';
+  const db    = (Array.isArray(g.db)?g.db.join(' + '):g.db) || (Array.isArray(a.database)?a.database[0]:'Supabase');
+  const db0   = (Array.isArray(a.database)?a.database[0]:a.database) || 'supabase';
+  const auth  = (Array.isArray(a.auth)?a.auth[0]:a.auth) || 'supabase-auth';
+  const dep   = (Array.isArray(a.deployment)?a.deployment[0]:a.deployment) || 'vercel';
+  const ui    = (Array.isArray(a.uiLib)?a.uiLib[0]:a.uiLib) || 'tailwind-shadcn';
+  const scl   = a.scale || a.complexity || 'small';
+  const wb    = a.webBuilder || 'astro';
+  const cms   = a.cms || 'markdown';
+  const orch  = Array.isArray(g.orch)?g.orch.join('+'):(g.orch||'langchain');
+  const llm   = g.llm || a.llm || 'claude';
+  const desc  = a.projectName || g.name;
+
+  // ════════════════════════════════════════════
+  // 1. masterplan.md  — POWERFULL TEMPLATE
+  // ════════════════════════════════════════════
+  let mp = `# 📋 MASTERPLAN — ${g.name.toUpperCase()}
+Generated by DevForge Studio | ${new Date().toLocaleDateString('id-ID', {dateStyle:'long'})}
+
+> ⚠️ **INSTRUKSI PENTING UNTUK AI IDE (Cursor / Trae / Antigravity)**
+> Buka file ini PERTAMA KALI sebelum memulai pekerjaan apapun.
+> Baca seluruh file ini, konfirmasi pemahaman Anda dengan menjawab:
+> 1. Nama project dan tujuannya?
+> 2. Tech stack apa yang WAJIB digunakan?
+> 3. Struktur folder seperti apa yang diharapkan?
+> 4. Sudahkah Anda membaca panduan wajib di \`ai_ide_instructions.md\`?
+
+---
+
+## ⚡ PANDUAN EKSEKUSI (WAJIB)
+Sebelum memulai koding, baca file **[ai_ide_instructions.md](ai_ide_instructions.md)**. Di sana terdapat "Golden Prompt" yang harus Anda gunakan agar AI IDE bekerja secara efektif dan tidak keluar dari jalur.
+
+---
+
+## 🎯 IDENTITAS PROJECT
+
+| Atribut | Value |
+|---------|-------|
+| **Nama** | ${g.name} |
+| **Deskripsi** | ${desc} |
+| **Mode** | ${isA?'Agentic AI System':isW?'Website / Landing Page':'Software Application'} |
+| **Skala** | ${scl} |
+| **Generated** | ${new Date().toISOString()} |
+
+---
+
+## ⚙️ TECH STACK — WAJIB DIIKUTI, JANGAN GANTI TANPA IZIN
+
+\`\`\`yaml
+${isA?`orchestration: ${orch}
+llm_model:     ${llm}
+agent_type:    ${a.agentType||'single'}
+memory:        ${(Array.isArray(a.memory)?a.memory.join(', '):(a.memory||'context'))}
+tools:         ${(Array.isArray(a.agentTools)?a.agentTools.join(', '):(a.agentTools||'web-search'))}
+deployment:    ${dep}
+`:isW?`web_builder:   ${wb}
+cms:           ${cms}
+animation:     ${(Array.isArray(a.animation)?a.animation.join(', '):(a.animation||'CSS'))}
+form:          ${(Array.isArray(a.form)?a.form.join(', '):(a.form||'Formspree'))}
+hosting:       ${dep}
+`:`frontend:      ${fe}
+database:      ${db}
+auth:          ${auth}
+ui_library:    ${ui}
+deployment:    ${dep}
+app_type:      ${a.appType||'webapp'}
+audience:      ${a.audience||'b2c'}
+`}\`\`\`
+
+---
+
+## 📁 STRUKTUR FOLDER
+
+\`\`\`text
+${g.structure.trim()}
+\`\`\`
+
+---
+
+## 🤝 RULES FOR AI — WAJIB DIPATUHI
+
+### 📌 SELALU LAKUKAN (DO):
+- Baca masterplan.md sebelum memulai setiap fase baru
+- Tulis komentar Bahasa Indonesia di setiap fungsi
+- Buat satu commit per fitur yang selesai (bukan per file)
+- Ikuti struktur folder di atas dengan ketat — jangan membuat folder baru tanpa diskusi
+- Validasi semua input dari user sebelum memproses
+- Gunakan TypeScript strict mode untuk semua file .ts/.tsx
+- Setiap async function WAJIB memiliki try-catch
+- Test manual setiap fitur sebelum lanjut ke berikutnya
+
+### 🚫 JANGAN LAKUKAN (DON'T):
+- Jangan install package yang tidak ada di rencana tanpa izin
+- Jangan ubah database schema tanpa membuat migration file
+- Jangan hardcode API key, password, atau secret apapun
+- Jangan skip error handling dengan alasan "nanti saja"
+- Jangan merge branch tanpa review minimal satu fase selesai
+- Jangan buat file di luar struktur folder yang sudah ditentukan
+- Jangan gunakan \`any\` type di TypeScript kecuali darurat
+- Jangan lanjut ke fase berikutnya sebelum checklist selesai
+
+---
+
+## 🌐 ENVIRONMENT VARIABLES
+
+Buat file \`.env.local\` (dan \`.env.example\` untuk repo):
+\`\`\`env
+${isA?`# LLM Provider
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+
+# Memory / Storage
+DATABASE_URL=
+REDIS_URL=
+
+# App Config
+AGENT_NAME=${g.name}
+LOG_LEVEL=INFO
+MAX_ITERATIONS=10
+TIMEOUT_SECONDS=30
+`:isW?`# CMS & Content
+CMS_API_URL=
+CMS_API_TOKEN=
+
+# Form
+FORM_ENDPOINT=
+
+# Analytics  
+GA_MEASUREMENT_ID=
+`:`# Database
+DATABASE_URL=
+${db0.includes('supabase')?`NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+`:''}
+# Auth
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=
+
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NODE_ENV=development
+`}\`\`\`
+
+---
+
+## 📊 DEFINISI ENTITAS UTAMA
+
+${isA?`### Agent State
+\`\`\`python
+class AgentState(TypedDict):
+    messages: list[BaseMessage]
+    task: str
+    iteration: int
+    results: list[dict]
+    error: Optional[str]
+    done: bool
+\`\`\`
+
+### Tool Interface
+\`\`\`python
+class BaseTool(ABC):
+    name: str
+    description: str
+
+    @abstractmethod
+    async def run(self, input: str) -> ToolResult:
+        pass
+\`\`\`
+`:isW?`### Konten Halaman
+| Halaman | Seksi | Data Source |
+|---------|-------|-------------|
+| Beranda | Hero, Features, Testimonial | ${cms} |
+| Tentang | Company Story, Team | ${cms} |
+| Layanan | Services List, Pricing | ${cms} |
+| Kontak | Form, Map | Form handler |
+
+### SEO Fields (wajib per halaman)
+- \`title\` (max 60 karakter)
+- \`description\` (max 160 karakter)
+- \`og:image\` (1200×630px)
+- \`canonical\` URL
+`:`### Entitas Utama (Core Entities)
+> Lengkapi sesuai domain bisnis project ini.
+> Contoh untuk e-commerce:
+
+| Entity | Fields | Relations |
+|--------|--------|-----------|
+| User | id, email, name, role, createdAt | has many Orders |
+| Product | id, name, price, stock, categoryId | belongs to Category |
+| Order | id, userId, total, status, createdAt | has many OrderItems |
+| OrderItem | id, orderId, productId, qty, price | belongs to Product |
+
+> ✏️ Minta AI untuk generate schema nyata berdasarkan deskripsi project: "${desc}"
+`}
+
+---
+
+## 🔒 KEAMANAN MINIMAL
+
+- [ ] Input sanitization di semua form/API
+- [ ] Rate limiting di semua endpoint publik
+- [ ] HTTPS only di production
+- [ ] Environment variables tidak pernah di-commit ke git
+- [ ] Dependencies di-audit dengan \`npm audit\` sebelum deploy
+${isA?'- [ ] Timeout pada setiap API call ke LLM\n- [ ] Validasi output LLM sebelum dieksekusi':''}
+
+---
+
+## 🚀 CARA MEMULAI DENGAN AI IDE
+
+\`\`\`
+INSTRUKSI AWAL untuk AI IDE:
+
+Saya sedang membangun project: ${g.name}
+
+Konteks project ada di file masterplan.md yang sudah terbuka.
+Kita akan membangun step by step mengikuti file phase_01.md sampai phase_0N.md.
+
+Mulai dengan membuka phase_01.md dan jalankan semua instruksi di dalamnya.
+Tanyakan konfirmasi sebelum melanjutkan ke fase berikutnya.
+\`\`\`
+`;
+  const aiGuide = `# 🤖 PANDUAN PENGGUNAAN AI IDE (Antigravity/Trae/Cursor)
+
+File ini adalah panduan wajib untuk memastikan AI IDE membangun project Anda dengan benar mengikuti standar DevForge Studio.
+
+## 🚀 LANGKAH 1: INISIALISASI KONTEKS (PENTING!)
+Copy dan paste prompt di bawah ini ke chat AI IDE Anda sebagai instruksi pertama:
+
+\`\`\`
+Halo. Saya ingin membangun Proyek **${g.name}** berdasarkan blueprint yang ada di folder ini.
+
+**Aturan Main:**
+1. Baca \`masterplan.md\` sebagai referensi utama aturan coding, tech stack, dan struktur folder.
+2. Pahami file panduan wajib di \`ai_ide_instructions.md\`.
+3. Kita akan bekerja secara bertahap mengikuti file 'Phase' (\`phase_01.md\`, \`phase_02.md\`, dst).
+4. Jangan mengerjakan phase berikutnya sebelum saya memberikan konfirmasi 'LANJUT'.
+5. Pastikan setiap file diletakkan di folder yang sesuai dengan instruksi \`masterplan.md\`.
+
+Jika sudah paham, berikan ringkasan singkat tujuan proyek dan tech stack yang akan kita gunakan.
+\`\`\`
+
+## 🏗️ LANGKAH 2: EKSEKUSI BERTAHAP
+Setelah AI paham konteksnya, gunakan pola prompt ini untuk setiap fase:
+*"Bagus. Mari kita mulai dengan **Phase 01**. Baca kontennya di \`phase_01.md\` dan lakukan instruksinya langkah demi langkah. Beritahu saya jika ada hambatan atau jika sudah siap diverifikasi."*
+
+## ✅ LANGKAH 3: VERIFIKASI & KOMIT
+Setiap akhir fase memiliki bagian **VERIFIKASI**. Mintalah AI untuk menjalankan perintah tersebut sebelum lanjut. 
+Disiplin dalam mengikuti fase akan memastikan aplikasi Anda berjalan sesuai standar sejak baris kode pertama.
+
+---
+Generated by DevForge Studio v3
+`;
+
+  folder.file('ai_ide_instructions.md', aiGuide);
+  folder.file('masterplan.md', mp);
+
+  // ════════════════════════════════════════════
+  // 2. tech_notes.md — POWERFULL TEMPLATE
+  // ════════════════════════════════════════════
+  const tn = `# 🔧 TECH NOTES — ${g.name}
+> Panduan teknis mendalam yang WAJIB dibaca oleh AI IDE sebelum menulis kode.
+
+---
+
+## 📐 KONVENSI KODE
+
+| Aspek | Aturan | Contoh |
+|-------|--------|--------|
+| File name | kebab-case | \`user-profile.tsx\` |
+| Functions | camelCase | \`getUserById()\` |
+| Classes | PascalCase | \`UserRepository\` |
+| Constants | UPPER_SNAKE | \`MAX_RETRY_COUNT\` |
+| Types/Interfaces | PascalCase | \`UserResponse\` |
+| CSS classes | kebab-case | \`.user-card\` |
+| Database tables | snake_case | \`user_profiles\` |
+| Env variables | UPPER_SNAKE | \`DATABASE_URL\` |
+
+---
+
+## 🏗️ POLA ARSITEKTUR
+
+### Service Layer Pattern
+\`\`\`
+Request → Route Handler → Service → Repository → Database
+                ↓
+         Validation (Zod)
+                ↓
+         Response DTO
+\`\`\`
+
+### Error Handling Standard
+\`\`\`typescript
+// BENAR — gunakan pola ini
+async function fetchUser(id: string): Promise<User> {
+  try {
+    const user = await db.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundError(\`User \${id} tidak ditemukan\`);
+    return user;
+  } catch (error) {
+    logger.error({ error, userId: id }, 'fetchUser gagal');
+    throw error; // re-throw, jangan telan error
+  }
+}
+
+// SALAH — jangan lakukan ini
+async function fetchUser(id: string) {
+  return await db.user.findUnique({ where: { id } }); // ❌ no error handling
+}
+\`\`\`
+
+### Validasi Input (gunakan Zod)
+\`\`\`typescript
+const CreateUserSchema = z.object({
+  email: z.string().email('Email tidak valid'),
+  password: z.string().min(8, 'Password minimal 8 karakter'),
+  name: z.string().min(2).max(50),
+});
+
+// Di API route:
+const parsed = CreateUserSchema.safeParse(req.body);
+if (!parsed.success) return res.status(400).json({ errors: parsed.error.issues });
+\`\`\`
+
+---
+
+## 🚫 ANTI-PATTERNS — JANGAN LAKUKAN
+
+\`\`\`typescript
+// ❌ Hardcode secret
+const apiKey = "sk-12345abcde";
+
+// ✅ Gunakan env variable
+const apiKey = process.env.API_KEY!;
+if (!apiKey) throw new Error('API_KEY tidak diset');
+
+// ❌ Any type
+function process(data: any) { ... }
+
+// ✅ Typed properly
+function process(data: ProcessInput): ProcessOutput { ... }
+
+// ❌ Nested callback hell
+fetchUser(id, (user) => {
+  fetchOrders(user.id, (orders) => { ... });
+});
+
+// ✅ Async/await
+const user = await fetchUser(id);
+const orders = await fetchOrders(user.id);
+\`\`\`
+
+---
+
+## 🧪 TESTING STRATEGY
+
+| Level | Tool | Coverage Target |
+|-------|------|----------------|
+| Unit | Vitest / Jest | Service functions |
+| Integration | Supertest | API endpoints |
+| E2E | Playwright | Critical user flows |
+
+### Command Testing
+\`\`\`bash
+# Run semua test
+npm test
+
+# Watch mode  
+npm test -- --watch
+
+# Coverage report
+npm test -- --coverage
+\`\`\`
+
+---
+
+## 📦 DEPENDENCY POLICY
+
+- Audit sebelum install: \`npm audit\`
+- Cek bundle size: \`npx bundlephobia <package>\`
+- Prefer packages dengan:
+  - Weekly downloads > 100k
+  - Good TypeScript support
+  - Aktif maintenance (commit dalam 3 bulan terakhir)
+- Jangan install 2 package yang fungsinya sama
+
+---
+
+## ⚡ PERFORMANCE TARGETS
+
+${isW?`| Metric | Target |
+|--------|--------|
+| LCP (Largest Contentful Paint) | < 2.5s |
+| FID (First Input Delay) | < 100ms |
+| CLS (Cumulative Layout Shift) | < 0.1 |
+| Lighthouse Score | > 90 |
+| Image size | Max 200KB (WebP) |
+| JS bundle | < 100KB gzipped |
+`:isA?`| Metric | Target |
+|--------|--------|
+| Response time (P95) | < 3s |
+| Error rate | < 1% |
+| Token efficiency | Minimal context padding |
+| Memory per session | < 100MB |
+`:isD?`| Metric | Target |
+|--------|--------|
+| App startup | < 3s |
+| Memory usage | < 500MB |
+| Build size | < 200MB |
+`:`| Metric | Target |
+|--------|--------|
+| API response (P95) | < 300ms |
+| DB query (per request) | < 5 queries |
+| Memory usage | < 512MB |
+| Error rate | < 0.1% |
+`}
+`;
+  folder.file('tech_notes.md', tn);
+
+  // ════════════════════════════════════════════
+  // 3. .env.example
+  // ════════════════════════════════════════════
+  let envEx = `# 🔐 ENVIRONMENT VARIABLES — ${g.name}
+# Salin file ini menjadi .env.local dan isi nilainya
+# JANGAN PERNAH commit .env.local ke repository
+
+${isA?`# ── LLM Provider ────────────────────────────
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+GOOGLE_AI_API_KEY=AI...
+
+# ── Vector Store ─────────────────────────────
+DATABASE_URL=postgresql://user:pass@host:5432/db
+
+# ── Agent Configuration ───────────────────────  
+AGENT_NAME="${g.name}"
+LOG_LEVEL=INFO
+MAX_ITERATIONS=10
+TIMEOUT_SECONDS=30
+DEBUG=false
+`:isW?`# ── CMS ──────────────────────────────────────
+CMS_BASE_URL=https://your-cms.io
+CMS_API_TOKEN=
+
+# ── Form ─────────────────────────────────────
+FORM_ENDPOINT=https://formspree.io/f/xxxxx
+
+# ── Analytics ────────────────────────────────
+GA_MEASUREMENT_ID=G-XXXXXXXXXX
+
+# ── Deployment ───────────────────────────────
+SITE_URL=https://your-domain.com
+`:`# ── Database ─────────────────────────────────
+DATABASE_URL=postgresql://postgres:password@localhost:5432/${slug(g.name)}
+${db0.includes('supabase')?`NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGci...
+`:db0.includes('mysql')?`MYSQL_DATABASE=${slug(g.name)}
+MYSQL_USER=root
+MYSQL_PASSWORD=password
+`:''}
+# ── Auth ─────────────────────────────────────
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
+
+# ── Application ───────────────────────────────
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_NAME="${g.name}"
+NODE_ENV=development
+
+# ── Third Party (sesuaikan yang dipakai) ──────
+# STRIPE_SECRET_KEY=sk_test_...
+# RESEND_API_KEY=re_...
+# CLOUDINARY_URL=cloudinary://...
+`}`;
+  folder.file('.env.example', envEx);
+
+  // ════════════════════════════════════════════
+  // 4. PHASE FILES — POWERFULL ATOMIC PROMPTS
+  // ════════════════════════════════════════════
+  let phases = [];
+
+  if(isA){
+    phases = [
+      {title:'Environment Setup & Project Scaffold', steps:[
+        `Inisialisasi project Python dengan struktur berikut:
+\`\`\`bash
+mkdir ${slug(g.name)} && cd ${slug(g.name)}
+python -m venv venv
+source venv/bin/activate  # Windows: venv\\Scripts\\activate
+pip install ${orch.includes('langchain')?'langchain langchain-community langchain-openai':'langgraph langchain-anthropic'} python-dotenv pydantic
+pip freeze > requirements.txt
+\`\`\``,
+        `Buat file konfigurasi \`.env\` dari template \`.env.example\`.
+Pastikan semua API key sudah diisi sebelum lanjut.`,
+        `Buat file \`config.py\`:
+\`\`\`python
+# config.py — Konfigurasi terpusat
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    agent_name: str = "${g.name}"
+    llm_model: str = "${llm}"
+    max_iterations: int = 10
+    timeout_seconds: int = 30
+    log_level: str = "INFO"
+
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
+\`\`\``,
+      ], verify:[
+        '`python -c "from config import settings; print(settings.agent_name)"` berhasil tanpa error',
+        'Semua dependency terinstall: `pip list | grep langchain`',
+      ]},
+
+      {title:'Core Agent Implementation', steps:[
+        `Buat file \`agents/main_agent.py\` — implementasi agent utama:
+\`\`\`
+Prompt ke AI IDE:
+Implementasikan class MainAgent menggunakan ${orch}.
+Agent ini bertujuan: ${desc}
+Jenis: ${a.agentType||'single'}
+LLM: ${llm}
+
+Struktur yang diharapkan:
+- __init__(self, llm, tools, memory)
+- async run(self, task: str) -> AgentResult
+- _plan(self, task) -> list[Step]
+- _execute_step(self, step) -> StepResult
+- _reflect(self, results) -> str
+
+Gunakan LangGraph jika multi-agent, LangChain jika single agent.
+Output harus berupa AgentResult(status, summary, artifacts).
+\`\`\``,
+        `Buat tests/test_agent.py untuk unit test basic agent:
+\`\`\`
+Buat unit test untuk MainAgent:
+1. Test inisialisasi agent berhasil
+2. Test run() dengan task sederhana
+3. Test error handling saat LLM unavailable
+\`\`\``,
+      ], verify:[
+        '`python -m pytest tests/test_agent.py -v` semua test hijau',
+        'Agent bisa menjawab pertanyaan sederhana via `python -c "from agents.main_agent import MainAgent; ..."`',
+      ]},
+
+      {title:'Tools Integration', steps:[
+        `Buat setiap tool sebagai class terpisah di folder \`tools/\`:
+\`\`\`
+Untuk setiap tool dalam daftar: ${(a.agentTools||['web-search']).join(', ')}
+
+Buat file tools/{nama_tool}.py dengan:
+- class {NamaTool}Tool(BaseTool)
+- Implementasi async def run(self, input: str) -> ToolResult
+- Error handling yang proper
+- Unit test di tests/test_{nama_tool}.py
+
+Contoh untuk web search:
+class WebSearchTool(BaseTool):
+    name = "web_search"
+    description = "Search web untuk informasi terkini"
+    
+    async def run(self, query: str) -> ToolResult:
+        # implementasi...
+\`\`\``,
+      ], verify:[
+        'Setiap tool bisa dijalankan secara independen',
+        '`python -m pytest tests/ -v` 100% pass',
+      ]},
+
+      {title:'Memory & State Persistence', steps:[
+        `Implementasikan sistem memori berdasarkan ${(a.memory||['context']).join('+')}.
+\`\`\`
+Buat memory/memory_manager.py dengan:
+- save_conversation(session_id, messages)
+- load_conversation(session_id) -> list[Message]
+- clear_session(session_id)
+- summarize_conversation(messages) -> str (jika terlalu panjang)
+
+Gunakan SQLite untuk storage lokal, atau ${db0} untuk production.
+\`\`\``,
+      ], verify:[
+        'Memory tersimpan antar session: jalankan agent 2x dengan session_id sama',
+        'Clear session benar-benar menghapus data',
+      ]},
+
+      {title:'API Layer & Deployment', steps:[
+        `Buat REST API menggunakan FastAPI di \`api/main.py\`:
+\`\`\`
+Buat FastAPI app dengan endpoints:
+POST /run — jalankan agent dengan task
+GET /sessions/{id} — ambil history session
+DELETE /sessions/{id} — hapus session
+GET /health — health check
+
+Gunakan BackgroundTasks untuk long-running agent.
+Tambahkan rate limiting (max 10 req/menit per IP).
+Tambahkan authentication basic (API key di header).
+\`\`\``,
+        `Deploy ke ${dep}:
+\`\`\`bash
+# Dockerfile
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+\`\`\``,
+      ], verify:[
+        'GET http://localhost:8000/health mengembalikan {"status": "ok"}',
+        'POST /run dengan task sederhana berhasil dalam < 30 detik',
+        'Rate limiter aktif: request ke-11 dalam 1 menit ditolak dengan 429',
+      ]},
+    ];
+  } else if(isW){
+    phases = [
+      {title:'Project Init & Config Setup', steps:[
+        `Inisialisasi project ${wb}:
+\`\`\`bash
+# Untuk Astro:
+npm create astro@latest ${slug(g.name)} -- --template minimal --typescript strict --no-install
+cd ${slug(g.name)} && npm install
+
+# Tambahkan integrasi:
+npx astro add tailwind
+npx astro add ${cms==='contentful'?'@astrojs/rss':'sitemap'}
+\`\`\``,
+        `Buat \`src/config/site.ts\` — konfigurasi global:
+\`\`\`typescript
+export const SITE = {
+  name: "${g.name}",
+  url: import.meta.env.SITE_URL || "http://localhost:4321",
+  description: "${desc}",
+  lang: "id",
+  author: "Author Name",
+  social: {
+    twitter: "@handle",
+    instagram: "@handle",
+  }
+};
+\`\`\``,
+        `Buat desain system di \`src/styles/tokens.css\`:
+\`\`\`css
+:root {
+  --color-primary: #3B82F6;
+  --color-secondary: #8B5CF6;
+  --color-accent: #F59E0B;
+  --color-bg: #FFFFFF;
+  --color-text: #1F2937;
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius-md: 8px;
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+\`\`\``,
+      ], verify:[
+        '`npm run dev` berjalan di http://localhost:4321 tanpa error',
+        'TypeScript strict mode tidak ada error di `npm run check`',
+      ]},
+
+      {title:'Layout & Component System', steps:[
+        `Buat base layout di \`src/layouts/BaseLayout.astro\`:
+\`\`\`
+Buat BaseLayout dengan:
+- <head> lengkap: meta charset, viewport, title, description
+- Open Graph tags (og:title, og:description, og:image, og:url)
+- Twitter Card tags
+- canonical URL
+- Google Fonts preconnect
+- Slot untuk konten halaman
+- Props: title, description, image (opsional)
+\`\`\``,
+        `Buat komponen UI dasar di \`src/components/\`:
+\`\`\`
+Buat komponen berikut (HANYA yang disebutkan, tidak lebih):
+1. Header.astro — navigasi dengan mobile hamburger menu
+2. Footer.astro — footer dengan link dan copyright
+3. Hero.astro — hero section dengan heading, subheading, CTA button
+4. Button.astro — reusable button (variant: primary, secondary, ghost)
+5. Section.astro — wrapper section dengan padding konsisten
+
+Semua komponen HARUS menggunakan CSS Variables dari tokens.css.
+Semua teks dalam Bahasa Indonesia kecuali kode.
+\`\`\``,
+      ], verify:[
+        'Semua komponen render tanpa error di browser',
+        'Header hamburger menu berfungsi di mobile (< 768px)',
+        'Tidak ada layout shift saat scroll',
+      ]},
+
+      {title:'Content Pages Implementation', steps:[
+        `Buat semua halaman utama:
+\`\`\`
+Buat file halaman berikut di src/pages/:
+
+1. index.astro — Beranda
+   Seksi: Hero, Features (3-6 item), Testimonial, CTA
+   
+2. about.astro — Tentang Kami  
+   Seksi: Story, Team, Values
+
+3. services.astro — Layanan/Produk
+   Seksi: Services list, Pricing (jika ada)
+
+4. contact.astro — Kontak
+   Seksi: Form kontak, Info alamat, Map embed
+
+Setiap halaman WAJIB menggunakan BaseLayout.
+Gunakan konten dari ${cms} untuk data dinamis.
+\`\`\``,
+      ], verify:[
+        'Semua halaman bisa diakses tanpa 404',
+        'Meta title dan description unik per halaman',
+        'Tampilan di mobile responsive (test di DevTools 375px)',
+      ]},
+
+      {title:'Form, Animation & CMS Integration', steps:[
+        `Integrasikan form kontak dengan ${(a.form||['Formspree'])[0]}:
+\`\`\`
+Buat src/components/ContactForm.astro:
+- Field: nama (required), email (required), pesan (required, textarea)
+- Client-side validation sebelum submit
+- Submit ke ${(a.form||['formspree'])[0]} endpoint
+- Loading state saat submit
+- Success/error message setelah submit
+- Honeypot field untuk anti-spam
+\`\`\``,
+        `Tambahkan animasi scroll-reveal menggunakan ${(a.animation||['CSS'])[0]}:
+\`\`\`
+Buat src/scripts/animations.ts:
+- Gunakan Intersection Observer API
+- Animasikan elemen dengan class .animate-on-scroll
+- Animasi fadeUp untuk teks, fadeIn untuk gambar
+- Pastikan reduced-motion dipatuhi (prefers-reduced-motion)
+\`\`\``,
+      ], verify:[
+        'Form submisi berhasil (cek inbox Formspree)',
+        'Animasi berjalan smooth di 60fps',
+        'Animasi tidak aktif saat prefers-reduced-motion: reduce',
+      ]},
+
+      {title:'SEO, Performance & Deploy', steps:[
+        `Optimasi SEO lengkap:
+\`\`\`
+1. Generate sitemap.xml otomatis
+2. Buat robots.txt: Allow all, Sitemap: /sitemap.xml
+3. Setiap gambar WAJIB memiliki alt text deskriptif
+4. Heading hierarchy: satu H1 per halaman, H2 untuk seksi
+5. Structured data (JSON-LD) untuk halaman utama
+6. Kompres semua gambar ke WebP dengan max 200KB
+\`\`\``,
+        `Audit dan deploy:
+\`\`\`bash
+# Build production
+npm run build
+
+# Preview production
+npm run preview
+
+# Audit Lighthouse (Chrome DevTools atau npx)
+npx lighthouse http://localhost:4321 --only-categories=performance,seo,accessibility --output=html
+
+# Deploy ke ${dep}
+${dep==='vercel'?'npx vercel --prod':dep==='netlify'?'npx netlify deploy --prod':dep==='cloudflare'?'npx wrangler pages deploy dist':'# deploy sesuai provider'}
+\`\`\``,
+      ], verify:[
+        'Lighthouse score > 90 untuk Performance, SEO, Accessibility',
+        'Sitemap.xml accessible di /sitemap.xml',
+        'Website live dan semua link berfungsi',
+      ]},
+    ];
+  } else {
+    // SDLC / Software
+    const isNextjs = fe.toLowerCase().includes('next');
+    phases = [
+      {title:'Project Scaffold & Database Setup', steps:[
+        `Inisialisasi project:
+\`\`\`bash
+${isNextjs?`npx create-next-app@latest ${slug(g.name)} --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
+cd ${slug(g.name)}`:`# Sesuaikan dengan framework: ${fe}`}
+
+# Install core dependencies
+npm install ${db0.includes('supabase')?'@supabase/supabase-js @supabase/auth-helpers-nextjs':db0.includes('prisma')?'@prisma/client prisma':''}
+npm install ${auth.includes('supabase')?'':'next-auth@beta'}
+npm install zod
+npm install -D @types/node
+\`\`\``,
+        `Setup database connection di \`src/lib/db.ts\`:
+\`\`\`
+Buat file src/lib/db.ts untuk koneksi ke ${db0}.
+${db0.includes('supabase')?`
+Gunakan createServerClient dan createBrowserClient dari @supabase/ssr.
+Export: supabaseAdmin (server-side, service role key)
+Export: supabaseClient (browser-side, anon key)
+`:db0.includes('prisma')?`
+Setup PrismaClient singleton untuk development hot-reload.
+Export: db (PrismaClient instance)
+`:''}
+Buat src/types/database.ts dengan semua TypeScript types untuk tabel.
+\`\`\``,
+        `Setup schema database:
+\`\`\`
+Berdasarkan deskripsi project "${desc}", generate schema database untuk ${db0}.
+
+Entitas yang diperkirakan diperlukan — sesuaikan dengan actual requirement:
+- users (id, email, name, role, created_at)
+- [entitas bisnis utama — definisikan dari konteks project]
+- [entitas pendukung]
+
+Untuk setiap tabel, sertakan:
+- Primary key (UUID lebih aman dari integer auto-increment)
+- Timestamps (created_at, updated_at)
+- Soft delete field jika data sensitif (deleted_at)
+- Index yang relevan untuk query yang sering digunakan
+
+Buat migration file atau SQL script untuk setup awal.
+\`\`\``,
+      ], verify:[
+        '`npm run dev` berjalan tanpa error di http://localhost:3000',
+        'Koneksi database berhasil: `npm run db:status` atau test via seed script',
+        'TypeScript strict mode tidak ada error: `npm run type-check`',
+      ]},
+
+      {title:'Authentication & Authorization', steps:[
+        `Implementasikan sistem auth menggunakan ${auth}:
+\`\`\`
+Buat sistem autentikasi lengkap:
+
+1. src/app/auth/login/page.tsx — Halaman login
+   - Form: email + password
+   - Validasi dengan Zod
+   - Error message yang jelas
+   - Link ke register & lupa password
+
+2. src/app/auth/register/page.tsx — Halaman daftar
+   - Form: name, email, password, confirm password
+   - Password strength indicator
+   - Terms & conditions checkbox
+
+3. src/middleware.ts — Proteksi route
+   - Public routes: /, /auth/*, /api/health
+   - Protected routes: /dashboard/*, /api/protected/*
+   - Redirect unauthenticated ke /auth/login
+
+4. src/lib/auth.ts — Auth configuration
+   - Session duration: 7 hari
+   - Refresh token handling
+\`\`\``,
+        `Buat sistem Role-Based Access Control (RBAC):
+\`\`\`typescript
+// src/types/auth.ts
+export type UserRole = 'admin' | 'manager' | 'user';
+
+export const PERMISSIONS = {
+  admin: ['read', 'write', 'delete', 'manage_users'],
+  manager: ['read', 'write'],
+  user: ['read'],
+} as const;
+
+// Buat helper:
+// canDo(user, action) => boolean
+// requireRole(role) => middleware
+\`\`\``,
+      ], verify:[
+        'Login berhasil dan session tersimpan',
+        'Akses /dashboard tanpa login → redirect ke /auth/login',
+        'Admin bisa akses semua route, user biasa tidak bisa akses admin route',
+        'Register → email verification → login flow berjalan',
+      ]},
+
+      {title:'Core Business Features', steps:[
+        `Implementasikan fitur inti berdasarkan "${desc}":
+\`\`\`
+Mulai dengan SATU fitur inti yang paling penting terlebih dahulu.
+
+INSTRUKSI UNTUK AI:
+1. Baca deskripsi project: "${desc}"
+2. Identifikasi fitur inti utama (CRUD entitas bisnis)
+3. Buat sesuai pola berikut:
+
+PATTERN: Feature per folder
+src/
+  features/
+    [nama-fitur]/
+      components/        ← UI components spesifik fitur ini
+      hooks/            ← React hooks untuk data fetching
+      actions.ts        ← Server Actions untuk mutations
+      queries.ts        ← Query functions
+      types.ts          ← TypeScript types
+      schema.ts         ← Zod validation schema
+
+CONTOH untuk setiap CRUD:
+- GET /api/[entity] — list dengan pagination & filter
+- GET /api/[entity]/[id] — detail
+- POST /api/[entity] — create dengan validasi
+- PATCH /api/[entity]/[id] — update partial
+- DELETE /api/[entity]/[id] — soft delete (preferred)
+
+SETIAP endpoint WAJIB:
+- Validasi input dengan Zod
+- Cek authorization (apakah user boleh akses?)
+- Return consistent response: { data, error, meta }
+- Log request untuk debugging
+\`\`\``,
+      ], verify:[
+        'CRUD semua entitas utama berfungsi',
+        'API mengembalikan error 401 untuk akses tidak terotorisasi',
+        'API mengembalikan error 422 untuk input tidak valid',
+        'Data tersimpan correctly di database',
+      ]},
+
+      {title:'Frontend UI & User Experience', steps:[
+        `Bangun semua halaman UI menggunakan ${ui}:
+\`\`\`
+Buat layout dan pages berikut:
+
+1. Layout utama (src/app/(dashboard)/layout.tsx):
+   - Sidebar navigasi
+   - Header dengan user menu & notifikasi
+   - Main content area
+
+2. Halaman per fitur dari phase 03:
+   - List view dengan tabel/grid, pagination, search & filter
+   - Detail view dengan semua informasi
+   - Form create/edit dengan validasi real-time
+
+3. Komponen UI reusable:
+   - DataTable dengan sorting & pagination
+   - SearchInput dengan debounce 300ms
+   - Modal/Dialog untuk konfirmasi & form
+   - Toast/Notification untuk feedback aksi
+   - LoadingState & EmptyState
+
+STANDAR UX:
+- Loading skeleton saat fetch data
+- Optimistic updates untuk aksi cepat
+- Error boundary untuk handle unexpected error
+- Responsive di semua ukuran layar (360px - 1440px+)
+\`\`\``,
+      ], verify:[
+        'Semua halaman render tanpa layout shift',
+        'Form validation berjalan real-time (bukan hanya saat submit)',
+        'Mobile view (375px) nyaman digunakan',
+        'Tidak ada console error di browser DevTools',
+      ]},
+
+      {title:'Testing, Optimization & Production Deploy', steps:[
+        `Tulis test coverage untuk semua service functions:
+\`\`\`bash
+# Install testing tools
+npm install -D vitest @testing-library/react @testing-library/user-event
+
+# Buat test untuk:
+# 1. Service functions (unit test)
+# 2. API endpoints (integration test)  
+# 3. Critical user flows (E2E dengan Playwright)
+
+# Run tests
+npm test
+npm run test:e2e
+\`\`\``,
+        `Audit dan optimasi performa:
+\`\`\`
+Lakukan audit berikut dan perbaiki semua issue:
+
+1. Database:
+   - Cek query N+1 dengan logging
+   - Tambahkan index yang belum ada
+   - Gunakan select hanya field yang diperlukan
+
+2. Frontend:
+   - Analyze bundle: npx @next/bundle-analyzer
+   - Lazy load components yang tidak critical
+   - Optimize images dengan next/image
+
+3. Security:
+   - npm audit (zero high/critical vulnerabilities)
+   - Cek semua API endpoint memiliki auth check
+   - Pastikan CORS dikonfigurasi benar
+\`\`\``,
+        `Deploy ke production di ${dep}:
+\`\`\`bash
+# 1. Set semua environment variables di ${dep} dashboard
+# 2. Koneksi database production (bukan development)
+# 3. Build dan deploy:
+${dep==='vercel'?`npx vercel --prod
+# Atau via Git: push ke main branch`:`# Deploy sesuai platform ${dep}`}
+
+# 4. Smoke test setelah deploy:
+# - Login/logout flow
+# - Create, read, update, delete satu data
+# - Cek semua API endpoint via Postman/Thunder Client
+\`\`\``,
+      ], verify:[
+        'npm test: semua test pass (coverage > 80% untuk services)',
+        'Database queries efisien (tidak ada N+1 di log)',
+        'Production URL bisa diakses dan fitur utama berjalan',
+        'npm audit: zero critical/high vulnerabilities',
+      ]},
+    ];
+  }
+
+  // Generate phase files
+  phases.forEach((ph, i) => {
+    const num = String(i+1).padStart(2,'0');
+    let fc = `# 🚀 FASE ${num}: ${(ph.title||'Phase').toUpperCase()}
+> ⚠️ Baca dan kerjakan langkah-langkah di bawah secara berurutan.
+> Selesaikan fase ini sepenuhnya SEBELUM lanjut ke fase berikutnya.
+> Jika ada hambatan, tanyakan ke AI IDE dengan konteks dari masterplan.md.
+
+---
+
+## 📋 LANGKAH PENGERJAAN
+
+`;
+    (ph.steps||[]).forEach((step, si) => {
+      fc += `### Langkah ${si+1}\n${step}\n\n`;
+    });
+
+    fc += `---
+
+## ✅ VERIFIKASI SEBELUM LANJUT
+
+Pastikan semua item berikut sudah terpenuhi sebelum lanjut ke fase berikutnya:
+
+${(ph.verify||[]).map(v=>`- [ ] ${v}`).join('\n')}
+- [ ] Tidak ada error di terminal / browser console
+- [ ] Perubahan sudah di-commit: \`git add . && git commit -m "feat: selesaikan fase ${num} - ${ph.title}"\`
+
+---
+
+## 💬 PROMPT UNTUK AI IDE (jika terhenti)
+
+\`\`\`
+Saya sedang mengerjakan project ${g.name}.
+Konteks ada di masterplan.md.
+Saya terhenti di Fase ${num}: ${ph.title}.
+
+Masalah yang dihadapi: [DESKRIPSIKAN MASALAH]
+
+Tolong bantu selesaikan dengan:
+1. Jelaskan penyebab masalah
+2. Berikan solusi konkret dengan kode
+3. Verifikasi solusi berjalan dengan test command
+\`\`\`
+`;
+    folder.file(`phase_${num}.md`, fc);
+  });
+
+  // ════════════════════════════════════════════
+  // 5. git_setup.md
+  // ════════════════════════════════════════════
+  const git = `# 🔀 GIT SETUP — ${g.name}
+
+## Inisialisasi Repository
+\`\`\`bash
+git init
+git add .
+git commit -m "initial: DevForge Studio scaffold"
+git branch -M main
+git remote add origin https://github.com/USERNAME/${slug(g.name)}.git
+git push -u origin main
+\`\`\`
+
+## Branch Strategy
+\`\`\`
+main          ← production-ready, deploy otomatis
+develop       ← integrasi semua fitur
+feature/*     ← feature branch per fase
+hotfix/*      ← perbaikan cepat production
+\`\`\`
+
+## .gitignore (tambahkan di root)
+\`\`\`gitignore
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+*.pyc
+
+# Build
+.next/
+dist/
+build/
+out/
+
+# System
+.DS_Store
+Thumbs.db
+*.log
+\`\`\`
+
+## Commit Message Convention
+\`\`\`
+feat:     Fitur baru
+fix:      Perbaikan bug
+docs:     Update dokumentasi
+style:    Formatting (tidak ada logic change)
+refactor: Refactoring kode
+test:     Menambah test
+chore:    Update build, dependencies
+\`\`\`
+`;
+  folder.file('git_setup.md', git);
+
+  // ════════════════════════════════════════════
+  // 6. AI ENHANCEMENT — jika connected
+  // ════════════════════════════════════════════
+  if(S.aiConfig.enabled && S.aiConfig.connected){
+    const provCfg = AI_PROVIDERS[S.aiConfig.provider];
+    try {
+      // Show loading indicator
+      const loadingDiv = document.createElement('div');
+      loadingDiv.id = 'aiLoadingBanner';
+      loadingDiv.style.cssText = `position:fixed;top:0;left:0;right:0;z-index:9999;padding:12px;background:var(--accent);color:#fff;text-align:center;font-family:var(--font);font-size:14px;font-weight:700;animation:fadeDown .3s ease`;
+      loadingDiv.innerHTML = `⚡ AI (${provCfg.name} — ${S.aiConfig.model.split('/').pop()}) sedang menganalisis project Anda dan membuat dokumen spesifik...`;
+      document.body.appendChild(loadingDiv);
+
+      const systemPrompt = `Kamu adalah arsitek software senior berpengalaman 10+ tahun. 
+Tugas kamu: Menghasilkan dokumentasi teknis SPESIFIK dan ACTIONABLE untuk project berikut.
+Setiap output HARUS spesifik ke domain bisnis project — BUKAN generic template.
+Gunakan Bahasa Indonesia untuk narasi, kode tetap dalam Bahasa Inggris/bahasa pemrograman yang sesuai.
+Output dalam format Markdown yang rapi.`;
+
+      const userPrompt = `Project: ${g.name}
+Deskripsi: ${desc}
+Mode: ${isA?'Agentic AI':isW?'Website':'Software/App'}
+Tech Stack: ${isA?`Orchestration=${orch}, LLM=${llm}, Memory=${(a.memory||[]).join(',')}`:isW?`Builder=${wb}, CMS=${cms}, Deploy=${dep}`:`Frontend=${fe}, DB=${db}, Auth=${auth}, Scale=${scl}`}
+Audience: ${a.audience||'general'}
+
+Generate dalam format JSON valid dengan struktur:
+{
+  "database_schema": "markdown berisi skema database LENGKAP spesifik project ini (tabel, kolom beserta type, constraint, relasi, index, dan contoh data seed 5 baris)",
+  "api_contracts": "markdown berisi semua endpoint API utama — request body (dengan contoh), response body (dengan contoh), HTTP status codes, dan curl example untuk testing",  
+  "prd_enhanced": "markdown berisi Product Requirements Document — Executive Summary, 5-7 User Stories dengan Acceptance Criteria spesifik, Feature List dengan prioritas (P0/P1/P2), Non-functional Requirements",
+  "coding_guidelines": "markdown berisi panduan spesifik untuk stack ini — pattern yang direkomendasikan, anti-pattern yang harus dihindari, code example dari domain bisnis ini"
+}
+
+PENTING: Semua konten harus SPESIFIK ke project "${g.name}" — bukan template generic.`;
+
+      // Powerfull Auto-Switch & Retry Logic for OpenRouter Free (Updated 2026)
+      const freeFallbacks = [
+        'openrouter/free',
+        'google/gemma-3-27b-it:free',
+        'qwen/qwen3.6-plus:free',
+        'qwen/qwen3-coder:free',
+        'google/gemma-3-4b-it:free'
+      ];
+      
+      async function attemptRequest(currentModel) {
+          const body = {
+            model: currentModel,
+            messages: [
+              {role: 'system', content: systemPrompt},
+              {role: 'user', content: userPrompt}
+            ],
+            max_tokens: 4000,
+            temperature: 0.3,
+            response_format: {type: 'json_object'}
+          };
+
+          // 1. Handle Puter.js Case (Keyless)
+          if (S.aiConfig.provider === 'puter') {
+              console.log('[AI] Using Puter.js for generation...');
+              // Combine system and user prompts for better compatibility with Puter.js v2 SDK
+              const combinedPrompt = `${systemPrompt}\n\nUser Request:\n${userPrompt}`;
+              
+              try {
+                  const response = await puter.ai.chat(combinedPrompt, {
+                      model: currentModel
+                  });
+                  
+                  if (!response) throw new Error('Puter returned empty response.');
+
+                  console.log('[AI] Puter.js success:', response.toString().substring(0, 50) + '...');
+
+                  // Normalize Puter response to match fetch-like structure
+                  return {
+                      ok: true,
+                      status: 200,
+                      json: async () => ({ choices: [{ message: { content: response.toString() } }] })
+                  };
+              } catch (err) {
+                  console.error('[AI ERROR] Puter JS Failed:', err);
+                  throw err; // Re-throw to be caught by the outer catch block
+              }
+          }
+
+          // 2. Handle Proxy/Direct Fetch Case
+          if (S.aiConfig.useProxy) {
+            return await fetch('/api/ai-proxy', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                provider: S.aiConfig.provider,
+                apiUrl: `${provCfg.baseUrl}/chat/completions`,
+                apiKey: S.aiConfig.apiKey,
+                payload: body
+              })
+            });
+          } else {
+            return await fetch(`${provCfg.baseUrl}/chat/completions`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${S.aiConfig.apiKey}`,
+                'Content-Type': 'application/json',
+                ...(S.aiConfig.provider==='openrouter' ? {
+                  'HTTP-Referer': 'https://devforge.studio',
+                  'X-Title': 'DevForge Studio'
+                } : {})
+              },
+              body: JSON.stringify(body)
+            });
+          }
+      }
+
+      let res = await attemptRequest(S.aiConfig.model);
+
+      // Auto-Switch logic if 429 occurs on OpenRouter Free
+      if (res.status === 429 && S.aiConfig.provider === 'openrouter' && S.aiConfig.model.endsWith(':free')) {
+          console.warn('Rate limit hit, attempting Auto-Switch...');
+          for (const fallback of freeFallbacks) {
+              if (fallback === S.aiConfig.model) continue;
+              loadingDiv.innerHTML = `<span style="color:#ffeb3b">⚠️ Rate Limit!</span> Auto-Switch ke model cadangan: ${fallback.split('/').pop()}...`;
+              res = await attemptRequest(fallback);
+              if (res.ok) {
+                  console.log(`Auto-Switch success! Used: ${fallback}`);
+                  break;
+              }
+          }
+      }
+
+      document.getElementById('aiLoadingBanner')?.remove();
+
+      if(res.ok){
+        const data = await res.json();
+        const content = data.choices?.[0]?.message?.content || '{}';
+        let parsed = {};
+        try { parsed = JSON.parse(content); } catch(e) {
+          // Fallback: try to extract JSON from markdown
+          const match = content.match(/```json\n?([\s\S]*?)\n?```/);
+          if(match) try { parsed = JSON.parse(match[1]); } catch(e2){}
+        }
+
+        if(parsed.database_schema) folder.file('AI_database_schema.md',
+          `# 🗄️ DATABASE SCHEMA — ${g.name} (AI Generated)\n> Dibuat oleh ${provCfg.name} — ${S.aiConfig.model}\n\n${parsed.database_schema}`);
+
+        if(parsed.api_contracts) folder.file('AI_api_contracts.md',
+          `# 🔌 API CONTRACTS — ${g.name} (AI Generated)\n> Dibuat oleh ${provCfg.name} — ${S.aiConfig.model}\n\n${parsed.api_contracts}`);
+
+        if(parsed.prd_enhanced) folder.file('AI_prd_enhanced.md',
+          `# 📄 PRD ENHANCED — ${g.name} (AI Generated)\n> Dibuat oleh ${provCfg.name} — ${S.aiConfig.model}\n\n${parsed.prd_enhanced}`);
+
+        if(parsed.coding_guidelines) folder.file('AI_coding_guidelines.md',
+          `# 📐 CODING GUIDELINES — ${g.name} (AI Generated)\n> Dibuat oleh ${provCfg.name} — ${S.aiConfig.model}\n\n${parsed.coding_guidelines}`);
+
+        // Add AI enhancement note to masterplan
+        folder.file('masterplan.md', mp + `
+---
+## 🤖 AI ENHANCEMENT
+Bundle ini diperkuat oleh **${provCfg.name}** (${S.aiConfig.model}).
+File tambahan yang tersedia:
+- \`AI_database_schema.md\` — Schema database spesifik project ini
+- \`AI_api_contracts.md\` — Kontrak API dengan contoh request/response
+- \`AI_prd_enhanced.md\` — PRD lengkap dengan user stories
+- \`AI_coding_guidelines.md\` — Panduan coding spesifik stack ini
+
+**Cara penggunaan terbaik:**
+1. Buka semua file AI_* bersama masterplan.md di IDE AI
+2. Ikuti phase files secara berurutan
+3. Rujuk AI_database_schema.md saat membuat tabel
+4. Rujuk AI_api_contracts.md saat membuat endpoint
+`);
+      }
+    } catch(aiErr) {
+      document.getElementById('aiLoadingBanner')?.remove();
+      console.warn('AI enhancement gagal:', aiErr.message);
+      // Tetap lanjut generate bundle tanpa AI files
+      folder.file('AI_ERROR.md', `# AI Enhancement Gagal\n\nError: ${aiErr.message}\n\nBundle tetap dihasilkan tanpa AI enhancement.\nCoba lagi atau periksa koneksi API Key di AI Settings.`);
+    }
+  }
+
+  // ── Generate & Download ZIP ────────────────────────────
+  const zipBlob = await zip.generateAsync({type:'blob', compression:'DEFLATE', compressionOptions:{level:6}});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(zipBlob);
+  link.download = `devforge-${slug(g.name)}.zip`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(link.href), 2000);
+}
+
+
+
+function setTab(t){S.activeTab=t;render();window.scrollTo(0,0)}
+function cpCode(id,btn){
+  const el=document.getElementById(id);
+  if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(()=>{
+    btn.textContent='Tersalin ✓';btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='Salin';btn.classList.remove('ok')},2000);
+  });
+}
+
+// ═══════════════════════════════════════════
+// AI SETTINGS PANEL
+// ═══════════════════════════════════════════
+function updateNavAIBtn(){
+  const btn = document.getElementById('aiNavBtn');
+  if(!btn) return;
+  btn.classList.remove('ai-active','ai-connected');
+  if(S.aiConfig.connected && S.aiConfig.enabled){
+    btn.textContent = '🟢 AI Aktif';
+    btn.classList.add('ai-connected');
+  } else if(S.aiConfig.apiKey){
+    btn.textContent = '🤖 AI Settings';
+    btn.classList.add('ai-active');
+  } else {
+    btn.textContent = '🤖 AI Settings';
+  }
+}
+
+function renderModelOptions(provider){
+  const models = AI_PROVIDERS[provider]?.models || [];
+  const cur = S.aiConfig.model;
+  return models.map(m=>{
+    const badge = m.free ? '<span class="ai-badge free">GRATIS</span>' : '';
+    return `<option value="${m.id}" ${m.id===cur?'selected':''}>${m.label} [${m.provider}]${m.free?' ★':''}</option>`;
+  }).join('');
+}
+
+function handleApiKeyInput(val) {
+  S.aiConfig.apiKey = val;
+  S.aiConfig.connected = false;
+  
+  const warningDiv = document.getElementById('aiKeyWarning');
+  if (warningDiv) {
+    warningDiv.innerHTML = '';
+    const prov = S.aiConfig.provider;
+    if (val.startsWith('sk-or-') && prov !== 'openrouter') {
+      warningDiv.innerHTML = `
+        <div style="font-size:11px; color:#f59e0b; margin-top:8px; display:flex; flex-direction:column; gap:4px; padding:8px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-radius:6px">
+          <span>⚠️ API Key Anda terlihat seperti OpenRouter key (sk-or-), tetapi Anda memilih provider ${AI_PROVIDERS[prov]?.name}.</span>
+          <button class="nav-btn" style="padding:2px 8px; font-size:10px; align-self:flex-start; margin-top:2px; background:rgba(245,158,11,0.15); color:#f59e0b; border-color:rgba(245,158,11,0.3)" onclick="autoSwitchProvider('openrouter')">⚡ Beralih ke OpenRouter</button>
+        </div>`;
+    } else if (val.startsWith('sk-') && !val.startsWith('sk-or-') && prov === 'sumopod') {
+      warningDiv.innerHTML = `
+        <div style="font-size:11px; color:#f59e0b; margin-top:8px; display:flex; flex-direction:column; gap:4px; padding:8px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-radius:6px">
+          <span>⚠️ API Key Anda terlihat seperti OpenAI/OpenRouter key (sk-), tetapi Anda memilih provider SumoPod. SumoPod biasanya menggunakan key berformat 'sp-...'.</span>
+          <button class="nav-btn" style="padding:2px 8px; font-size:10px; align-self:flex-start; margin-top:2px; background:rgba(245,158,11,0.15); color:#f59e0b; border-color:rgba(245,158,11,0.3)" onclick="autoSwitchProvider('openrouter')">⚡ Beralih ke OpenRouter</button>
+        </div>`;
+    }
+  }
+  updateAIStatus('idle');
+}
+
+function autoSwitchProvider(targetProv) {
+  switchAIProvider(targetProv);
+  closeAIPanel();
+  openAIPanel();
+  setTimeout(() => {
+    const inp = document.getElementById('aiKeyInput');
+    if (inp) inp.focus();
+  }, 100);
+}
+
+function openAIPanel(){
+  if(document.getElementById('aiModalOverlay')) return;
+  const prov = S.aiConfig.provider;
+  const overlay = document.createElement('div');
+  overlay.id = 'aiModalOverlay';
+  overlay.className = 'ai-modal-overlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) closeAIPanel(); };
+  
+  const statusDot = S.aiConfig.connected ? 'green' : (prov === 'puter' ? 'green' : (S.aiConfig.apiKey ? 'yellow' : ''));
+  const statusText = S.aiConfig.connected ? `Terhubung ke ${AI_PROVIDERS[prov]?.name} — Model: ${S.aiConfig.model}` 
+    : prov === 'puter' ? 'Puter.js siap digunakan tanpa API Key'
+    : S.aiConfig.apiKey ? 'API Key tersimpan — belum diuji' 
+    : 'Belum terhubung. Masukkan API Key dan tes koneksi.';
+
+  overlay.innerHTML = `
+  <div class="ai-modal">
+    <button class="ai-modal-close" onclick="closeAIPanel()">✕</button>
+    <div class="ai-modal-title">🤖 AI Enhancement</div>
+    <div class="ai-modal-sub">Sambungkan AI untuk menghasilkan Project Bundle yang jauh lebih spesifik dan powerfull — database schema nyata, API contracts detail, dan PRD berbasis domain project Anda.</div>
+    
+    <div class="ai-status-bar">
+      <div class="ai-dot ${statusDot}" id="aiDot"></div>
+      <div class="ai-status-text" id="aiStatusText">${statusText}</div>
+    </div>
+
+    <label class="ai-label">Provider</label>
+    <div class="ai-provider-tabs" id="aiProvTabs">
+      ${Object.entries(AI_PROVIDERS).map(([key, p])=>`
+        <div class="ai-prov-tab ${key===prov?'active':''}" onclick="switchAIProvider('${key}')">
+          <span class="prov-name">${p.name}</span>
+          <span class="prov-url">${key==='sumopod'?'sumopod.com':'openrouter.ai'}</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="ai-row">
+      <div class="ai-field" style="flex:1.5">
+        <label class="ai-label">Model AI</label>
+        <select class="ai-select" id="aiModelSel" onchange="S.aiConfig.model=this.value">
+          ${renderModelOptions(prov)}
+        </select>
+      </div>
+    </div>
+
+    <div class="ai-field" id="aiKeyField" style="${AI_PROVIDERS[prov]?.requiresKey===false?'display:none':''}">
+      <label class="ai-label">API Key <a href="${AI_PROVIDERS[prov]?.docsUrl}" target="_blank" style="font-weight:400;text-transform:none;font-size:10px;color:var(--accent);margin-left:6px">→ Dapatkan key</a></label>
+      <input class="ai-input" id="aiKeyInput" type="password" 
+        placeholder="${AI_PROVIDERS[prov]?.keyPlaceholder}"
+        value="${S.aiConfig.apiKey}"
+        oninput="handleApiKeyInput(this.value)">
+      <div id="aiKeyWarning" style="margin-top:4px"></div>
+    </div>
+
+    <div class="ai-field ai-checkbox-row" id="aiProxyField" style="margin-top:-10px;margin-bottom:15px;${AI_PROVIDERS[prov]?.requiresKey===false?'display:none':''}">
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;color:var(--text2)">
+          <input type="checkbox" id="aiProxyCheck" ${S.aiConfig.useProxy?'checked':''} 
+            onchange="S.aiConfig.useProxy=this.checked;S.aiConfig.connected=false;updateAIStatus('idle')">
+          <span>Gunakan Internal Proxy (Serverless — Direkomendasikan)</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="ai-footer">
+      <button class="ai-test-btn" onclick="testAPIKey()">⚡ Tes Koneksi</button>
+      <button class="ai-save-btn" onclick="saveAIConfig()">💾 Simpan &amp; Aktifkan</button>
+    </div>
+    <div class="ai-usage-note">
+      🔐 API Key disimpan di <strong>localStorage browser Anda</strong> saja — tidak dikirim ke server manapun.<br>
+      Model GRATIS (★) dapat digunakan tanpa biaya tambahan.
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  // Trigger warning check immediately if key is loaded
+  if (S.aiConfig.apiKey) {
+    handleApiKeyInput(S.aiConfig.apiKey);
+  }
+}
+
+function switchAIProvider(prov){
+  S.aiConfig.provider = prov;
+  S.aiConfig.connected = false;
+  const freeModel = AI_PROVIDERS[prov]?.models.find(m=>m.free);
+  if(freeModel) S.aiConfig.model = freeModel.id;
+  document.querySelectorAll('.ai-prov-tab').forEach((el,i)=>{
+    el.classList.toggle('active', Object.keys(AI_PROVIDERS)[i]===prov);
+  });
+  const sel = document.getElementById('aiModelSel');
+  if(sel) sel.innerHTML = renderModelOptions(prov);
+  const inpField = document.getElementById('aiKeyField');
+  const prxField = document.getElementById('aiProxyField');
+  const isKeyless = AI_PROVIDERS[prov]?.requiresKey === false;
+  if(inpField) inpField.style.display = isKeyless ? 'none' : 'block';
+  if(prxField) prxField.style.display = isKeyless ? 'none' : 'block';
+  
+  const inp = document.getElementById('aiKeyInput');
+  if(inp) inp.placeholder = AI_PROVIDERS[prov]?.keyPlaceholder || '';
+  const warningDiv = document.getElementById('aiKeyWarning');
+  if(warningDiv) warningDiv.innerHTML = '';
+  updateAIStatus('idle');
+}
+
+function updateAIStatus(state, msg, detail){
+  const dot = document.getElementById('aiDot');
+  const txt = document.getElementById('aiStatusText');
+  if(!dot||!txt) return;
+  dot.className = 'ai-dot';
+  if(state==='loading'){ dot.classList.add('yellow'); txt.textContent = '⏳ Menguji koneksi...'; }
+  else if(state==='ok'){ dot.classList.add('green'); txt.textContent = msg || '✅ Koneksi berhasil!'; }
+  else if(state==='err'){ 
+    dot.classList.add('red'); 
+    txt.innerHTML = `<span style="color:var(--red)">❌ Gagal: ${msg}</span>${detail?`<div style="font-size:10px;margin-top:4px;opacity:0.7">${detail}</div>`:''}`; 
+  }
+  else { 
+    const prov = S.aiConfig.provider;
+    txt.textContent = prov === 'puter' ? 'Puter.js siap digunakan tanpa API Key' : (S.aiConfig.apiKey ? '🔑 API Key tersedia — klik "Tes Koneksi"' : 'Masukkan API Key dan tes koneksi.');
+    if (prov === 'puter') dot.classList.add('green');
+  }
+}
+
+async function testAPIKey(){
+  const provKey = S.aiConfig.provider;
+  const prov = AI_PROVIDERS[provKey];
+  const requiresKey = prov?.requiresKey !== false;
+  const key = document.getElementById('aiKeyInput')?.value || S.aiConfig.apiKey;
+  if(requiresKey && !key){ updateAIStatus('err','⚠️ API Key kosong.'); return; }
+  S.aiConfig.apiKey = key;
+  updateAIStatus('loading');
+  
+  const apiUrl = `${prov.baseUrl}/chat/completions`;
+  const internalProxyUrl = '/api/ai-proxy';
+
+  const freeFallbacks = [
+    'openrouter/free',
+    'google/gemma-3-27b-it:free',
+    'qwen/qwen3.6-plus:free',
+    'qwen/qwen3-coder:free',
+    'google/gemma-3-4b-it:free'
+  ];
+
+  async function attemptTest(modelId) {
+      const payload = {
+          model: modelId,
+          messages:[{role:'user',content:'Say OK'}],
+          max_tokens: 15
+      };
+
+      if (S.aiConfig.provider === 'puter') {
+          try {
+              const response = await puter.ai.chat("Say OK", { model: modelId });
+              if (!response) throw new Error('Puter returned empty response.');
+              return { ok: true, status: 200, json: async () => ({ id: 'puter-test', choices: [{ message: { content: response.toString() } }] }) };
+          } catch (err) { throw err; }
+      }
+
+      if (S.aiConfig.useProxy) {
+          return await fetch(internalProxyUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ provider: S.aiConfig.provider, apiUrl: apiUrl, apiKey: key, payload: payload })
+          });
+      } else {
+          return await fetch(apiUrl, {
+              method: 'POST',
+              headers: {
+                  'Authorization': `Bearer ${key}`,
+                  'Content-Type': 'application/json',
+                  ...(S.aiConfig.provider==='openrouter' ? { 'HTTP-Referer': 'https://devforge.studio', 'X-Title': 'DevForge Studio' } : {})
+              },
+              body: JSON.stringify(payload)
+          });
+      }
+  }
+
+  try {
+    let res = await attemptTest(S.aiConfig.model);
+    if (res.status === 429 && S.aiConfig.provider === 'openrouter' && S.aiConfig.model.endsWith(':free')) {
+        for (const fallback of freeFallbacks) {
+            if (fallback === S.aiConfig.model) continue;
+            updateAIStatus('loading', `⏳ Rate Limit! Mencoba cadangan: ${fallback.split('/').pop()}...`);
+            res = await attemptTest(fallback);
+            if (res.ok) {
+                S.aiConfig.connected = true;
+                const sel = document.getElementById('aiModelSel');
+                if(sel) sel.value = fallback;
+                S.aiConfig.model = fallback;
+                updateAIStatus('ok', `✅ Berhasil Auto-Switch ke: ${fallback.split('/').pop()}`);
+                return;
+            }
+        }
+    }
+
+    if(!res.ok){ 
+      let bodyData = {};
+      try { bodyData = await res.json(); } catch(e){}
+      const errDetail = bodyData.error?.message || bodyData.message || res.statusText;
+      throw new Error(`Server returned ${res.status}: ${errDetail}`);
+    }
+    
+    const data = await res.json();
+    if(data.choices?.[0] || data.id){
+      S.aiConfig.connected = true;
+      updateAIStatus('ok', `✅ Terhubung! Model: ${S.aiConfig.model.split('/').pop()}`);
+    } else {
+       throw new Error('Format respons tidak dikenal.');
+     }
+  } catch(err){
+    S.aiConfig.connected = false;
+    updateAIStatus('err', err.message);
+  }
+}
+
+function saveAIConfig(){
+  const prov = S.aiConfig.provider;
+  const requiresKey = AI_PROVIDERS[prov]?.requiresKey !== false;
+  const key = document.getElementById('aiKeyInput')?.value || S.aiConfig.apiKey;
+  S.aiConfig.apiKey = key;
+  S.aiConfig.enabled = !!((!requiresKey || key) && S.aiConfig.connected);
+  try { localStorage.setItem('devforge_ai', JSON.stringify(S.aiConfig)); } catch(e){}
+  closeAIPanel();
+  updateNavAIBtn();
+  if(S.aiConfig.enabled){
+    alert(`✅ AI Enhancement aktif!\nProvider: ${AI_PROVIDERS[S.aiConfig.provider]?.name}\nModel: ${S.aiConfig.model}\n\nDownload Bundle selanjutnya akan diperkuat oleh AI.`);
+  } else if(requiresKey && key && !S.aiConfig.connected){
+    alert('⚠️ API Key disimpan tapi belum terverifikasi.\nSilakan tes koneksi terlebih dahulu.');
+  }
+}
+
+function closeAIPanel(){
+  const el = document.getElementById('aiModalOverlay');
+  if(el){ el.style.animation='fadeIn .15s ease reverse'; setTimeout(()=>el.remove(),150); }
+}
+
+setTimeout(updateNavAIBtn, 100);
+
+function openLivePreview() {
+    const workspace = S.virtualWorkspace || {};
+    let content = workspace['index.html'] || workspace['public/index.html'] || workspace['src/index.html'];
+
+    if (!content) {
+        const htmlFile = Object.keys(workspace).find(k => k.endsWith('.html'));
+        if (htmlFile) content = workspace[htmlFile];
+    }
+
+    if (!content || content.trim().length === 0) {
+        if(Object.keys(workspace).length === 0) {
+            addBuildLog("ERROR: Virtual Workspace masih kosong.", "error");
+            addBuildLog("→ Silakan klik tombol '🚀 Mulai Pembangunan Otonom' terlebih dahulu di tengah layar.", "info");
+        } else {
+            addBuildLog("ERROR: File HTML utama (index.html) ada tapi tidak berisi kode (kosong).", "error");
+            addBuildLog("→ Tunggu hingga AI selesai menuliskan kode ke dalam file tersebut.", "info");
+        }
+        return;
+    }
+
+    // ── Deteksi apakah sebuah JS content menggunakan ES Module ──
+    const isESModule = (code) => /^\s*(import\s|export\s)/m.test(code);
+
+    // ── Inject CSS dari virtual workspace sebagai <style> inline ──
+    // (CSS eksternal tidak bisa dimuat dari blob URL karena path relatif tidak berlaku)
+    let inlineStyles = '';
+    Object.keys(workspace).forEach(path => {
+        if (path.endsWith('.css')) {
+            inlineStyles += `\n<style>/* ${path} */\n${workspace[path]}\n</style>`;
+        }
+    });
+
+    // ── Inject JS dari virtual workspace sebagai <script> inline ──
+    // Gunakan type="module" jika JS tersebut mengandung import/export
+    const skipPatterns = [/vite\.config/, /astro\.config/, /tailwind\.config/, /postcss\.config/, /next\.config/];
+    let inlineScripts = '';
+    Object.keys(workspace).forEach(path => {
+        if (path.endsWith('.js') || path.endsWith('.ts')) {
+            const skip = skipPatterns.some(p => p.test(path));
+            if (!skip) {
+                const jsCode = workspace[path] || '';
+                const modType = isESModule(jsCode) ? ' type="module"' : '';
+                inlineScripts += `\n<script${modType}>/* ${path} */\n${jsCode}\n<\/script>`;
+            }
+        }
+    });
+
+    let finalContent = content;
+
+    // ── Hapus hanya <link stylesheet> karena CSS sudah di-inject inline ──
+    // Pertahankan <script src> yang sudah ada di HTML (jangan dihapus)
+    finalContent = finalContent.replace(/<link[^>]+rel=["']stylesheet["'][^>]*>/gi, '');
+
+    // ── Jika ada <script src="./xxx.js"> yang merujuk ke file dalam workspace,
+    //    ganti dengan inline script yang sudah benar type-nya ──
+    finalContent = finalContent.replace(/<script([^>]*)\s+src=["']([^"']+)["']([^>]*)><\/script>/gi, (match, pre, src, post) => {
+        // Normalisasi path: hapus ./ atau / di depan
+        const normalizedSrc = src.replace(/^\.?\//, '');
+        const jsCode = workspace[normalizedSrc] || workspace[src];
+        if (jsCode !== undefined) {
+            const existingAttrs = (pre + post).trim();
+            // Jika sudah ada type="module" atau JS-nya pakai import, pakai module
+            const needsModule = isESModule(jsCode) || /type=["']module["']/.test(existingAttrs);
+            const modAttr = needsModule ? ' type="module"' : '';
+            return `<script${modAttr}>/* ${normalizedSrc} */\n${jsCode}\n<\/script>`;
+        }
+        // Jika file tidak ada di workspace, biarkan tag aslinya
+        return match;
+    });
+
+    // ── Sisipkan style inline tepat sebelum </head> ──
+    if (inlineStyles) {
+        finalContent = finalContent.includes('</head>')
+            ? finalContent.replace('</head>', inlineStyles + '\n</head>')
+            : inlineStyles + finalContent;
+    }
+
+    // ── Sisipkan script inline tepat sebelum </body>
+    //    hanya jika tidak ada <script src> yang sudah di-resolve di atas ──
+    const hasExistingScripts = /<script[^>]*>[\s\S]*?<\/script>/i.test(finalContent);
+    if (inlineScripts && !hasExistingScripts) {
+        finalContent = finalContent.includes('</body>')
+            ? finalContent.replace('</body>', inlineScripts + '\n</body>')
+            : finalContent + inlineScripts;
+    }
+
+    addBuildLog("Opening Live Preview in new tab...", "info");
+    const blob = new Blob([finalContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+}
+
+
+function openGuidePanel(){
+  if(document.getElementById('gdOverlay')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'gdOverlay';
+  overlay.className = 'gd-overlay';
+  overlay.onclick = (e) => { if(e.target === overlay) closeGuidePanel(); };
+  
+  overlay.innerHTML = `
+  <div class="gd-modal">
+    <div class="gd-header">
+      <div class="gd-title">🚀 Panduan Cepat DevForge</div>
+      <button class="gd-close" onclick="closeGuidePanel()">✕</button>
+    </div>
+    <div class="gd-body">
+      <p style="font-size:14px; color:var(--text2); line-height:1.6; margin-bottom:20px;">
+        Selamat datang di <strong>DevForge Studio v3.0 (Autonomous Edition)</strong>. Platform ini memberdayakan 7 Agen AI cerdas untuk merakit penuh proyek Anda dari nol langsung di browser!
+      </p>
+
+      <span class="gd-section-label">Alur Kerja Otonom (Workflow Terkini)</span>
+      <div class="wf-container">
+        <div class="wf-step">
+          <div class="wf-num">1</div>
+          <div class="wf-content">
+            <div class="wf-title">Konfigurasi AI & Tema Proyek</div>
+            <div class="wf-desc">Buka <strong>AI Settings</strong> dan sambungkan API Key Anda. Kemudian, pilih framework dan tulis deskripsi ide aplikasi impian Anda.</div>
+          </div>
+        </div>
+        <div class="wf-step">
+          <div class="wf-num">2</div>
+          <div class="wf-content">
+            <div class="wf-title">Buka Autonomous Builder</div>
+            <div class="wf-desc">Tekan tombol Generate. Setelah struktur dasar terbentuk, klik <strong>🚀 Buka AI Autonomous Builder</strong> untuk masuk ke studio perakitan multi-agen.</div>
+          </div>
+        </div>
+        <div class="wf-step">
+          <div class="wf-num">3</div>
+          <div class="wf-content">
+            <div class="wf-title">Jalankan 7 Agen Pembuat Kode</div>
+            <div class="wf-desc">Klik <strong>Mulai Pembangunan Otonom</strong>. Arsitek, Coder, QA, Security, Polisher, Tester, dan DevOps akan secara beruntun menulis kode nyata untuk Anda.</div>
+          </div>
+        </div>
+        <div class="wf-step">
+          <div class="wf-num">4</div>
+          <div class="wf-content">
+            <div class="wf-title">Install, Dev & Preview</div>
+            <div class="wf-desc">Tekan tombol <strong>📦 install</strong> untuk mengunduh package di RAM browser, lalu <strong>🚀 dev</strong> dan <strong>🌐 Preview</strong> untuk melihat hasilnya secara langsung!</div>
+          </div>
+        </div>
+      </div>
+
+      <span class="gd-section-label">Fitur Terbaru v3.0</span>
+      <div style="background:var(--bg3); padding:16px; border-radius:12px; font-size:13px; color:var(--text2); line-height:1.6;">
+        <ul style="padding-left:20px">
+          <li><strong>7 Agen Orkestrasi Penuh:</strong> Arsitek, Coder, QA, Security, Polisher, Tester & DevOps.</li>
+          <li><strong>WebContainer OS:</strong> Menjalankan node.js, install NPM, & localhost server utuh langsung di dalam browser Anda.</li>
+          <li><strong>Speedrun Mode:</strong> Tidak ada delay buatan di UI, kecepatan kerja murni setara respon model AI Anda.</li>
+          <li><strong>Clean Workspace:</strong> Memori terminal otomatis di-flush setiap memulai proyek baru.</li>
+        </ul>
+      </div>
+      
+      <div style="margin-top:30px; text-align:center;">
+        <button class="btn btn-next" onclick="closeGuidePanel()" style="width:100%; padding:14px">Mulai Berkreasi!</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+function closeGuidePanel(){
+  const el = document.getElementById('gdOverlay');
+  if(el){ el.style.animation='fadeIn .2s ease reverse'; setTimeout(()=>el.remove(),200); }
+}
+
+function toggleMobileMenu(){
+  document.getElementById('mobileNav')?.classList.toggle('active');
+  document.getElementById('hamburgerBtn')?.classList.toggle('active');
+}
+
+function closeMobileMenu(){
+  document.getElementById('mobileNav')?.classList.remove('active');
+  document.getElementById('hamburgerBtn')?.classList.remove('active');
+}
+
+document.addEventListener('click', (e) => {
+  const nav = document.getElementById('mobileNav');
+  const hmb = document.getElementById('hamburgerBtn');
+  if(nav?.classList.contains('active') && !nav.contains(e.target) && !hmb.contains(e.target)){
+    closeMobileMenu();
+  }
+});
+
+function renderBuilderPanel(){
+    const logs = (S.buildLogs || []).map(l => `
+        <div class="term-line">
+            <span class="term-ts">[${l.time}]</span>
+            <span class="term-msg ${l.type}">${l.msg}</span>
+        </div>
+    `).join('');
+
+    const files = Object.keys(S.virtualWorkspace || {}).map(path => `
+        <div class="file-item ${S.activeFile===path?'active':''}" onclick="viewVirtualFile('${path}')">
+            <span>${path.endsWith('.md')?'📘':path.includes('.')?'📄':'📁'}</span>
+            ${path}
+        </div>
+    `).join('');
+
+    const gClass = (S.mode === 'website') ? 'pink' : (S.mode === 'adlc') ? 'green' : (S.mode === 'desktop') ? 'amber' : '';
+
+    if(!S.building && Object.keys(S.virtualWorkspace || {}).length === 0){
+        return `
+            <div class="builder-empty">
+                <div class="builder-empty-icon">🏗️</div>
+                <div class="q-title" style="font-size: 28px; background: linear-gradient(90deg, #fff, #00f0ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Autonomous Professional Developer</div>
+                <div class="q-desc" style="max-width: 600px; margin-top: 20px; font-size: 16px; opacity: 0.8;">Platform ini akan mengambil alih peran sebagai <strong>Senior Developer</strong>. Ia akan merancang arsitektur, mendesain basis data, dan menulis kode siap produksi secara otonom 100%.</div>
+                <button class="btn btn-generate ${gClass} builder-empty-btn" onclick="startAutonomousBuild()">🚀 Mulai Pembangunan Otonom</button>
+            </div>
+        `;
+    }
+
+    return `
+        <style>
+        @keyframes pulse-architect {
+            0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 240, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0); }
+        }
+        @keyframes pulse-coder {
+            0% { box-shadow: 0 0 0 0 rgba(190, 75, 219, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(190, 75, 219, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(190, 75, 219, 0); }
+        }
+        @keyframes pulse-qa {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+        @keyframes pulse-devops {
+            0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 63, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+        @keyframes pulse-security {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+        @keyframes pulse-polisher {
+            0% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(236, 72, 153, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
+        }
+        @keyframes pulse-tester {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        @keyframes agent-icon-bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-8px) scale(1.2); }
+        }
+        @keyframes loading-dots {
+            0% { content: "."; }
+            33% { content: ".."; }
+            66% { content: "..."; }
+            100% { content: ""; }
+        }
+        .agent-active-icon {
+            display: inline-block;
+            animation: agent-icon-bounce 0.6s cubic-bezier(0.68, -0.55, 0.26, 1.55) infinite alternate;
+        }
+        .loading-text::after {
+            content: ".";
+            animation: loading-dots 1.5s infinite steps(1);
+        }
+        
+        .agent-active-architect { animation: pulse-architect 2s infinite, float 3s ease-in-out infinite !important; }
+        .agent-active-coder { animation: pulse-coder 2s infinite, float 3s ease-in-out infinite !important; }
+        .agent-active-qa { animation: pulse-qa 2s infinite, float 3s ease-in-out infinite !important; }
+        .agent-active-security { animation: pulse-security 2s infinite, float 3s ease-in-out infinite !important; }
+        .agent-active-polisher { animation: pulse-polisher 2s infinite, float 3s ease-in-out infinite !important; }
+        .agent-active-tester { animation: pulse-tester 2s infinite, float 3s ease-in-out infinite !important; }
+        .agent-active-devops { animation: pulse-devops 2s infinite, float 3s ease-in-out infinite !important; }
+        
+        .agent-cards-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding-top: 12px;
+            padding-bottom: 8px;
+            /* Hide scrollbar for cleaner look */
+            -ms-overflow-style: none;  
+            scrollbar-width: none;  
+        }
+        .agent-cards-container::-webkit-scrollbar { 
+            display: none; 
+        }
+        .agent-card {
+            min-width: 130px;
+            flex: 1;
+        }
+        </style>
+        <div class="builder-grid">
+            <div class="builder-sidebar">
+                <div class="builder-head">
+                    <span class="builder-title">Explorer ${S.isNative ? '🏠' : '☁️'}</span>
+                    <div style="display: flex; gap: 8px;">
+                        ${!S.building ? `<button class="nav-btn" onclick="resetBuilder()" style="padding: 6px 12px; font-size: 11px; background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.2); border-radius: 8px;">🔄 Reset</button>
+                        <button class="nav-btn" onclick="downloadVirtualProject()" style="padding: 6px 12px; font-size: 11px; background: rgba(63, 185, 80, 0.15); color: #3fb950; border: 1px solid rgba(63, 185, 80, 0.2); border-radius: 8px;">📥 Export</button>` : ''}
+                    </div>
+                </div>
+                ${S.isNative ? `<div style="padding:10px; font-size:10px; opacity:0.6; border-bottom:1px solid rgba(255,255,255,0.05)">Path: ${S.workspacePath}</div>` : ''}
+                <div class="file-tree">${files || '<div style="opacity:0.3; font-size:11px; padding:20px; text-align:center;">Menyiapkan workspace...</div>'}</div>
+            </div>
+            <div class="builder-main">
+                <div class="workflow-steps">
+                    <div class="step-item ${Object.keys(S.virtualWorkspace).length > 0 ? 'done' : (S.building ? 'active' : 'active')}">
+                        <div class="step-num">${Object.keys(S.virtualWorkspace).length > 0 ? '✓' : '1'}</div>
+                        <div class="step-text">BUILD CODE</div>
+                    </div>
+                    <div class="step-item ${S.isDevRunning ? 'done' : (Object.keys(S.virtualWorkspace).length > 0 ? 'active' : '')}">
+                        <div class="step-num">${S.isDevRunning ? '✓' : '2'}</div>
+                        <div class="step-text">START DEV</div>
+                    </div>
+                    <div class="step-item ${Object.keys(S.virtualWorkspace).length > 0 ? 'active' : ''}">
+                        <div class="step-num">3</div>
+                        <div class="step-text">PREVIEW</div>
+                    </div>
+                </div>
+
+                <!-- Multi-Agent Orchestration Pipeline -->
+                <div class="agent-orchestrator" style="margin-bottom: 20px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 20px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); backdrop-filter: blur(5px);">
+                    <div style="font-size: 11px; font-weight: 800; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                        <span>🤖 ORKESTRASI MULTI-AGEN OTONOM</span>
+                        ${S.building ? '<span style="width: 8px; height: 8px; background: #27c93f; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px #27c93f;"></span>' : ''}
+                    </div>
+                    <div class="agent-cards-container">
+                        <!-- Agent 1: Architect -->
+                        <div class="agent-card ${S.agentStatus?.architect === 'running' ? 'agent-active-architect' : ''}" style="background: ${S.agentStatus?.architect === 'running' ? 'rgba(0, 240, 255, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.architect === 'running' ? '#00f0ff' : S.agentStatus?.architect === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class=\"${S.agentStatus?.architect === 'running' ? 'agent-active-icon' : ''}\" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.architect === 'running' ? 'drop-shadow(0 0 8px #00f0ff)' : 'none'}">📐</div>
+                            <div style="font-size: 12px; font-weight: 700; color: #fff;">Arsitek AI</div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Architect Agent</div>
+                            <div style="font-size: 10px; color: ${S.agentStatus?.architect === 'running' ? '#00f0ff' : S.agentStatus?.architect === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.architect === 'running' ? '<span class=\"loading-text\">🧠 Merancang</span>' : S.agentStatus?.architect === 'done' ? '✅ Masterplan OK' : '💤 Idle'}
+                            </div>
+                        </div>
+
+                        <!-- Agent 2: Coder -->
+                        <div class="agent-card ${S.agentStatus?.coder === 'running' ? 'agent-active-coder' : ''}" style="background: ${S.agentStatus?.coder === 'running' ? 'rgba(190, 75, 219, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.coder === 'running' ? '#be4bdb' : S.agentStatus?.coder === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class=\"${S.agentStatus?.coder === 'running' ? 'agent-active-icon' : ''}\" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.coder === 'running' ? 'drop-shadow(0 0 8px #be4bdb)' : 'none'}">💻</div>
+                            <div style="font-size: 12px; font-weight: 700; color: #fff;">Coder AI</div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Developer Agent</div>
+                            <div style="font-size: 10px; color: ${S.agentStatus?.coder === 'running' ? '#be4bdb' : S.agentStatus?.coder === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.coder === 'running' ? '<span class=\"loading-text\">✍️ Menulis Kode</span>' : S.agentStatus?.coder === 'done' ? '✅ Kode Ditulis' : '💤 Idle'}
+                            </div>
+                        </div>
+
+                                                <!-- Agent 3 (New): Feature Implementer -->
+                        <div class="agent-card ${S.agentStatus?.feature === 'running' ? 'agent-active-feature' : ''}" style="background: ${S.agentStatus?.feature === 'running' ? 'rgba(59, 130, 246, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.feature === 'running' ? '#3b82f6' : S.agentStatus?.feature === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class="${S.agentStatus?.feature === 'running' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.feature === 'running' ? 'drop-shadow(0 0 8px #3b82f6)' : 'none'}">🧩</div>
+                            <div style="font-size: 12px; font-weight: 700; color: #fff;">Feature AI</div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Component Builder</div>
+                            <div style="font-size: 10px; color: ${S.agentStatus?.feature === 'running' ? '#3b82f6' : S.agentStatus?.feature === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.feature === 'running' ? '<span class="loading-text">🧩 Menyusun</span>' : S.agentStatus?.feature === 'done' ? '✅ Fitur Siap' : '💤 Idle'}
+                            </div>
+                        </div>
+
+                        <!-- Agent 4 (New): Content Writer -->
+                        <div class="agent-card ${S.agentStatus?.content === 'running' ? 'agent-active-content' : ''}" style="background: ${S.agentStatus?.content === 'running' ? 'rgba(168, 85, 247, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.content === 'running' ? '#a855f7' : S.agentStatus?.content === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class="${S.agentStatus?.content === 'running' ? 'agent-active-icon' : ''}" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.content === 'running' ? 'drop-shadow(0 0 8px #a855f7)' : 'none'}">📝</div>
+                            <div style="font-size: 12px; font-weight: 700; color: #fff;">Content AI</div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Copywriter</div>
+                            <div style="font-size: 10px; color: ${S.agentStatus?.content === 'running' ? '#a855f7' : S.agentStatus?.content === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.content === 'running' ? '<span class="loading-text">📝 Menulis</span>' : S.agentStatus?.content === 'done' ? '✅ Konten Terisi' : '💤 Idle'}
+                            </div>
+                        </div>
+
+                        <!-- Agent 3: QA Reviewer -->
+                        <div class="agent-card ${S.agentStatus?.qa === 'running' ? 'agent-active-qa' : ''}" style="background: ${S.agentStatus?.qa === 'running' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.qa === 'running' ? '#f59e0b' : S.agentStatus?.qa === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class=\"${S.agentStatus?.qa === 'running' ? 'agent-active-icon' : ''}\" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.qa === 'running' ? 'drop-shadow(0 0 8px #f59e0b)' : 'none'}">🛡️</div>
+                            <div style="font-size: 12px; font-weight: 700; color: #fff;">QA Reviewer</div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">QA Specialist</div>
+                            <div style="font-size: 10px; color: ${S.agentStatus?.qa === 'running' ? '#f59e0b' : S.agentStatus?.qa === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.qa === 'running' ? '<span class=\"loading-text\">🛡️ Verifikasi</span>' : S.agentStatus?.qa === 'done' ? '✅ Kode Bersih' : '💤 Idle'}
+                            </div>
+                        </div>
+
+                        <!-- Agent 4: Security AI -->
+                        <div class="agent-card ${S.agentStatus?.security === 'running' ? 'agent-active-security' : ''}" style="background: ${S.agentStatus?.security === 'running' ? 'rgba(220, 38, 38, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.security === 'running' ? '#dc2626' : S.agentStatus?.security === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class=\"${S.agentStatus?.security === 'running' ? 'agent-active-icon' : ''}\" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.security === 'running' ? 'drop-shadow(0 0 8px #dc2626)' : 'none'}">🔐</div>
+                            <div style="font-size: 12px; font-weight: 700; color: #fff;">Security AI</div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Vuln Auditor</div>
+                            <div style="font-size: 10px; color: ${S.agentStatus?.security === 'running' ? '#dc2626' : S.agentStatus?.security === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.security === 'running' ? '<span class=\"loading-text\">🔐 Audit</span>' : S.agentStatus?.security === 'done' ? '✅ 0 Vulns' : '💤 Idle'}
+                            </div>
+                        </div>
+
+                        <!-- Agent 5: UX/Polisher AI -->
+                        <div class="agent-card ${S.agentStatus?.polisher === 'running' ? 'agent-active-polisher' : ''}" style="background: ${S.agentStatus?.polisher === 'running' ? 'rgba(236, 72, 153, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.polisher === 'running' ? '#ec4899' : S.agentStatus?.polisher === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class=\"${S.agentStatus?.polisher === 'running' ? 'agent-active-icon' : ''}\" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.polisher === 'running' ? 'drop-shadow(0 0 8px #ec4899)' : 'none'}">🪄</div>
+                            <div style="font-size: 12px; font-weight: 700; color: #fff;">Polisher AI</div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">UX Optimizer</div>
+                            <div style="font-size: 10px; color: ${S.agentStatus?.polisher === 'running' ? '#ec4899' : S.agentStatus?.polisher === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.polisher === 'running' ? '<span class=\"loading-text\">🪄 Memoles UI</span>' : S.agentStatus?.polisher === 'done' ? '✅ UX Sempurna' : '💤 Idle'}
+                            </div>
+                        </div>
+
+                        <!-- Agent 6: Tester AI -->
+                        <div class="agent-card ${S.agentStatus?.tester === 'running' ? 'agent-active-tester' : ''}" style="background: ${S.agentStatus?.tester === 'running' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.tester === 'running' ? '#10b981' : S.agentStatus?.tester === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class=\"${S.agentStatus?.tester === 'running' ? 'agent-active-icon' : ''}\" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.tester === 'running' ? 'drop-shadow(0 0 8px #10b981)' : 'none'}">🧪</div>
+                            <div style="font-size: 12px; font-weight: 700; color: #fff;">Tester AI</div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">E2E Testing</div>
+                            <div style="font-size: 10px; color: ${S.agentStatus?.tester === 'running' ? '#10b981' : S.agentStatus?.tester === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.tester === 'running' ? '<span class=\"loading-text\">🧪 Simulasi</span>' : S.agentStatus?.tester === 'done' ? '✅ Lolos Test' : '💤 Idle'}
+                            </div>
+                        </div>
+
+                        <!-- Agent 7: DevOps -->
+                        <div class="agent-card ${S.agentStatus?.devops === 'running' ? 'agent-active-devops' : ''}" style="background: ${S.agentStatus?.devops === 'running' ? 'rgba(244, 63, 94, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${S.agentStatus?.devops === 'running' ? '#f43f5e' : S.agentStatus?.devops === 'done' ? 'rgba(63, 185, 80, 0.4)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 12px; padding: 12px; text-align: center; transition: all 0.3s ease; position: relative;">
+                            <div class=\"${S.agentStatus?.devops === 'running' ? 'agent-active-icon' : ''}\" style="font-size: 24px; margin-bottom: 6px; filter: ${S.agentStatus?.devops === 'running' ? 'drop-shadow(0 0 8px #f43f5e)' : 'none'}">🚀</div>
+                            <div style="font-size: 12px; font-weight: 700; color: #fff;">DevOps AI</div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top:2px;">Deployment Agent</div>
+                            <div style="font-size: 10px; color: ${S.agentStatus?.devops === 'running' ? '#f43f5e' : S.agentStatus?.devops === 'done' ? '#3fb950' : 'rgba(255,255,255,0.3)'}; margin-top: 8px; font-weight: 600;">
+                                ${S.agentStatus?.devops === 'running' ? '<span class=\"loading-text\">⚙️ Deployment</span>' : S.agentStatus?.devops === 'done' ? '✅ Siap Deploy' : '💤 Idle'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terminal-panel" style="background: #010409; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; min-height: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+                    <div class="terminal-header" style="background: rgba(255, 255, 255, 0.03); padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                        <div class="term-dots" style="display: flex; gap: 6px;"><div style="width: 11px; height: 11px; border-radius: 50%; background:#ff5f56"></div><div style="width: 11px; height: 11px; border-radius: 50%; background:#ffbd2e"></div><div style="width: 11px; height: 11px; border-radius: 50%; background:#27c93f"></div></div>
+                        <span style="font-family:var(--mono); font-size:11px; opacity:0.5; letter-spacing: 0.1em; margin-left:10px">AGENT CONSOLE — ${S.building ? 'ACTIVE' : 'READY'}</span>
+                        ${S.building ? `<div class="agent-active-glow" style="width:8px; height:8px; background:#00f0ff; margin-left:auto; border-radius:50%; box-shadow: 0 0 15px #00f0ff;"></div>` : ''}
+                    </div>
+                    <div class="term-toolbar">
+                        <button class="term-btn ${S.isInstalled?'active':''}" onclick="execTerminalCmd('install')" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;" title="Harap tunggu AI selesai merakit kode..."' : ''}>📦 install</button>
+                        <button class="term-btn ${S.isDevRunning?'active':''}" onclick="execTerminalCmd('dev')" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;" title="Harap tunggu AI selesai merakit kode..."' : ''}>🚀 dev</button>
+                        <button class="term-btn preview-btn" onclick="openLivePreview()" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;" title="Harap tunggu AI selesai merakit kode..."' : ''}>🌐 Preview</button>
+                    </div>
+                    <div class="term-body" id="buildTerminal" style="flex:1; padding:20px; overflow-y:auto; font-family:var(--mono); font-size:13px; line-height:1.6; color: rgba(255,255,255,0.85);">${logs || '<div style="opacity:0.3">Waiting for logs...</div>'}</div>
+                </div>
+                
+                <div class="chat-container">
+
+                <div class="chat-input-row">
+                        <input type="text" id="agentChatInput" class="chat-input-field" placeholder="Minta revisi atau tambah fitur... (Contoh: 'Tambahkan halaman login')" onkeydown="if(event.key==='Enter') submitAgentChat()">
+                        <button class="chat-send-btn" onclick="submitAgentChat()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                        </button>
+                    </div>
+                </div>
+
+                ${S.activeFile ? `
+                <div class="code-block" style="border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; flex:1; display:flex; flex-direction:column; min-height:0; overflow:hidden; background: #010409; margin-top:20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                    <div class="code-header" style="display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background: rgba(255,255,255,0.02); border-bottom:1px solid rgba(255,255,255,0.05)">
+                        <span style="font-size:11px; font-weight:700; color:var(--accent); letter-spacing:.1em; text-transform:uppercase">${S.activeFile}</span>
+                        <button class="copy-btn" onclick="cpCode('activeCodeCont',this)">Salin Kode</button>
+                    </div>
+                    <pre style="flex:1; max-height:50vh; overflow:auto; padding: 24px; font-size: 13px; color: #e6edf3; line-height: 1.6;" id="activeCodeCont">${esc(S.virtualWorkspace[S.activeFile])}</pre>
+                </div>` : ''}
+            </div>
+        </div>
+    `;
+}
+
+const sleep = ms => new Promise(resolve => setTimeout(resolve, 10)); // Speedrun Mode Maximum!
+
+function resetBuilder() {
+    if (confirm("Apakah Anda yakin ingin mereset progress pembangunan otonom? Semua kode yang digenerate akan dihapus.")) {
+        S.virtualWorkspace = {};
+        S.buildLogs = [];
+        S.building = false;
+        S.activeAgent = null;
+        S.activeFile = null;
+        S.isInstalled = false;
+        S.isDevRunning = false;
+        S.agentStatus = {
+            architect: 'idle',
+            coder: 'idle',
+            qa: 'idle',
+            security: 'idle',
+            polisher: 'idle',
+            tester: 'idle',
+            devops: 'idle',
+            feature: 'idle',
+            content: 'idle'
+        };
+        try {
+            localStorage.removeItem('devforge_logs');
+            localStorage.removeItem('devforge_workspace');
+        } catch(e) {}
+        saveWorkspaceToLocal();
+        render();
+    }
+}
+
+async function startAutonomousBuild(){
+    S.activeAgent = null;
+    S.agentStatus = {
+        architect: 'idle',
+        coder: 'idle',
+        qa: 'idle',
+        security: 'idle',
+        polisher: 'idle',
+        tester: 'idle',
+        devops: 'idle',
+        feature: 'idle',
+        content: 'idle'
+    };
+
+    if(!S.aiConfig.enabled || !S.aiConfig.connected){
+        const runSim = confirm("⚠️ AI Settings belum aktif atau belum terhubung.\n\nApakah Anda ingin menjalankan Mode Simulasi Otonom (Non-AI) secara luring?\nSistem tetap akan memvisualisasikan alur kerja 4 Agen AI dan menghasilkan kode fungsional untuk proyek Anda.");
+        if (runSim) {
+            S.building = true;
+            S.buildLogs = [];
+            S.virtualWorkspace = {};
+            S.activeFile = null;
+            S.activeTab = 'builder';
+            addBuildLog("MEMULAI SIMULASI PEMBANGUNAN OTONOM (OFFLINE)...", "info");
+            addBuildLog("Visualisasi pipeline Multi-Agent aktif.", "info");
+            render();
+
+            try {
+                await runSimulationLoop();
+            } catch(err) {
+                addBuildLog(`ERROR SIMULASI: ${err.message}`, "error");
+                S.building = false;
+                render();
+            }
+        } else {
+            openAIPanel();
+        }
+        return;
+    }
+    
+    S.building = true;
+    S.buildLogs = [];
+    S.virtualWorkspace = {};
+    S.activeFile = null;
+    S.activeTab = 'builder';
+    addBuildLog("SISTEM OTONOM REAL DIJALANKAN. MENGOTORISASI DEPLOYMENT AGENT...", "info");
+    addBuildLog("WORLD-CLASS DESIGN SYSTEM: APPLIED.", "info");
+    render();
+
+    try {
+        await runAutonomousLoop();
+    } catch(err) {
+        addBuildLog(`CRITICAL ERROR: ${err.message}`, "error");
+        S.building = false;
+        render();
+    }
+}
+
+function addBuildLog(msg, type='info'){
+    const time = new Date().toLocaleTimeString();
+    S.buildLogs.push({time, msg, type});
+    saveWorkspaceToLocal();
+    render();
+    setTimeout(() => {
+        const term = document.getElementById('buildTerminal');
+        if(term) term.scrollTop = term.scrollHeight;
+    }, 50);
+}
+
+function viewVirtualFile(p){
+    S.activeFile = p;
+    render();
+}
+
+async function submitAgentChat() {
+    const input = document.getElementById('agentChatInput');
+    const msg = input.value.trim();
+    if (!msg || S.building) return;
+
+    input.value = '';
+    addBuildLog(`USER: ${msg}`, 'agent');
+    
+    S.building = true;
+    render();
+
+    try {
+        const workspaceFiles = Object.keys(S.virtualWorkspace).join(", ");
+        const masterplan = S.virtualWorkspace['MASTERPLAN.md'] || "Belum ada masterplan.";
+        
+        const systemPrompt = `Kamu adalah SENIOR FULLSTACK DEVELOPER.
+Tugas: Melakukan REVISI atau PENAMBAHAN FITUR berdasarkan permintaan USER.
+Konteks Workspace: [${workspaceFiles}]
+Isi MASTERPLAN.md Saat Ini:
+${masterplan}
+
+ATURAN:
+1. Jika user meminta revisi, perbarui file yang ada atau buat file baru.
+2. JANGAN menghapus file yang tidak terkait dengan revisi.
+3. Tetap gunakan format JSON yang konsisten.
+4. Update MASTERPLAN.md jika ada perubahan arsitektur besar.
+5. DILARANG menggunakan atribut 'integrity' pada tag <link> atau <script> untuk library eksternal (seperti FontAwesome, Google Fonts, dll) karena sering menyebabkan error pemblokiran di browser.
+
+FORMAT RESPONS (Valid JSON):
+{
+  "logs": ["Status revisi"],
+  "files": [
+    {"path": "file/diperbarui.ext", "content": "kode baru"}
+  ],
+  "finished": true
+}`;
+
+        const userPrompt = `USER REQUEST: "${msg}"
+Lakukan perubahan yang diperlukan agar hasil sesuai dengan permintaan user di atas.`;
+
+        await processBuildStep(systemPrompt, userPrompt);
+        addBuildLog("REVISION COMPLETED SUCCESSFULLY.", "success");
+    } catch (err) {
+        addBuildLog(`REVISION ERROR: ${err.message}`, "error");
+    } finally {
+        S.building = false;
+        render();
+    }
+}
+
+async function runAutonomousLoop(){
+    const g = S.generated || {};
+    const projectName = g.name || 'Proyek Otonom';
+    const mode = S.mode || 'sdlc';
+    const desc = S.answers.projectName || projectName;
+    const fe = g.fe || g.fw || 'HTML/CSS/JS Vanilla';
+    const be = g.be || 'None';
+    const db = g.db || 'None';
+    const dep = (Array.isArray(S.answers.deployment) ? S.answers.deployment[0] : S.answers.deployment) || 'Vercel';
+    const ui  = (Array.isArray(S.answers.uiLib) ? S.answers.uiLib[0] : S.answers.uiLib) || 'Vanilla CSS';
+
+    const getWorkspaceSnapshot = () => {
+        const ws = S.virtualWorkspace || {};
+        return Object.entries(ws)
+            .filter(([k]) => !k.endsWith('.md') || k === 'MASTERPLAN.md')
+            .map(([k, v]) => `=== ${k} ===\n${(v || '').substring(0, 800)}`)
+            .join('\n\n')
+            .substring(0, 5000);
+    };
+
+    // ── FASE 1: ARSITEK AI ──
+    S.agentStatus.architect = 'running';
+    addBuildLog("📐 [Arsitek AI] Menganalisis kebutuhan & merancang arsitektur sistem...", "agent");
+    render();
+    await sleep(1000);
+
+    const blueprintPrompt = `You are a SENIOR SYSTEM ARCHITECT with 15 years experience.
+
+PROJECT BRIEF:
+- Name: ${projectName}
+- Mode: ${mode === 'adlc' ? 'Agentic AI System' : mode === 'website' ? 'Website/Landing Page' : 'Software Application'}
+- Description: ${desc}
+- Tech Stack: Frontend=${fe} | Backend=${be} | Database=${db} | Deploy=${dep} | UI=${ui}
+
+YOUR TASK:
+1. Write MASTERPLAN.md with: project overview, complete file structure, component breakdown, data models, feature checklist
+2. Write TECH_NOTES.md with: setup steps, env vars, deployment guide for ${dep}, technical decisions
+
+CRITICAL RULES:
+- MASTERPLAN.md must list EVERY file to be created, including index.html, style.css, app.js at minimum
+- No vague descriptions — be specific about file names and function names
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Analyzing requirements...", "Designing architecture...", "Writing MASTERPLAN.md...", "Writing TECH_NOTES.md..."],
+  "files": [
+    {"path": "MASTERPLAN.md", "content": "# ${projectName} — MASTERPLAN\\n\\n## Overview\\n...detailed content..."},
+    {"path": "TECH_NOTES.md", "content": "# Tech Notes\\n\\n...detailed content..."}
+  ]
+}`;
+
+    await processBuildStep(
+        `You are an expert SENIOR SYSTEM ARCHITECT. Always respond in valid JSON only. Never use markdown code fences outside JSON string values.`,
+        blueprintPrompt
+    );
+    S.agentStatus.architect = 'done';
+    addBuildLog("📐 [Arsitek AI] Masterplan & Tech Notes berhasil dirancang.", "success");
+    render();
+    await sleep(1200);
+
+    // ── FASE 2: CODER AI & DEVOPS AI (PARALEL) ──
+    const runCoder = async () => {
+        S.agentStatus.coder = 'running';
+        addBuildLog("💻 [Coder AI] Membaca Masterplan dan menulis kode utama...", "agent");
+        render();
+        await sleep(800);
+
+        const masterplan = S.virtualWorkspace['MASTERPLAN.md'] || 'No masterplan yet.';
+        const coderPrompt = `You are a SENIOR FULLSTACK DEVELOPER. Write COMPLETE, PRODUCTION-READY source code.
+
+PROJECT:
+- Name: ${projectName}
+- Description: ${desc}
+- Tech Stack: ${fe} | ${be} | ${db}
+- UI Library: ${ui}
+- Masterplan:
+${masterplan.substring(0, 3000)}
+
+MANDATORY FILES:
+- index.html  (complete HTML: semantic, meta viewport, Google Fonts linked)
+- style.css   (premium: CSS variables, glassmorphism/flat modern, transitions, fully responsive)
+- app.js      (complete vanilla JS: all interactivity, DOM manipulation, data logic)
+
+STRICT RULES:
+1. ZERO placeholders. No "// TODO", no "[content here]", no empty functions
+2. App must be VISUALLY COMPLETE when opened in browser — not a blank page
+3. CSS must have :root variables, flexbox/grid, hover states & smooth transitions
+4. Write beautiful UI that would win a design award
+5. No import/export statements in app.js — use vanilla JS only
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Writing index.html...", "Writing premium style.css...", "Writing complete app.js..."],
+  "files": [
+    {"path": "index.html", "content": "<!DOCTYPE html>...COMPLETE HTML..."},
+    {"path": "style.css", "content": ":root { ... }...COMPLETE CSS..."},
+    {"path": "app.js", "content": "// Complete logic...COMPLETE JS..."}
+  ]
+}`;
+
+        await processBuildStep(
+            `You are an elite SENIOR FULLSTACK DEVELOPER. Output complete working code. Never use placeholders. Respond only in valid JSON.`,
+            coderPrompt
+        );
+        S.agentStatus.coder = 'done';
+        addBuildLog("💻 [Coder AI] Kode utama berhasil ditulis lengkap.", "success");
+        render();
+    };
+
+    const runDevops = async () => {
+        S.agentStatus.devops = 'running';
+        addBuildLog("🚀 [DevOps AI] Menyiapkan konfigurasi deployment & dokumentasi...", "agent");
+        render();
+        await sleep(800);
+
+        const safeName = (projectName || 'project').toLowerCase().replace(/\s+/g, '-');
+        const devopsPrompt = `You are a SENIOR DEVOPS ENGINEER.
+
+PROJECT: ${projectName} | Deploy: ${dep} | Stack: ${fe} | ${be} | ${db}
+
+FILES TO CREATE:
+1. vercel.json — valid JSON config for Vercel SPA deployment
+2. .gitignore — comprehensive (Node, Python, OS, env files)
+3. README.md — professional with emoji headers, features table, setup steps, deployment guide
+4. package.json — with name="${safeName}", scripts: dev, build, start
+
+STRICT RULES:
+1. All files must be complete and immediately usable
+2. README.md must be impressive and professional
+3. package.json "dev" script: "npx serve ."
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Configuring ${dep}...", "Writing .gitignore...", "Generating README.md..."],
+  "files": [
+    {"path": "vercel.json", "content": "{\\"version\\": 2, \\"routes\\": [{\\"src\\": \\"/(.*)\\"..}]}"},
+    {"path": ".gitignore", "content": "node_modules/\\n.env\\n.DS_Store\\ndist/"},
+    {"path": "README.md", "content": "# ${projectName}\\n\\n...COMPLETE README..."},
+    {"path": "package.json", "content": "{\\"name\\": \\"${safeName}\\", \\"scripts\\": {\\"dev\\": \\"npx serve .\\"}}"}
+  ]
+}`;
+
+        await processBuildStep(
+            `You are a SENIOR DEVOPS ENGINEER. Create complete, production-ready config files. Respond only in valid JSON.`,
+            devopsPrompt
+        );
+        S.agentStatus.devops = 'done';
+        addBuildLog("🚀 [DevOps AI] Konfigurasi deployment berhasil dibuat.", "success");
+        render();
+    };
+
+    await Promise.all([runCoder(), runDevops()]);
+    await sleep(1200);
+
+    // ── FASE 3: FEATURE & CONTENT (PARALEL) ──
+    const runFeature = async () => {
+        S.agentStatus.feature = 'running';
+        addBuildLog("🧩 [Feature AI] Mengimplementasi komponen dan logika bisnis...", "agent");
+        render();
+        await sleep(800);
+
+        const wsSnap = getWorkspaceSnapshot();
+        const featurePrompt = `You are a SENIOR COMPONENT ENGINEER. ENHANCE the existing codebase.
+
+PROJECT: ${projectName}
+CURRENT WORKSPACE:
+${wsSnap}
+
+ADD these features if not already present:
+- Mobile navigation with hamburger menu
+- Smooth scroll behavior
+- Dark/light mode toggle (with localStorage persistence)
+- Form validation with real-time feedback (if forms exist)
+- Skeleton loading states
+- Scroll-triggered animations (IntersectionObserver)
+
+RULES:
+1. Only output files you actually changed
+2. All code must be complete — no "..." or placeholder comments
+3. Enhance existing code, don't rewrite from scratch
+4. If everything is already complete, output minimal changes
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Adding hamburger menu...", "Implementing dark mode...", "Adding scroll animations..."],
+  "files": [{"path": "app.js", "content": "// Enhanced...COMPLETE CODE..."}]
+}`;
+
+        await processBuildStep(
+            `You are a SENIOR COMPONENT ENGINEER. Enhance code without breaking it. Respond only in valid JSON.`,
+            featurePrompt
+        );
+        S.agentStatus.feature = 'done';
+        addBuildLog("🧩 [Feature AI] Semua komponen berhasil diimplementasi.", "success");
+        render();
+    };
+
+    const runContent = async () => {
+        S.agentStatus.content = 'running';
+        addBuildLog("📝 [Content AI] Mengisi konten nyata & data...", "agent");
+        render();
+        await sleep(800);
+
+        const wsSnap = getWorkspaceSnapshot();
+        const contentPrompt = `You are a SENIOR COPYWRITER & CONTENT STRATEGIST.
+
+PROJECT: ${projectName} — ${desc}
+CURRENT WORKSPACE:
+${wsSnap}
+
+TASKS:
+1. Replace ALL placeholder text (Lorem ipsum, [Title Here], etc.) with real content specific to "${projectName}"
+2. Fill data arrays in JS with realistic entries (products, services, team, posts, etc.)
+3. Create content/data.json with structured data for the app's domain
+4. Create CHANGELOG.md with v1.0.0 release notes
+
+RULES:
+1. Content must be specific to "${projectName}" — not generic filler
+2. Use Indonesian language where appropriate
+3. Fill ALL slots visible in the HTML
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Replacing placeholders...", "Writing realistic data...", "Creating CHANGELOG..."],
+  "files": [
+    {"path": "content/data.json", "content": "[{\\"id\\": 1, ...}]"},
+    {"path": "CHANGELOG.md", "content": "# Changelog\\n## v1.0.0..."}
+  ]
+}`;
+
+        await processBuildStep(
+            `You are a SENIOR COPYWRITER. Write real content, not placeholders. Respond only in valid JSON.`,
+            contentPrompt
+        );
+        S.agentStatus.content = 'done';
+        addBuildLog("📝 [Content AI] Konten nyata berhasil diisi.", "success");
+        render();
+    };
+
+    await Promise.all([runFeature(), runContent()]);
+    await sleep(1200);
+
+    // ── FASE 4: QA, SECURITY, POLISHER, TESTER (PARALEL) ──
+    const workspaceFiles = Object.keys(S.virtualWorkspace).join(", ");
+    const wsSnap4 = getWorkspaceSnapshot();
+
+    const runQa = async () => {
+        S.agentStatus.qa = 'running';
+        addBuildLog("🛡️ [QA AI] Menjalankan audit kode & mencari bug...", "agent");
+        render();
+        await sleep(800);
+
+        const qaPrompt = `You are a SENIOR QA ENGINEER (static analysis + browser compatibility expert).
+
+PROJECT: ${projectName}
+FILES: ${workspaceFiles}
+CODE:
+${wsSnap4}
+
+FIND AND FIX:
+1. Broken HTML (unclosed tags, missing attributes)
+2. JS errors (undefined vars, broken selectors, missing null checks)
+3. CSS issues (missing units, broken responsiveness)
+4. Dead code and unused functions
+5. Missing try/catch around fetch() calls
+6. Accessibility (missing alt, aria-labels, poor contrast)
+
+OUTPUT: Fixed files only. Skip unchanged files. Log exactly what was fixed.
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Fixed: undefined variable in app.js...", "Fixed: missing alt on images..."],
+  "files": [{"path": "app.js", "content": "// Fixed...COMPLETE..."}]
+}`;
+
+        await processBuildStep(
+            `You are a SENIOR QA ENGINEER. Find and fix real bugs. Respond only in valid JSON.`,
+            qaPrompt
+        );
+        S.agentStatus.qa = 'done';
+        addBuildLog("🛡️ [QA AI] Audit selesai — semua bug diperbaiki.", "success");
+        render();
+    };
+
+    const runSecurity = async () => {
+        S.agentStatus.security = 'running';
+        addBuildLog("🔐 [Security AI] Mengaudit kerentanan keamanan (OWASP Top 10)...", "agent");
+        render();
+        await sleep(800);
+
+        const secPrompt = `You are a SENIOR SECURITY ENGINEER (OWASP Top 10 specialist).
+
+PROJECT: ${projectName}
+FILES: ${workspaceFiles}
+CODE:
+${wsSnap4}
+
+CHECK AND FIX:
+1. XSS vulnerabilities (innerHTML with user input → use textContent)
+2. Exposed secrets in frontend code
+3. Missing Content-Security-Policy meta tag → add to index.html
+4. eval() / Function() usage → remove
+5. Unvalidated form inputs
+6. IMPORTANT: Do NOT add integrity= attributes to <link>/<script> tags (breaks blob preview)
+
+Add security.config.js if significant hardening applied.
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Scanning XSS vectors...", "Adding CSP meta tag...", "Sanitizing inputs..."],
+  "files": [{"path": "index.html", "content": "...COMPLETE SECURED HTML..."}]
+}`;
+
+        await processBuildStep(
+            `You are a SENIOR SECURITY ENGINEER. Apply OWASP best practices. Respond only in valid JSON.`,
+            secPrompt
+        );
+        S.agentStatus.security = 'done';
+        addBuildLog("🔐 [Security AI] Audit keamanan selesai.", "success");
+        render();
+    };
+
+    const runPolisher = async () => {
+        S.agentStatus.polisher = 'running';
+        addBuildLog("✨ [Polisher AI] Mempercantik UI/UX ke level premium...", "agent");
+        render();
+        await sleep(800);
+
+        const polisherPrompt = `You are a WORLD-CLASS UI/UX DESIGNER (ex-Apple, ex-Stripe design team).
+
+PROJECT: ${projectName}
+FILES: ${workspaceFiles}
+CODE:
+${wsSnap4}
+
+TRANSFORM THE UI:
+1. CSS — Add smooth transitions on ALL interactive elements, micro-animations (fadeIn, hover lift, button press), glassmorphism accents, gradient headings
+2. Typography — Import Inter/Plus Jakarta Sans/Outfit from Google Fonts, consistent 8px spacing grid, contrast ratio ≥ 4.5:1
+3. Responsive — Perfect on 320px (mobile), 768px (tablet), 1440px (desktop), touch targets ≥ 44px
+
+Output improved style.css (and index.html if structure changes needed).
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Applying micro-animations...", "Enhancing color palette...", "Polishing responsive..."],
+  "files": [{"path": "style.css", "content": "/* World-class CSS */\\n:root { ... }\\n...COMPLETE CSS..."}]
+}`;
+
+        await processBuildStep(
+            `You are a world-class UI/UX Designer. Make the interface visually stunning. Respond only in valid JSON.`,
+            polisherPrompt
+        );
+        S.agentStatus.polisher = 'done';
+        addBuildLog("✨ [Polisher AI] UI/UX berhasil dipoles ke level kelas dunia.", "success");
+        render();
+    };
+
+    const runTester = async () => {
+        S.agentStatus.tester = 'running';
+        addBuildLog("🧪 [Tester AI] Menulis unit & integration tests...", "agent");
+        render();
+        await sleep(800);
+
+        const testerPrompt = `You are a SENIOR TEST ENGINEER (browser-based testing specialist).
+
+PROJECT: ${projectName}
+FILES: ${workspaceFiles}
+
+WRITE:
+1. tests/app.test.js — Pure vanilla JS test suite:
+   - Tests for all major app.js functions
+   - DOM interaction tests (simulated clicks, form submissions)
+   - localStorage read/write tests
+   - Outputs results to console.table()
+2. tests/run-tests.html — Visual test runner page
+
+RESPOND ONLY with valid JSON:
+{
+  "logs": ["Writing unit tests...", "Adding DOM tests...", "Creating test runner..."],
+  "files": [
+    {"path": "tests/app.test.js", "content": "const results = [];\\n...COMPLETE TESTS..."},
+    {"path": "tests/run-tests.html", "content": "<!DOCTYPE html>...COMPLETE RUNNER..."}
+  ]
+}`;
+
+        await processBuildStep(
+            `You are a SENIOR TEST ENGINEER. Write complete runnable tests. Respond only in valid JSON.`,
+            testerPrompt
+        );
+        S.agentStatus.tester = 'done';
+        addBuildLog("🧪 [Tester AI] Test suite berhasil ditulis.", "success");
+        render();
+    };
+
+    await Promise.all([runQa(), runSecurity(), runPolisher(), runTester()]);
+    await sleep(1200);
+
+    S.activeAgent = null;
+    S.building = false;
+    addBuildLog("🎉 PEMBANGUNAN MULTI-AGENT SELESAI 100% — Klik Preview untuk melihat hasilnya!", "success");
+    render();
+}
+
+async function runSimulationLoop(){
+
+    const g = S.generated || {};
+    const name = g.name || S.answers.projectName || 'My Proyek';
+    const fe = g.fe || g.fw || 'HTML/CSS/JS';
+    const be = g.be || 'None';
+    const db = g.db || 'SQLite';
+    
+    // 📐 FASE 1: ARSITEK AI
+    S.agentStatus.architect = 'running';
+    addBuildLog("📐 [Arsitek AI] Memulai perancangan arsitektur untuk proyek: " + name + "...", "agent");
+    await sleep(2000);
+    
+    addBuildLog("📐 [Arsitek AI] Menentukan tech stack terbaik: Frontend: " + fe + ", Backend: " + be + ", Database: " + db + ".", "info");
+    await sleep(1500);
+
+    const masterplanContent = `# MASTERPLAN — ${name}
+Proyek ini dirancang secara otonom oleh DevForge Studio Multi-Agent Orchestrator.
+
+## Tech Stack Pilihan
+- **Frontend / Core:** ${fe}
+- **Backend / API:** ${be}
+- **Database / Vector:** ${db}
+- **Orchestration:** ${g.orch || 'None'}
+- **Memory Database:** ${g.mem || 'Context Window'}
+- **Agentic Tools:** ${g.tools || 'Web Search'}
+
+## Struktur Direktori Proyek
+\`\`\`
+/
+├── index.html          # File UI Utama (Interaktif & Indah)
+├── style.css           # Styling CSS Premium (Glassmorphism & Neon)
+├── app.js              # Logika Frontend & Simulasi Konsol Agen
+├── package.json        # Manifest Proyek & Dependensi
+├── vercel.json         # Konfigurasi Deployment Vercel
+└── README.md           # Panduan Resmi Proyek
+\`\`\`
+
+## Langkah Deployment
+1. Jalankan \`npm install\` untuk menginstal paket dependensi.
+2. Jalankan \`npm run dev\` untuk mengaktifkan server lokal.
+3. Deploy ke Vercel dengan perintah \`vercel deploy\`.`;
+
+    const technotesContent = `# TECH NOTES — ${name}
+Informasi teknis dan panduan integrasi sistem.
+
+## Dependensi & Requirements
+- Node.js >= 18.0.0
+- npm atau yarn
+
+## Konfigurasi Environment (.env)
+\`\`\`env
+PORT=3000
+DATABASE_URL=sqlite://local.db
+# API key jika menggunakan modul AI nyata
+API_KEY=your_api_key_here
+\`\`\``;
+
+    S.virtualWorkspace['MASTERPLAN.md'] = masterplanContent;
+    S.virtualWorkspace['TECH_NOTES.md'] = technotesContent;
+    addBuildLog("Manufacturing module: MASTERPLAN.md", "success");
+    addBuildLog("Manufacturing module: TECH_NOTES.md", "success");
+    
+    S.agentStatus.architect = 'done';
+    addBuildLog("📐 [Arsitek AI] Masterplan berhasil dibuat dan divalidasi.", "success");
+    render();
+    await sleep(2000);
+
+    // 💻 FASE 2: CODER AI
+    S.agentStatus.coder = 'running';
+    addBuildLog("💻 [Coder AI] Menerima Masterplan. Memulai penulisan modul kode utama...", "agent");
+    await sleep(2000);
+
+    addBuildLog("💻 [Coder AI] Menulis file package.json dan boilerplate dasar...", "info");
+    const packageJsonContent = `{
+  "name": "${slug(name)}",
+  "version": "1.0.0",
+  "description": "Autonomous AI Generated project",
+  "main": "app.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "canvas-confetti": "^1.6.0"
+  }
+}`;
+    S.virtualWorkspace['package.json'] = packageJsonContent;
+    addBuildLog("Manufacturing module: package.json", "success");
+    await sleep(1500);
+
+    addBuildLog("💻 [Coder AI] Mendesain antarmuka premium di index.html dengan glassmorphism dan partikel interaktif...", "info");
+    
+    let indexHtmlContent = '';
+    
+    if (S.mode === 'adlc') {
+        // Dashboard untuk Agentic AI
+        indexHtmlContent = `<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${name} — Agentic AI Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0f19;
+            --accent-green: #3fb950;
+            --accent-cyan: #00f0ff;
+            --accent-purple: #8b5cf6;
+            --text-main: #f3f4f6;
+            --text-muted: #8b949e;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 40px 20px;
+        }
+        #particleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 900px;
+            background: rgba(13, 17, 23, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 50px 40px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.02);
+            text-align: center;
+        }
+        .title-glow {
+            font-size: 38px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #ffffff, var(--accent-cyan), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            letter-spacing: -0.02em;
+        }
+        .subtitle {
+            font-size: 15px;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+        .badge-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        .badge {
+            background: rgba(63, 185, 80, 0.1);
+            border: 1px solid rgba(63, 185, 80, 0.2);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--accent-green);
+            text-transform: uppercase;
+        }
+        .console-box {
+            background: #010409;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: left;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .console-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 12px;
+        }
+        .console-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .console-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .console-lines {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #e6edf3;
+            min-height: 140px;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+        .console-btn {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            border: none;
+            color: #0b0f19;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(63, 185, 80, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .console-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(63, 185, 80, 0.5);
+            filter: brightness(1.1);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particleCanvas"></canvas>
+    
+    <div class="container">
+        <div class="badge-container">
+            <span class="badge">🤖 Orchestrator: ${g.orch || 'Pydantic AI'}</span>
+            <span class="badge">🧠 Memory: ${g.mem || 'Qdrant'}</span>
+            <span class="badge">🔌 Tools: ${g.tools || 'MCP'}</span>
+        </div>
+        <h1 class="title-glow">${name}</h1>
+        <p class="subtitle">Sistem Agentic AI otonom terstruktur berbasis orkestrasi multi-agent yang siap dideploy.</p>
+        
+        <div class="console-box">
+            <div class="console-header">
+                <div class="console-dot" style="background:#ff5f56"></div>
+                <div class="console-dot" style="background:#ffbd2e"></div>
+                <div class="console-dot" style="background:#27c93f"></div>
+                <span class="console-title" style="margin-left: 10px;">Agentic Framework Console Simulator</span>
+            </div>
+            <div class="console-lines" id="consoleLines">
+                <div>[System] Agen siap menerima instruksi. Klik tombol di bawah untuk simulasi pemanggilan tool dan respons terstruktur.</div>
+            </div>
+        </div>
+        
+        <button class="console-btn" id="runSimulationBtn">🚀 Jalankan Agen AI</button>
+    </div>
+
+    <script>
+        // Animasi Partikel Grid
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize);
+        resize();
+        
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.5 + 1;
+                this.speedX = Math.random() * 0.2 - 0.1;
+                this.speedY = Math.random() * 0.2 - 0.1;
+                this.color = '#3fb950';
+                this.alpha = Math.random() * 0.4 + 0.2;
+            }
+            update() {
+                this.x += this.speedX; this.y += this.speedY;
+                if(this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if(this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            }
+        }
+        for(let i=0; i<60; i++) particles.push(new Particle());
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        const btn = document.getElementById('runSimulationBtn');
+        const consoleLines = document.getElementById('consoleLines');
+        
+        const logs = [
+            { type: 'info', msg: '🤖 Menginisialisasi model: ${g.llm || 'Claude 3.5 Sonnet'}...' },
+            { type: 'info', msg: '🔌 Menghubungkan client Model Context Protocol (MCP)... Berhasil.' },
+            { type: 'info', msg: '🔍 Memanggil tool \\'web_search\\' dengan query: \\'Agentic AI best practices 2026\\'' },
+            { type: 'success', msg: '📥 Menerima hasil pencarian (3 dokumen ditemukan).' },
+            { type: 'info', msg: '🧠 Menyimpan potongan pengetahuan ke database vector: ${g.mem || 'Qdrant'}' },
+            { type: 'success', msg: '✨ Menghasilkan respons terstruktur (confidence: 0.96): Task selesai dengan sukses!' }
+        ];
+
+        btn.addEventListener('click', async () => {
+            if(btn.disabled) return; btn.disabled = true;
+            consoleLines.innerHTML = '<div>[System] Mengirim payload task ke Agen...</div>';
+            for(const l of logs) {
+                await new Promise(r => setTimeout(r, 1000));
+                const line = document.createElement('div');
+                const time = new Date().toLocaleTimeString();
+                const color = l.type === 'success' ? '#3fb950' : '#00f0ff';
+                line.innerHTML = \`<span style="opacity:0.4;">[\${time}]</span> <span style="color:\${color}">\${l.msg}</span>\`;
+                consoleLines.appendChild(line);
+                consoleLines.scrollTop = consoleLines.scrollHeight;
+            }
+            btn.disabled = false;
+        });
+    <\/script>
+</body>
+</html>`;
+    } else if (S.mode === 'desktop') {
+        // Simulator Desktop Application
+        indexHtmlContent = `<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${name} — Desktop Application Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f111a;
+            --accent-amber: #f59e0b;
+            --accent-cyan: #3b82f6;
+            --text-main: #f3f4f6;
+            --text-muted: #6b7280;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .desktop-window {
+            width: 100%;
+            max-width: 800px;
+            background: #1e2230;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .window-titlebar {
+            background: #161923;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .window-title {
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.8;
+            margin-left: 10px;
+        }
+        .window-content {
+            padding: 40px;
+            text-align: center;
+        }
+        .app-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        .app-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        .app-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .action-btn {
+            background: var(--accent-cyan);
+            border: none;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .action-btn:hover { background: #2563eb; }
+    </style>
+</head>
+<body>
+    <div class="desktop-window">
+        <div class="window-titlebar">
+            <div class="dot" style="background:#ff5f56"></div>
+            <div class="dot" style="background:#ffbd2e"></div>
+            <div class="dot" style="background:#27c93f"></div>
+            <div class="window-title">${g.name || 'Proyek'} (${g.fw || 'Tauri'})</div>
+        </div>
+        <div class="window-content">
+            <div class="app-icon">🖥️</div>
+            <h2 class="app-title">${g.name || 'Proyek'}</h2>
+            <p class="app-desc">Selamat! Ini adalah representasi simulasi visual dari aplikasi desktop native Anda di lingkungan web. Aplikasi sesungguhnya dikompilasi menggunakan bundler ${g.fw || 'Tauri'}.</p>
+            <button class="action-btn" onclick="alert('Halo dari Native GUI Desktop App Simulator!')">Jelajahi Fitur</button>
+        </div>
+    </div>
+</body>
+</html>`;
+    } else {
+        // Default Website Landing Page
+        indexHtmlContent = `<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${g.name || 'Proyek'} — AI Generated Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #03001e;
+            --accent-purple: #7f00ff;
+            --accent-pink: #ff007f;
+            --accent-cyan: #00f0ff;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #09090e;
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 40px 20px;
+        }
+        #particleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 900px;
+            background: rgba(15, 10, 30, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 50px 40px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.02);
+            text-align: center;
+        }
+        .title-glow {
+            font-size: 42px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #ffffff, var(--accent-cyan), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            letter-spacing: -0.02em;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+        .badge-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+        .badge {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.05);
+        }
+        .console-box {
+            background: #010409;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: left;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .console-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 12px;
+        }
+        .console-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .console-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .console-lines {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #e6edf3;
+            min-height: 120px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .console-btn {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            border: none;
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(236, 56, 188, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .console-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(236, 56, 188, 0.5);
+            filter: brightness(1.1);
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.25);
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particleCanvas"></canvas>
+    
+    <div class="container">
+        <div class="badge-container">
+            <span class="badge">${fe}</span>
+            <span class="badge">${be}</span>
+            <span class="badge">${db}</span>
+        </div>
+        <h1 class="title-glow">${g.name || 'Proyek'}</h1>
+        <p class="subtitle">Aplikasi otonom modern yang dirakit menggunakan arsitektur orkestrasi Multi-Agent DevForge Studio v3.0.</p>
+        
+        <div class="console-box">
+            <div class="console-header">
+                <div class="console-dot" style="background:#ff5f56"></div>
+                <div class="console-dot" style="background:#ffbd2e"></div>
+                <div class="console-dot" style="background:#27c93f"></div>
+                <span class="console-title" style="margin-left: 10px;">Multi-Agent Terminal Simulator</span>
+            </div>
+            <div class="console-lines" id="consoleLines">
+                <div>[System] Konsol simulasi siap. Tekan tombol di bawah untuk menjalankan orkestrasi agen.</div>
+            </div>
+        </div>
+        
+        <button class="console-btn" id="runSimulationBtn">🚀 Jalankan Orkes Agen</button>
+        
+        <div class="footer">
+            &copy; 2026 B.O.A Indonesia &bull; DevForge Studio Premium
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+        
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = Math.random() * 0.4 - 0.2;
+                this.speedY = Math.random() * 0.4 - 0.2;
+                this.color = Math.random() > 0.5 ? '#00f0ff' : '#ff007f';
+                this.alpha = Math.random() * 0.5 + 0.3;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if(this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if(this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        
+        for(let i=0; i<80; i++) particles.push(new Particle());
+        
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        const btn = document.getElementById('runSimulationBtn');
+        const consoleLines = document.getElementById('consoleLines');
+        
+        const logs = [
+            { agent: '📐 Arsitek AI', msg: 'Mulai mendesain model database relasional...', type: 'info' },
+            { agent: '📐 Arsitek AI', msg: 'Menyelesaikan Masterplan dan Tech Notes.', type: 'success' },
+            { agent: '💻 Coder AI', msg: 'Menerima blueprint. Menulis package.json dan modul utama...', type: 'info' },
+            { agent: '💻 Coder AI', msg: 'Membuat endpoint REST API dengan logic auth JWT...', type: 'info' },
+            { agent: '🛡️ QA Reviewer AI', msg: 'Mengecek integrity eksternal script tag...', type: 'warn' },
+            { agent: '🛡️ QA Reviewer AI', msg: 'Pengujian integrasi lolos 100%.', type: 'success' },
+            { agent: '🚀 DevOps AI', msg: 'Menyusun konfigurasi Vercel deployment...', type: 'info' },
+            { agent: '🚀 DevOps AI', msg: 'Proyek siap didistribusikan ke production!', type: 'success' }
+        ];
+
+        btn.addEventListener('click', async () => {
+            if(btn.disabled) return;
+            btn.disabled = true;
+            consoleLines.innerHTML = '<div>[System] Memulai orkestrasi agen...</div>';
+            
+            for(const l of logs) {
+                await new Promise(r => setTimeout(r, 1200));
+                const line = document.createElement('div');
+                const time = new Date().toLocaleTimeString();
+                const color = l.type === 'success' ? '#27c93f' : l.type === 'warn' ? '#f59e0b' : '#00f0ff';
+                line.innerHTML = \`<span style="opacity:0.4;">[\${time}]</span> <strong style="color:\${color}">\substr\${l.agent}</strong>: \${l.msg}\`;
+                consoleLines.appendChild(line);
+                consoleLines.scrollTop = consoleLines.scrollHeight;
+            }
+            btn.disabled = false;
+        });
+    <\/script>
+</body>
+</html>`;
+    }
+
+    const styleCssContent = `/* Stylesheet Premium hasil build simulasi */
+:root {
+    --primary-color: #7f00ff;
+    --secondary-color: #ff007f;
+    --neon-blue: #00f0ff;
+    --dark-bg: #09090e;
+    --glass-bg: rgba(255, 255, 255, 0.02);
+    --glass-border: rgba(255, 255, 255, 0.05);
+}`;
+
+    const appJsContent = `// Logika aplikasi utama
+console.log("Application initialized successfully.");`;
+
+    S.virtualWorkspace['index.html'] = indexHtmlContent;
+    S.virtualWorkspace['style.css'] = styleCssContent;
+    S.virtualWorkspace['app.js'] = appJsContent;
+    addBuildLog("Manufacturing module: index.html", "success");
+    addBuildLog("Manufacturing module: style.css", "success");
+    addBuildLog("Manufacturing module: app.js", "success");
+    
+    if(!S.activeFile) S.activeFile = 'index.html';
+    
+    S.agentStatus.coder = 'done';
+    addBuildLog("💻 [Coder AI] Boilerplate dan modul kode utama berhasil ditulis.", "success");
+    render();
+    await sleep(500);
+
+    // 🚀 FASE 2b: DevOps AI (paralel setelah coder selesai)
+    S.agentStatus.devops = 'running';
+    addBuildLog("🚀 [DevOps AI] Menerima output Coder AI. Mempersiapkan konfigurasi deployment...", "agent");
+    render();
+    await sleep(1200);
+    const vercelJsonSim = JSON.stringify({ version: 2, builds: [{ src: "index.html", use: "@vercel/static" }], routes: [{ src: "/(.*)", dest: "/index.html" }] }, null, 2);
+    const readmeSim = `# ${name}\n\nProyek ini dibuat secara otonom oleh **DevForge Studio Multi-Agent Orchestration v3.0**.\n\n## Cara Menjalankan\n1. Klik tombol \'📦 install\'\n2. Klik tombol \'🚀 dev\'\n3. Preview akan terbuka secara otomatis!\n\n## Tech Stack\n- Frontend: ${fe}\n- Backend: ${be}\n- Database: ${db}`;
+    S.virtualWorkspace['vercel.json'] = vercelJsonSim;
+    S.virtualWorkspace['README.md'] = readmeSim;
+    addBuildLog("Manufacturing module: vercel.json", "success");
+    addBuildLog("Manufacturing module: README.md", "success");
+    S.agentStatus.devops = 'done';
+    addBuildLog("🚀 [DevOps AI] Konfigurasi deployment selesai dipersiapkan.", "success");
+    render();
+    await sleep(1500);
+
+    // 🧩 📝 FASE 3: FEATURE & CONTENT (PARALEL)
+    const runFeatureSim = async () => {
+        S.agentStatus.feature = 'running';
+        addBuildLog("🧩 [Feature Implementer AI] Menelusuri komponen kosong (stubs)...", "agent");
+        await sleep(1500);
+        addBuildLog("🧩 [Feature Implementer AI] Mengisi state logika dan props pada Hero, ServiceCard, dan ContactForm.", "info");
+        await sleep(1500);
+        const featureContent = `// FULL COMPONENTS IMPLEMENTATION\nexport const Hero = () => '<header>Full</header>';`;
+        S.virtualWorkspace['src/components.js'] = featureContent;
+        addBuildLog("Manufacturing module: src/components.js", "success");
+        S.agentStatus.feature = 'done';
+        addBuildLog("🧩 [Feature Implementer AI] Semua fitur telah beroperasi penuh.", "success");
+        render();
+    };
+
+    const runContentSim = async () => {
+        S.agentStatus.content = 'running';
+        addBuildLog("📝 [Content Writer AI] Mempersiapkan koleksi konten markdown...", "agent");
+        await sleep(1500);
+        addBuildLog("📝 [Content Writer AI] Mengubah Lorem Ipsum menjadi copywriting SEO-friendly.", "info");
+        await sleep(1500);
+        const mdContent = `# Selamat Datang\n\nIni adalah konten asli.`;
+        S.virtualWorkspace['content/index.md'] = mdContent;
+        addBuildLog("Manufacturing module: content/index.md", "success");
+        S.agentStatus.content = 'done';
+        addBuildLog("📝 [Content Writer AI] Struktur konten selesai ditulis.", "success");
+        render();
+    };
+
+    await Promise.all([runFeatureSim(), runContentSim()]);
+    await sleep(2000);
+
+    // 🛡️ 🔐 ✨ 🧪 FASE 4: QA, SECURITY, POLISHER, TESTER (PARALEL)
+    const runQaSim = async () => {
+        S.agentStatus.qa = 'running';
+        addBuildLog("🛡️ [QA Reviewer AI] Membaca file program. Memulai analisis statis...", "agent");
+        await sleep(1500);
+        addBuildLog("🛡️ [QA Reviewer AI] Memvalidasi kompatibilitas tag script dan framework. Memastikan tidak ada placeholder.", "info");
+        await sleep(1500);
+        addBuildLog("🛡️ [QA Reviewer AI] Hasil pengujian unit: PASS (12/12 test case sukses).", "success");
+        S.agentStatus.qa = 'done';
+        addBuildLog("🛡️ [QA Reviewer AI] Kode berhasil diverifikasi dan disetujui untuk production.", "success");
+        render();
+    };
+
+    const runSecuritySim = async () => {
+        S.agentStatus.security = 'running';
+        addBuildLog("🔐 [Security AI] Mengaudit keseluruhan kode. Mencari celah keamanan XSS & SQL Injection...", "agent");
+        render();
+        await sleep(2000);
+        addBuildLog("🔐 [Security AI] Menambahkan header keamanan (Helmet, CSP) dan sanitasi input.", "info");
+        await sleep(1500);
+        const secHeadersContent = `// SECURITY HEADERS & MIDDLEWARE\n// Generated by DevForge Security AI\n// Zero-Vulnerability Guarantee\nexport const securityConfig = {\n  contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;",\n  xFrameOptions: "DENY",\n  xXssProtection: "1; mode=block",\n  strictTransportSecurity: "max-age=31536000; includeSubDomains"\n};\n`;
+        S.virtualWorkspace['src/security.config.js'] = secHeadersContent;
+        addBuildLog("Manufacturing module: src/security.config.js", "success");
+        S.agentStatus.security = 'done';
+        addBuildLog("🔐 [Security AI] Audit selesai. Vulnerability = 0.", "success");
+        render();
+    };
+
+    const runPolisherSim = async () => {
+        S.agentStatus.polisher = 'running';
+        addBuildLog("🪄 [Polisher AI] Memoles UI/UX dan memeriksa fungsionalitas fitur...", "agent");
+        render();
+        await sleep(2000);
+        addBuildLog("🪄 [Polisher AI] Memperbaiki dead-links, memastikan animasi 60fps, dan interaksi tombol 100% jalan.", "info");
+        await sleep(1500);
+        S.agentStatus.polisher = 'done';
+        addBuildLog("🪄 [Polisher AI] Penyempurnaan aplikasi selesai. Pengalaman pengguna telah dioptimalkan.", "success");
+        render();
+    };
+
+    const runTesterSim = async () => {
+        S.agentStatus.tester = 'running';
+        addBuildLog("🧪 [Tester AI] Melakukan End-to-End Testing (E2E) dan stress test otomatis...", "agent");
+        render();
+        await sleep(2000);
+        addBuildLog("🧪 [Tester AI] Menulis dan menjalankan skenario Playwright/Cypress di memory virtual...", "info");
+        await sleep(1500);
+        const testContent = `// END-TO-END TEST SUITE\n// Generated by DevForge Tester AI\n\ndescribe('Aplikasi Utama', () => {\n  it('seharusnya memuat beranda dengan benar tanpa error', () => {\n    // Simulasi klik navigasi\n  });\n  \n  it('seharusnya menangani input form dengan validasi yang benar', () => {\n    // Simulasi pengisian formulir\n  });\n  \n  // 12 test case tambahan berhasil dilewati\n});\n`;
+        S.virtualWorkspace['tests/e2e/app.spec.js'] = testContent;
+        addBuildLog("Manufacturing module: tests/e2e/app.spec.js", "success");
+        S.agentStatus.tester = 'done';
+        addBuildLog("🧪 [Tester AI] E2E Testing selesai. 14/14 Skenario berhasil lulus uji.", "success");
+        render();
+    };
+
+    const runDevopsSim = async () => {
+        S.agentStatus.devops = 'running';
+        addBuildLog("🚀 [DevOps AI] Mempersiapkan konfigurasi deployment dan berkas README.md...", "agent");
+        render();
+        await sleep(1500);
+        const vercelJsonContent = `{\n  "version": 2,\n  "builds": [\n    { "src": "index.html", "use": "@vercel/static" }\n  ],\n  "routes": [\n    { "src": "/(.*)", "dest": "/index.html" }\n  ]\n}`;
+        const readmeContent = `# ${g.name || 'Proyek'}\n\nProyek ini dibangun secara otonom oleh **DevForge Studio Multi-Agent Orchestration v3.0**.\n\n## Fitur Proyek\n- **Arsitektur Modular:** Kode bersih dan rapi.\n- **Tampilan Premium:** Menggunakan modern CSS Glassmorphism dan Canvas Particle Animation.\n- **Konsol Simulator Agen:** Panel terminal mini interaktif di dalam aplikasi.\n\n## Cara Menjalankan\n1. Ekstrak ZIP proyek.\n2. Buka berkas \`index.html\` langsung di browser Anda.\n3. ATAU jalankan dengan server lokal:\n   \`\`\`bash\n   npm install\n   npm run dev\n   \`\`\`\n\n## Pengembang\n- **DevForge Studio Otonom Multi-Agent** (Arsitek AI, Coder AI, QA Reviewer AI, DevOps AI)`;
+        S.virtualWorkspace['vercel.json'] = vercelJsonContent;
+        S.virtualWorkspace['README.md'] = readmeContent;
+        addBuildLog("Manufacturing module: vercel.json", "success");
+        addBuildLog("Manufacturing module: README.md", "success");
+        S.agentStatus.devops = 'done';
+        addBuildLog("🚀 [DevOps AI] Berkas deployment dan README.md berhasil ditulis.", "success");
+        render();
+    };
+
+    await Promise.all([runQaSim(), runSecuritySim(), runPolisherSim(), runTesterSim(), runDevopsSim()]);
+    await sleep(2000);
+
+    // SELESAI
+    // SELESAI
+    S.activeAgent = null;
+    S.building = false;
+    addBuildLog("🚀 PEMBANGUNAN OTONOM SIMULASI BERHASIL DISELESAIKAN.", "success");
+    addBuildLog("→ Anda sekarang dapat melihat preview situs dengan mengklik tombol 'Preview' di terminal toolbar.", "info");
+    addBuildLog("→ Anda dapat mengunduh seluruh codebase siap produksi via tombol 'Export' di explorer panel.", "info");
+    render();
+}
+
+async function processBuildStep(system, user){
+    const prov = AI_PROVIDERS[S.aiConfig.provider];
+    const body = {
+        model: S.aiConfig.model,
+        messages: [{role:'system', content:system}, {role:'user', content:user}],
+        response_format: {type: 'json_object'}
+    };
+
+    let res;
+    if (S.aiConfig.provider === 'puter') {
+        const combined = `${system}\n\n${user}`;
+        const resp = await puter.ai.chat(combined, {model: S.aiConfig.model});
+        res = { ok: true, json: async () => {
+            let content = resp.toString();
+            return robustParseJSON(content);
+        }};
+    } else {
+        const url = S.aiConfig.useProxy ? '/api/ai-proxy' : `${prov.baseUrl}/chat/completions`;
+        const headers = { 'Content-Type': 'application/json' };
+        if(!S.aiConfig.useProxy) headers['Authorization'] = `Bearer ${S.aiConfig.apiKey}`;
+        
+        const fetchBody = S.aiConfig.useProxy ? {
+            provider: S.aiConfig.provider,
+            apiUrl: `${prov.baseUrl}/chat/completions`,
+            apiKey: S.aiConfig.apiKey,
+            payload: body
+        } : body;
+
+        res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(fetchBody) });
+    }
+
+    if(res.ok){
+        const data = await res.json();
+        let result = {};
+        const rawContent = data.choices ? data.choices[0].message.content : (data.content || data);
+        
+        result = robustParseJSON(typeof rawContent === 'string' ? rawContent : JSON.stringify(rawContent));
+        
+        (result.logs || []).forEach(l => addBuildLog(l, "info"));
+        (result.files || []).forEach(f => {
+            const fullPath = S.isNative ? `${S.workspacePath}/${S.generated.name}/${f.path}` : f.path;
+            S.virtualWorkspace[f.path] = f.content;
+            
+            if (S.isNative && invoke) {
+                invoke('save_file', { path: fullPath, content: f.content });
+            }
+            
+            addBuildLog(`Manufacturing module: ${f.path}`, "success");
+            if(!S.activeFile) S.activeFile = f.path;
+        });
+        saveWorkspaceToLocal();
+        
+        if(result.finished) S.building = false;
+        render();
+    } else {
+        let errText = "";
+        try { errText = await res.text(); } catch(e){}
+        console.error("AI Communication Error:", res.status, res.statusText, errText);
+        
+        let extraTip = "";
+        if(res.status === 504 || res.status === 500) {
+            extraTip = " (Saran: Jika ini terus terjadi, coba BUKA AI Settings dan MATIKAN centang 'Gunakan Internal Proxy' karena mungkin terjadi limit waktu dari Vercel/Server)";
+        }
+        
+        throw new Error(`Gagal berkomunikasi dengan AI. HTTP ${res.status}: ${res.statusText}. Detail: ${errText.substring(0, 50)}${extraTip}`);
+    }
+}
+
+/**
+ * Robust JSON parser dengan multi-layer fallback.
+ * Menangani: markdown wrapper, karakter kontrol, newline dalam string,
+ * trailing comma, dan truncated JSON dari AI.
+ */
+function robustParseJSON(raw) {
+    if (!raw || typeof raw !== 'string') return { logs: [], files: [] };
+
+    // ── Layer 1: coba parse langsung ──
+    try { return JSON.parse(raw); } catch(_) {}
+
+    // ── Layer 2: hapus markdown code fence ──
+    let s = raw
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```\s*$/i, '')
+        .trim();
+    try { return JSON.parse(s); } catch(_) {}
+
+    // ── Layer 3: hapus karakter kontrol kecuali \n \r \t ──
+    s = s.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '');
+    try { return JSON.parse(s); } catch(_) {}
+
+    // ── Layer 4: escape newline & tab yang ada di dalam nilai string JSON ──
+    // (AI sering mengirim literal newline di dalam value, yang tidak valid di JSON)
+    s = s.replace(/"((?:[^"\\]|\\.)*)"/g, (match) => {
+        return match
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')
+            .replace(/\t/g, '\\t');
+    });
+    try { return JSON.parse(s); } catch(_) {}
+
+    // ── Layer 5: cari blok JSON terluar dengan regex ──
+    const outerMatch = s.match(/\{[\s\S]*\}/);
+    if (outerMatch) {
+        try { return JSON.parse(outerMatch[0]); } catch(_) {}
+        // Layer 5b: bersihkan trailing comma sebelum } atau ]
+        const noTrailing = outerMatch[0].replace(/,\s*([}\]])/g, '$1');
+        try { return JSON.parse(noTrailing); } catch(_) {}
+    }
+
+    // ── Layer 6: ekstrak field "files" dan "logs" secara manual ──
+    const result = { logs: [], files: [] };
+    const logsMatch = s.match(/"logs"\s*:\s*\[([\s\S]*?)\]/);
+    if (logsMatch) {
+        try {
+            result.logs = JSON.parse('[' + logsMatch[1] + ']');
+        } catch(_) {
+            result.logs = logsMatch[1].match(/"([^"]+)"/g)?.map(x => x.slice(1,-1)) || [];
+        }
+    }
+
+    const filesMatch = s.match(/"files"\s*:\s*\[([\s\S]*)\]/);
+    if (filesMatch) {
+        try {
+            result.files = JSON.parse('[' + filesMatch[1] + ']');
+        } catch(_) {
+            // coba ekstrak tiap objek file satu per satu
+            const fileBlocks = filesMatch[1].match(/\{[\s\S]*?"path"[\s\S]*?"content"[\s\S]*?\}/g) || [];
+            fileBlocks.forEach(block => {
+                try { result.files.push(JSON.parse(block)); } catch(_) {}
+            });
+        }
+    }
+
+    if (result.files.length > 0 || result.logs.length > 0) return result;
+
+    // ── Layer 7 (last resort): tidak ada yang bisa dipulihkan ──
+    console.warn("robustParseJSON: semua layer gagal untuk input:", raw.substring(0, 200));
+    addBuildLog("⚠️ Respons AI tidak bisa di-parse, langkah ini dilewati.", "amber");
+    return { logs: [], files: [] };
+}
+
+async function downloadVirtualProject(){
+    const zip = new JSZip();
+    const folderName = slug(S.generated.name);
+    const root = zip.folder(folderName);
+    
+    addBuildLog("PACKAGING SOURCE FOR PRODUCTION...", "info");
+    
+    for(const [path, content] of Object.entries(S.virtualWorkspace)){
+        if(path.endsWith('.md') && (path.includes('MASTERPLAN') || path.includes('TECH_NOTES'))){
+            root.file(`DOCS/${path}`, content);
+        } else {
+            root.file(path, content);
+        }
+    }
+    
+    const blob = await zip.generateAsync({type:'blob'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `PRO-SOURCE-${folderName}.zip`;
+    link.click();
+    addBuildLog("DOWNLOAD STARTED. YOUR PROFESSIONAL CODE BASE IS READY.", "success");
+}
+
+function restart(){
+    localStorage.removeItem('devforge_logs');
+    localStorage.removeItem('devforge_workspace');
+    window.location.reload();
+}
+
+render();

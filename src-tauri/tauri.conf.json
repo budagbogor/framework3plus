@@ -1,6 +1,6 @@
 {
   "productName": "DevForge Studio",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "identifier": "com.devforge.studio.native",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -20,6 +20,7 @@
       }
     ],
     "security": {
+      "dangerousDisableAssetCspModification": true,
       "csp": "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: wss: blob: data: tauri: asset:;"
     },
     "withGlobalTauri": true
