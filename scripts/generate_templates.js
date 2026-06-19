@@ -76,27 +76,9 @@ const indexHtml = `<!DOCTYPE html>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Preview</title>
-    <style>
-      .app-loader {
-        position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-        background: #0a0a0a; color: #fff; font-family: sans-serif; z-index: 9999;
-      }
-      .spinner {
-        width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-radius: 50%;
-        border-top-color: #00f0ff; animation: spin 1s ease-in-out infinite; margin-bottom: 20px;
-      }
-      @keyframes spin { to { transform: rotate(360deg); } }
-      .loading-text { font-size: 14px; letter-spacing: 2px; color: #888; animation: pulse 1.5s ease-in-out infinite; }
-      @keyframes pulse { 50% { opacity: 0.5; } }
-    </style>
   </head>
   <body class="bg-gray-50 text-gray-900 antialiased overflow-x-hidden">
-    <div id="root">
-      <div class="app-loader">
-        <div class="spinner"></div>
-        <div class="loading-text">INITIALIZING APP...</div>
-      </div>
-    </div>
+    <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>`;
@@ -141,14 +123,14 @@ import { Routes, Route, Link, useNavigate, useParams, useLocation } from 'react-
 import { ShoppingCart, Search, Menu, Star, ChevronRight, Heart, ShoppingBag, X, CheckCircle2, ArrowLeft, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
 
 const allProducts = [
-  { id: 1, name: 'Premium Wireless Headphones', price: 299, rating: 4.8, image: 'https://picsum.photos/id/163/800/800', category: 'Audio', desc: 'Experience studio-quality sound with active noise cancellation and 30-hour battery life. Hand-crafted with premium materials for ultimate comfort.' },
-  { id: 2, name: 'Minimalist Smart Watch', price: 199, rating: 4.6, image: 'https://picsum.photos/id/175/800/800', category: 'Wearables', desc: 'Track your health and stay connected with elegant precision. Features an always-on retina display and titanium case.' },
-  { id: 3, name: 'Professional DSLR Camera', price: 899, rating: 4.9, image: 'https://picsum.photos/id/225/800/800', category: 'Photography', desc: 'Capture stunning 4K video and 45MP stills with our flagship full-frame mirrorless camera. Perfect for professionals.' },
-  { id: 4, name: 'Ergonomic Workspace Chair', price: 349, rating: 4.7, image: 'https://picsum.photos/id/366/800/800', category: 'Furniture', desc: 'Designed for 8+ hours of comfortable seating. Features dynamic lumbar support and breathable mesh back.' },
-  { id: 5, name: 'Studio Microphones Set', price: 150, rating: 4.5, image: 'https://picsum.photos/id/425/800/800', category: 'Audio', desc: 'Broadcast-quality dynamic microphone ideal for podcasting, streaming, and vocal recording.' },
-  { id: 6, name: 'Mechanical Keyboard', price: 129, rating: 4.8, image: 'https://picsum.photos/id/473/800/800', category: 'Workspace', desc: 'Tactile, clicky mechanical switches enclosed in a solid aluminum frame. Customizable RGB backlight.' },
-  { id: 7, name: 'Curved Ultrawide Monitor', price: 599, rating: 4.9, image: 'https://picsum.photos/id/526/800/800', category: 'Workspace', desc: 'Immersive 34-inch curved display with 144Hz refresh rate and true 1ms response time.' },
-  { id: 8, name: 'Portable SSD 2TB', price: 219, rating: 4.7, image: 'https://picsum.photos/id/560/800/800', category: 'Accessories', desc: 'Blazing fast NVMe portable drive with read speeds up to 1050 MB/s. Drop resistant and pocket sized.' }
+  { id: 1, name: 'Premium Wireless Headphones', price: 299, rating: 4.8, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800', category: 'Audio', desc: 'Experience studio-quality sound with active noise cancellation and 30-hour battery life. Hand-crafted with premium materials for ultimate comfort.' },
+  { id: 2, name: 'Minimalist Smart Watch', price: 199, rating: 4.6, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800', category: 'Wearables', desc: 'Track your health and stay connected with elegant precision. Features an always-on retina display and titanium case.' },
+  { id: 3, name: 'Professional DSLR Camera', price: 899, rating: 4.9, image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=800', category: 'Photography', desc: 'Capture stunning 4K video and 45MP stills with our flagship full-frame mirrorless camera. Perfect for professionals.' },
+  { id: 4, name: 'Ergonomic Workspace Chair', price: 349, rating: 4.7, image: 'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?auto=format&fit=crop&q=80&w=800', category: 'Furniture', desc: 'Designed for 8+ hours of comfortable seating. Features dynamic lumbar support and breathable mesh back.' },
+  { id: 5, name: 'Studio Microphones Set', price: 150, rating: 4.5, image: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=800', category: 'Audio', desc: 'Broadcast-quality dynamic microphone ideal for podcasting, streaming, and vocal recording.' },
+  { id: 6, name: 'Mechanical Keyboard', price: 129, rating: 4.8, image: 'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=800', category: 'Workspace', desc: 'Tactile, clicky mechanical switches enclosed in a solid aluminum frame. Customizable RGB backlight.' },
+  { id: 7, name: 'Curved Ultrawide Monitor', price: 599, rating: 4.9, image: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&q=80&w=800', category: 'Workspace', desc: 'Immersive 34-inch curved display with 144Hz refresh rate and true 1ms response time.' },
+  { id: 8, name: 'Portable SSD 2TB', price: 219, rating: 4.7, image: 'https://images.unsplash.com/photo-1531492746076-161ca9bcad58?auto=format&fit=crop&q=80&w=800', category: 'Accessories', desc: 'Blazing fast NVMe portable drive with read speeds up to 1050 MB/s. Drop resistant and pocket sized.' }
 ];
 
 export default function App() {
@@ -300,7 +282,7 @@ function Home({ products, addToCart, wishlist, toggleWishlist }) {
     <div className="animate-fade-in">
       <section className="relative px-6 py-20 md:py-32 overflow-hidden bg-black text-white">
         <div className="absolute inset-0 opacity-40">
-          <img src="https://picsum.photos/id/10/2000/1000" alt="Hero" className="w-full h-full object-cover" />
+          <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=2000" alt="Hero" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto">
@@ -523,292 +505,237 @@ function About() {
     <div className="max-w-4xl mx-auto px-6 py-20 text-center animate-fade-in">
       <h1 className="text-5xl font-extrabold tracking-tight mb-8">Crafting the Future</h1>
       <p className="text-xl text-gray-600 leading-relaxed mb-8">LUXE is a premier destination for modern lifestyle tech and design. We believe that everyday objects should inspire creativity and elevate your environment. Every product in our collection is strictly vetted for uncompromising quality, durability, and aesthetics.</p>
-      <img src="https://picsum.photos/id/373/1200/800" className="rounded-3xl shadow-2xl w-full" />
+      <img src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80&w=1200" className="rounded-3xl shadow-2xl w-full" />
     </div>
   );
 }`;
 
 // 2. DASHBOARD TEMPLATE
-const dashboardApp = `import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, CreditCard, Activity, Bell, Search, Settings, MoreVertical, ArrowUpRight, ArrowDownRight, Menu, X, Loader2 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+const dashboardApp = `import React, { useState, useEffect } from 'react';
+import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Users, CreditCard, Activity, Bell, Search, Settings, MoreVertical, ArrowUpRight, ArrowDownRight, Menu, X, Loader2, PieChart, TrendingUp, BarChart3, Database, ShieldCheck, Download } from 'lucide-react';
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
-const allData = {
-  'Last 7 months': [
-    { name: 'Jan', value: 4000 }, { name: 'Feb', value: 3000 }, { name: 'Mar', value: 5000 },
-    { name: 'Apr', value: 4500 }, { name: 'May', value: 6000 }, { name: 'Jun', value: 5500 },
-    { name: 'Jul', value: 7000 },
-  ],
-  'This Year': [
-    { name: 'Q1', value: 12000 }, { name: 'Q2', value: 16000 }, { name: 'Q3', value: 14500 }, { name: 'Q4', value: 21000 }
-  ]
-};
-
-const allTransactions = [
-  { id: 1, name: 'Stripe Payment', date: 'Today, 10:23 AM', amount: '+$4,230.00', status: 'Completed', type: 'in' },
-  { id: 2, name: 'AWS Services', date: 'Yesterday, 08:45 AM', amount: '-$1,240.50', status: 'Pending', type: 'out' },
-  { id: 3, name: 'GitHub Enterprise', date: 'Oct 12, 14:30 PM', amount: '-$840.00', status: 'Completed', type: 'out' },
-  { id: 4, name: 'Client Retainer', date: 'Oct 10, 09:15 AM', amount: '+$8,500.00', status: 'Completed', type: 'in' },
-  { id: 5, name: 'Vercel Hosting', date: 'Oct 09, 11:00 AM', amount: '-$250.00', status: 'Completed', type: 'out' },
+const data = [
+  { name: 'Jan', revenue: 4000, users: 2400 },
+  { name: 'Feb', revenue: 3000, users: 1398 },
+  { name: 'Mar', revenue: 2000, users: 9800 },
+  { name: 'Apr', revenue: 2780, users: 3908 },
+  { name: 'May', revenue: 1890, users: 4800 },
+  { name: 'Jun', revenue: 2390, users: 3800 },
+  { name: 'Jul', revenue: 3490, users: 4300 },
 ];
 
-function DashboardHome() {
-  const [timeRange, setTimeRange] = useState('Last 7 months');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isDownloading, setIsDownloading] = useState(false);
+const customerData = [
+  { id: 1, name: 'Alex Johnson', email: 'alex@example.com', status: 'Active', spent: '$1,200', joined: 'Oct 24, 2023' },
+  { id: 2, name: 'Sarah Williams', email: 'sarah.w@example.com', status: 'Inactive', spent: '$340', joined: 'Sep 12, 2023' },
+  { id: 3, name: 'Michael Chen', email: 'm.chen@example.com', status: 'Active', spent: '$2,450', joined: 'Nov 01, 2023' },
+  { id: 4, name: 'Emma Davis', email: 'emma.d@example.com', status: 'Active', spent: '$890', joined: 'Oct 15, 2023' },
+  { id: 5, name: 'James Wilson', email: 'j.wilson@example.com', status: 'Pending', spent: '$0', joined: 'Dec 02, 2023' },
+];
 
-  const transactions = allTransactions.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  const data = allData[timeRange];
-
-  const handleDownload = () => {
-    setIsDownloading(true);
-    setTimeout(() => {
-      setIsDownloading(false);
-      alert('Report downloaded successfully!');
-    }, 2000);
-  };
-
-  return (
-    <div className="max-w-7xl mx-auto space-y-8 animate-fade-in">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-        <div className="animate-slide-up">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-gray-400 text-sm mt-1">Here's what's happening with your projects today.</p>
-        </div>
-        <button 
-          onClick={handleDownload}
-          disabled={isDownloading}
-          className="bg-white text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center gap-2 disabled:opacity-70 disabled:cursor-wait w-full sm:w-auto justify-center"
-        >
-          {isDownloading ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</> : 'Download Report'}
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[
-          { label: 'Total Revenue', value: '$128,430', trend: '+14.5%', up: true, color: 'text-emerald-400' },
-          { label: 'Active Users', value: '45.2K', trend: '+8.2%', up: true, color: 'text-emerald-400' },
-          { label: 'Churn Rate', value: '1.2%', trend: '-0.4%', up: false, color: 'text-rose-400' }
-        ].map((stat, i) => (
-          <div key={i} className="glass-dark bg-white/5 border border-white/10 p-6 rounded-2xl relative overflow-hidden group animate-slide-up" style={{animationDelay: \`\${i * 100}ms\`}}>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-indigo-500/20 transition-all"></div>
-            <h3 className="text-gray-400 text-sm font-medium mb-2">{stat.label}</h3>
-            <div className="flex items-end gap-4">
-              <span className="text-4xl font-bold tracking-tight">{stat.value}</span>
-              <span className={\`flex items-center text-sm font-medium \${stat.color} mb-1\`}>
-                {stat.up ? <ArrowUpRight className="w-4 h-4 mr-1" /> : <ArrowDownRight className="w-4 h-4 mr-1" />}
-                {stat.trend}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 glass-dark bg-white/5 border border-white/10 p-6 rounded-2xl animate-fade-in" style={{animationDelay: '300ms'}}>
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="font-semibold text-lg">Revenue Overview</h3>
-            <select 
-              value={timeRange} 
-              onChange={(e) => setTimeRange(e.target.value)}
-              className="bg-[#171717] border border-white/20 text-sm text-gray-300 rounded-lg px-3 py-1.5 outline-none focus:border-indigo-500 transition-colors cursor-pointer"
-            >
-              <option value="Last 7 months">Last 7 months</option>
-              <option value="This Year">This Year</option>
-            </select>
-          </div>
-          <div className="h-72 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                <XAxis dataKey="name" stroke="#ffffff50" axisLine={false} tickLine={false} tick={{fontSize: 12}} dy={10} />
-                <YAxis stroke="#ffffff50" axisLine={false} tickLine={false} tick={{fontSize: 12}} />
-                <Tooltip contentStyle={{backgroundColor: '#171717', borderColor: '#ffffff20', borderRadius: '8px'}} itemStyle={{color: '#fff'}} />
-                <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" animationDuration={1000} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="glass-dark bg-white/5 border border-white/10 p-6 rounded-2xl flex flex-col animate-fade-in" style={{animationDelay: '400ms'}}>
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="font-semibold text-lg">Recent Transfers</h3>
-            <button className="text-gray-400 hover:text-white"><MoreVertical className="w-5 h-5" /></button>
-          </div>
-          
-          <div className="sm:hidden mb-4">
-            <input 
-              type="text" 
-              placeholder="Search transfers..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-indigo-500 text-white placeholder-gray-500 transition-all"
-            />
-          </div>
-
-          <div className="flex-1 space-y-6 overflow-y-auto pr-2">
-            {transactions.length === 0 ? (
-                <p className="text-gray-500 text-sm text-center mt-10">No transactions found.</p>
-            ) : (
-              transactions.map(t => (
-                <div key={t.id} className="flex items-center justify-between group cursor-pointer">
-                  <div className="flex items-center gap-4">
-                    <div className={\`w-10 h-10 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 \${t.type === 'in' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}\`}>
-                      {t.type === 'in' ? <ArrowDownRight className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm group-hover:text-indigo-300 transition-colors">{t.name}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{t.date}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={\`font-semibold text-sm \${t.type === 'in' ? 'text-emerald-400' : 'text-white'}\`}>{t.amount}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{t.status}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-          <button className="w-full mt-6 py-2.5 rounded-xl border border-white/10 text-sm font-medium text-gray-300 hover:bg-white/5 transition-colors">
-            View All Activity
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PlaceholderPage({ title, description, icon: Icon }) {
-  return (
-    <div className="h-full flex flex-col items-center justify-center text-center animate-fade-in p-8">
-      <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-6">
-        <Icon className="w-12 h-12 text-indigo-400 opacity-80" />
-      </div>
-      <h2 className="text-3xl font-bold mb-3">{title}</h2>
-      <p className="text-gray-400 max-w-md">{description}</p>
-    </div>
-  );
-}
-
-export default function DashboardApp() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+export default function App() {
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
 
-  const NavLinks = () => (
-    <>
-      {[{icon: LayoutDashboard, label: 'Dashboard', path: '/'}, 
-        {icon: Activity, label: 'Analytics', path: '/analytics'}, 
-        {icon: Users, label: 'Customers', path: '/customers'}, 
-        {icon: CreditCard, label: 'Billing', path: '/billing'}].map(item => (
-        <Link 
-          key={item.label}
-          to={item.path}
-          onClick={() => setMobileMenuOpen(false)}
-          className={\`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all \${location.pathname === item.path ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}\`}
-        >
-          <item.icon className={\`w-5 h-5 \${location.pathname === item.path ? 'text-indigo-400' : ''}\`} /> {item.label}
-        </Link>
-      ))}
-    </>
-  );
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+      if (window.innerWidth < 1024) setSidebarOpen(false);
+      else setSidebarOpen(true);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const menuItems = [
+    { icon: LayoutDashboard, label: 'Overview', path: '/' },
+    { icon: Activity, label: 'Analytics', path: '/analytics' },
+    { icon: Users, label: 'Customers', path: '/customers' },
+    { icon: Settings, label: 'Settings', path: '/settings' },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white flex font-sans selection:bg-indigo-500/30">
-      
-      {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-[#0A0A0A] p-6 lg:hidden flex flex-col">
-          <div className="flex justify-between items-center mb-8">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg shadow-indigo-500/20" />
-              <span className="text-xl font-bold tracking-wide">NEXUS</span>
-            </div>
-            <button onClick={() => setMobileMenuOpen(false)}><X className="w-6 h-6" /></button>
-          </div>
-          <nav className="space-y-2"><NavLinks /></nav>
-        </div>
+    <div className="min-h-screen bg-gray-50/50 flex font-sans text-gray-900">
+      {isMobile && isSidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar Desktop */}
-      <aside className="w-64 border-r border-white/10 hidden lg:flex flex-col relative z-20 bg-[#0A0A0A]">
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg shadow-indigo-500/20" />
-          <span className="text-xl font-bold tracking-wide">NEXUS</span>
+      <aside className={\`fixed lg:sticky top-0 h-screen bg-white border-r border-gray-200 w-72 flex flex-col transition-transform duration-300 z-50 \${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-20'}\`}>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <Database className="w-5 h-5 text-white" />
+            </div>
+            {isSidebarOpen && <span className="font-bold text-xl tracking-tight text-gray-900">NEXUS</span>}
+          </div>
+          {isMobile && (
+            <button onClick={() => setSidebarOpen(false)} className="text-gray-500 hover:text-gray-900">
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
-        <nav className="flex-1 px-4 py-4 space-y-1"><NavLinks /></nav>
-        <div className="p-4 border-t border-white/10">
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl font-medium transition-all">
-            <Settings className="w-5 h-5" /> Settings
-          </button>
+
+        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+          {menuItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.label}
+                to={item.path}
+                onClick={() => isMobile && setSidebarOpen(false)}
+                className={\`flex items-center gap-3 px-4 py-3 rounded-xl transition-all \${isActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}\`}
+              >
+                <item.icon className={\`w-5 h-5 \${isActive ? 'text-indigo-600' : 'text-gray-400'}\`} />
+                {isSidebarOpen && <span>{item.label}</span>}
+              </Link>
+            )
+          })}
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* Header */}
-        <header className="h-20 border-b border-white/10 bg-[#0A0A0A]/80 backdrop-blur-md px-6 lg:px-8 flex items-center justify-between sticky top-0 z-10">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 z-30 sticky top-0">
           <div className="flex items-center gap-4">
-            <button className="lg:hidden text-white" onClick={() => setMobileMenuOpen(true)}><Menu className="w-6 h-6" /></button>
-            <div className="relative w-48 lg:w-96 hidden sm:block animate-fade-in">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="Search..." 
-                className="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-500 transition-all"
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-4 lg:gap-6">
-            <button className="relative text-gray-400 hover:text-white transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#0A0A0A] animate-pulse"></span>
+            <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-lg lg:hidden">
+              <Menu className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-3 cursor-pointer pl-4 lg:pl-6 border-l border-white/10 hover:bg-white/5 p-1 lg:pr-4 rounded-full transition-colors">
-              <img src="https://i.pravatar.cc/150?img=11" alt="User" className="w-8 h-8 lg:w-9 lg:h-9 rounded-full border border-white/20" />
-              <div className="hidden md:block">
-                <p className="text-sm font-semibold">Alex Doe</p>
-                <p className="text-xs text-gray-400">Admin</p>
-              </div>
+            <div className="relative hidden sm:block w-64 lg:w-96">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input type="text" placeholder="Search anything..." className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
             </div>
           </div>
         </header>
 
-        {/* Content Scrollable */}
-        <div className="flex-1 overflow-y-auto p-6 lg:p-8">
-          <Routes>
-            <Route path="/" element={<DashboardHome />} />
-            <Route path="/analytics" element={<PlaceholderPage title="Analytics" description="Deep dive into your user engagement and metric trends over time." icon={Activity} />} />
-            <Route path="/customers" element={<PlaceholderPage title="Customers" description="Manage your user base, view profiles, and track activity." icon={Users} />} />
-            <Route path="/billing" element={<PlaceholderPage title="Billing & Invoices" description="Manage your subscription, payment methods, and invoices." icon={CreditCard} />} />
-          </Routes>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto">
+            <Routes>
+              <Route path="/" element={<Overview />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/customers" element={<Customers />} />
+              <Route path="/settings" element={<SettingsView />} />
+            </Routes>
+          </div>
         </div>
       </main>
     </div>
   );
 }
 
+function Overview() {
+  return (
+    <div className="animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
+          <p className="text-gray-500 text-sm mt-1">Here's what's happening with your projects today.</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {[
+          { title: 'Total Revenue', value: '$45,231.89', change: '+20.1%', trend: 'up', icon: CreditCard },
+          { title: 'Active Users', value: '2,350', change: '+15.2%', trend: 'up', icon: Users },
+          { title: 'New Signups', value: '1,203', change: '-4.1%', trend: 'down', icon: Activity },
+          { title: 'Conversion Rate', value: '3.24%', change: '+1.2%', trend: 'up', icon: TrendingUp },
+        ].map((stat, i) => (
+          <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex justify-between items-start mb-4">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <stat.icon className="w-5 h-5" />
+              </div>
+              <div className={\`flex items-center gap-1 text-sm font-medium \${stat.trend === 'up' ? 'text-emerald-600' : 'text-red-500'}\`}>
+                {stat.trend === 'up' ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                {stat.change}
+              </div>
+            </div>
+            <h3 className="text-gray-500 text-sm font-medium mb-1">{stat.title}</h3>
+            <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
+function Analytics() {
+  return (
+    <div className="animate-fade-in">
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">Analytics</h1>
+      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+        <h3 className="text-lg font-bold text-gray-900 mb-6">User Growth</h3>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} dy={10} />
+              <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
+              <Tooltip cursor={{fill: '#f3f4f6'}} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+              <Bar dataKey="users" fill="#4f46e5" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Customers() {
+  return (
+    <div className="animate-fade-in">
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">Customers</h1>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-gray-500">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+              <tr>
+                <th className="px-6 py-4 font-semibold">Name</th>
+                <th className="px-6 py-4 font-semibold">Status</th>
+                <th className="px-6 py-4 font-semibold">Spent</th>
+              </tr>
+            </thead>
+            <tbody>
+              {customerData.map((c) => (
+                <tr key={c.id} className="border-b border-gray-50">
+                  <td className="px-6 py-4 font-medium text-gray-900">{c.name}</td>
+                  <td className="px-6 py-4">{c.status}</td>
+                  <td className="px-6 py-4 text-gray-900">{c.spent}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsView() {
+  return (
+    <div className="animate-fade-in">
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">Settings</h1>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <p className="text-gray-500">Settings page content goes here.</p>
+      </div>
+    </div>
+  );
+}
 `;
 
 // 3. MOBILE APP TEMPLATE
 const mobileApp = `import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Home, Search, Compass, MessageCircle, User, Bell, Heart, Share2, MoreHorizontal, Plus, X, Settings as SettingsIcon, Bookmark, Grid, PlaySquare, ChevronLeft } from 'lucide-react';
+import { Home, Search, Compass, MessageCircle, User, Bell, Heart, Share2, MoreHorizontal, Plus, X } from 'lucide-react';
 
 const initialPosts = [
-  { id: 1, user: 'Sarah Jenkins', avatar: 'https://i.pravatar.cc/150?img=47', image: 'https://picsum.photos/id/349/600/800', likes: 1240, liked: false, caption: 'Exploring the hidden gems of Kyoto ✨ #travel #japan' },
-  { id: 2, user: 'David Chen', avatar: 'https://i.pravatar.cc/150?img=12', image: 'https://picsum.photos/id/425/600/800', likes: 842, liked: true, caption: 'Morning coffee aesthetics ☕' },
+  { id: 1, user: 'Sarah Jenkins', avatar: 'https://i.pravatar.cc/150?img=47', image: 'https://images.unsplash.com/photo-1516483638261-f40af5aa339b?auto=format&fit=crop&q=80&w=600', likes: 1240, liked: false, caption: 'Exploring the hidden gems of Kyoto 🌸✨ #travel #japan' },
+  { id: 2, user: 'David Chen', avatar: 'https://i.pravatar.cc/150?img=12', image: 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&q=80&w=600', likes: 842, liked: true, caption: 'Morning coffee aesthetics ☕️' },
 ];
 
-function HomeFeed() {
+export default function MobileApp() {
+  const [activeTab, setActiveTab] = useState('home');
   const [posts, setPosts] = useState(initialPosts);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const toggleLike = (id) => {
     setPosts(posts.map(p => {
@@ -819,228 +746,88 @@ function HomeFeed() {
     }));
   };
 
-  return (
-    <div className="animate-fade-in">
-      {/* Stories */}
-      <div className="flex gap-4 px-4 py-4 overflow-x-auto hide-scrollbar bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-10">
-        <div className="flex flex-col items-center gap-1 min-w-[72px] cursor-pointer">
-          <div className="w-16 h-16 rounded-full p-[2px] bg-gray-200 relative">
-            <img src="https://i.pravatar.cc/150?img=33" className="w-full h-full rounded-full border-2 border-white object-cover" alt="Me" />
-            <div className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center border-2 border-white text-xs font-bold">+</div>
-          </div>
-          <span className="text-[10px] font-medium text-gray-500 truncate w-full text-center mt-1">Your Story</span>
-        </div>
-        {[1,2,3,4,5,6].map(i => (
-          <div key={i} className="flex flex-col items-center gap-1 min-w-[72px] cursor-pointer hover:opacity-80 transition-opacity">
-            <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-red-500 to-fuchsia-600">
-              <img src={\`https://i.pravatar.cc/150?img=\${i+20}\`} className="w-full h-full rounded-full border-2 border-white object-cover" alt="Story" />
-            </div>
-            <span className="text-[10px] font-medium text-gray-800 truncate w-full text-center mt-1">User {i}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Feed */}
-      <div className="space-y-4 bg-gray-50/50 py-2">
-        {posts.map((post, idx) => (
-          <article key={post.id} className="bg-white pb-4 animate-slide-up shadow-sm border-y border-gray-100" style={{animationDelay: \`\${idx * 100}ms\`}}>
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3 cursor-pointer">
-                <img src={post.avatar} className="w-10 h-10 rounded-full object-cover border border-gray-100" alt={post.user} />
-                <span className="font-semibold text-sm hover:underline">{post.user}</span>
+  const renderContent = () => {
+    if (activeTab === 'home') {
+      return (
+        <>
+          {/* Stories */}
+          <div className="flex gap-4 px-4 py-4 overflow-x-auto hide-scrollbar bg-white border-b border-gray-100">
+            <div className="flex flex-col items-center gap-1 min-w-[72px] cursor-pointer">
+              <div className="w-16 h-16 rounded-full p-[2px] bg-gray-200 relative">
+                <img src="https://i.pravatar.cc/150?img=33" className="w-full h-full rounded-full border-2 border-white object-cover" alt="Me" />
+                <div className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center border-2 border-white text-xs font-bold">+</div>
               </div>
-              <button className="p-1 hover:bg-gray-100 rounded-full"><MoreHorizontal className="w-5 h-5 text-gray-500" /></button>
+              <span className="text-[10px] font-medium text-gray-500 truncate w-full text-center">Your Story</span>
             </div>
-            
-            <div 
-              className="aspect-[4/5] bg-gray-100 relative cursor-pointer group overflow-hidden"
-              onDoubleClick={() => { if(!post.liked) toggleLike(post.id); }}
-            >
-              <img src={post.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Post content" />
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-active:opacity-100 transition-opacity duration-300 bg-black/10">
-                <Heart className="w-24 h-24 text-white fill-white drop-shadow-2xl animate-pulse-fast" />
-              </div>
-            </div>
-
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-4">
-                  <button onClick={() => toggleLike(post.id)} className="transition-transform active:scale-75">
-                    <Heart className={\`w-7 h-7 \${post.liked ? 'fill-red-500 text-red-500' : 'text-gray-800 hover:text-gray-500'}\`} />
-                  </button>
-                  <button className="hover:opacity-70 transition-opacity"><MessageCircle className="w-7 h-7 text-gray-800" /></button>
-                  <button className="hover:opacity-70 transition-opacity"><Share2 className="w-6 h-6 text-gray-800" /></button>
+            {[1,2,3,4,5,6].map(i => (
+              <div key={i} className="flex flex-col items-center gap-1 min-w-[72px] cursor-pointer hover:opacity-80 transition-opacity">
+                <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-red-500 to-fuchsia-600">
+                  <img src={\`https://i.pravatar.cc/150?img=\${i+20}\`} className="w-full h-full rounded-full border-2 border-white object-cover" alt="Story" />
                 </div>
-                <button className="hover:opacity-70 transition-opacity"><Bookmark className="w-6 h-6 text-gray-800" /></button>
+                <span className="text-[10px] font-medium text-gray-800 truncate w-full text-center">User {i}</span>
               </div>
-              <p className="font-bold text-sm mb-1">{post.likes.toLocaleString()} likes</p>
-              <p className="text-sm"><span className="font-semibold mr-2 cursor-pointer hover:underline">{post.user}</span>{post.caption}</p>
-              <p className="text-gray-400 text-xs mt-2 uppercase font-medium">2 HOURS AGO</p>
-            </div>
-          </article>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ExplorePage() {
-  return (
-    <div className="animate-fade-in pb-4">
-      <div className="p-4 sticky top-0 bg-white/80 backdrop-blur-md z-10 border-b border-gray-100">
-        <div className="relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input 
-            type="text" 
-            placeholder="Search vibes..." 
-            className="w-full bg-gray-100 border-none rounded-xl py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 transition-all"
-          />
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-1 px-1">
-        {[...Array(15)].map((_, i) => (
-          <div key={i} className={\`bg-gray-200 relative group cursor-pointer \${i === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-square'}\`}>
-            <img src={\`https://picsum.photos/id/\${i + 50}/\${i===0?600:300}/\${i===0?600:300}\`} className="w-full h-full object-cover" alt="Explore" />
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <Heart className="w-6 h-6 text-white fill-white" />
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
-function ProfilePage() {
-  return (
-    <div className="animate-fade-in bg-white min-h-full pb-4">
-      <div className="flex items-center justify-between p-4 border-b border-gray-100 sticky top-0 bg-white/90 backdrop-blur-md z-10">
-        <div className="flex items-center gap-1 font-bold text-lg cursor-pointer">
-          alex_creator <ChevronDown className="w-4 h-4" />
-        </div>
-        <div className="flex gap-4">
-          <Plus className="w-6 h-6 text-gray-800" />
-          <Menu className="w-6 h-6 text-gray-800" />
-        </div>
-      </div>
-      
-      <div className="p-4">
-        <div className="flex items-center gap-6 mb-4">
-          <div className="relative">
-            <img src="https://i.pravatar.cc/150?img=33" className="w-20 h-20 rounded-full object-cover border border-gray-200 p-0.5" alt="Profile" />
-            <div className="absolute bottom-0 right-0 bg-blue-500 rounded-full p-1 border-2 border-white">
-              <Plus className="w-3 h-3 text-white font-bold" />
-            </div>
+          {/* Feed */}
+          <div className="space-y-2 bg-gray-50">
+            {posts.map(post => (
+              <article key={post.id} className="bg-white pb-4 animate-fade-in">
+                <div className="flex items-center justify-between p-4">
+                  <div className="flex items-center gap-3 cursor-pointer">
+                    <img src={post.avatar} className="w-9 h-9 rounded-full object-cover border border-gray-100" alt={post.user} />
+                    <span className="font-semibold text-sm hover:underline">{post.user}</span>
+                  </div>
+                  <button className="p-1 hover:bg-gray-100 rounded-full"><MoreHorizontal className="w-5 h-5 text-gray-500" /></button>
+                </div>
+                
+                <div 
+                  className="aspect-[4/5] bg-gray-100 relative cursor-pointer group"
+                  onDoubleClick={() => { if(!post.liked) toggleLike(post.id); }}
+                >
+                  <img src={post.image} className="w-full h-full object-cover" alt="Post content" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-active:opacity-100 transition-opacity duration-300">
+                    <Heart className="w-24 h-24 text-white fill-white drop-shadow-2xl animate-pulse-fast" />
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-4">
+                      <button onClick={() => toggleLike(post.id)} className="transition-transform active:scale-75">
+                        <Heart className={\`w-7 h-7 \${post.liked ? 'fill-red-500 text-red-500' : 'text-gray-800 hover:text-gray-500'}\`} />
+                      </button>
+                      <button className="hover:opacity-70"><MessageCircle className="w-7 h-7 text-gray-800" /></button>
+                      <button className="hover:opacity-70"><Share2 className="w-6 h-6 text-gray-800" /></button>
+                    </div>
+                  </div>
+                  <p className="font-bold text-sm mb-1">{post.likes.toLocaleString()} likes</p>
+                  <p className="text-sm"><span className="font-semibold mr-2 cursor-pointer hover:underline">{post.user}</span>{post.caption}</p>
+                  <p className="text-gray-400 text-xs mt-2 uppercase">2 HOURS AGO</p>
+                </div>
+              </article>
+            ))}
           </div>
-          <div className="flex-1 flex justify-around text-center">
-            <div><p className="font-bold text-lg">128</p><p className="text-xs text-gray-500">Posts</p></div>
-            <div><p className="font-bold text-lg">45.2K</p><p className="text-xs text-gray-500">Followers</p></div>
-            <div><p className="font-bold text-lg">342</p><p className="text-xs text-gray-500">Following</p></div>
-          </div>
-        </div>
-        <div className="mb-4">
-          <h2 className="font-bold text-sm">Alex • Digital Creator</h2>
-          <p className="text-sm text-gray-800">UI/UX Designer & Traveler ✨</p>
-          <a href="#" className="text-sm text-blue-600 font-medium">linktr.ee/alexcreator</a>
-        </div>
-        <div className="flex gap-2">
-          <button className="flex-1 bg-gray-100 text-black py-1.5 rounded-lg font-semibold text-sm hover:bg-gray-200 transition-colors">Edit Profile</button>
-          <button className="flex-1 bg-gray-100 text-black py-1.5 rounded-lg font-semibold text-sm hover:bg-gray-200 transition-colors">Share Profile</button>
-          <button className="bg-gray-100 p-1.5 rounded-lg hover:bg-gray-200 transition-colors"><User className="w-5 h-5" /></button>
-        </div>
+        </>
+      );
+    }
+    
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-gray-400 animate-fade-in p-8 text-center">
+        <Compass className="w-16 h-16 mb-4 opacity-20" />
+        <h2 className="text-xl font-bold text-gray-800 mb-2 capitalize">{activeTab} Page</h2>
+        <p className="text-sm">This is a mock screen for the {activeTab} section. In a real app, this would route to a different component.</p>
       </div>
-
-      <div className="flex border-t border-gray-200">
-        <button className="flex-1 py-3 flex justify-center border-b-2 border-black"><Grid className="w-6 h-6" /></button>
-        <button className="flex-1 py-3 flex justify-center text-gray-400"><PlaySquare className="w-6 h-6" /></button>
-        <button className="flex-1 py-3 flex justify-center text-gray-400"><User className="w-6 h-6" /></button>
-      </div>
-
-      <div className="grid grid-cols-3 gap-0.5">
-        {[...Array(9)].map((_, i) => (
-          <div key={i} className="aspect-square bg-gray-200 relative group cursor-pointer">
-            <img src={\`https://picsum.photos/id/\${i + 120}/300/300\`} className="w-full h-full object-cover" alt="Post" />
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
-              <Heart className="w-4 h-4 text-white fill-white" /> <span className="text-white text-xs font-bold">1.2K</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function NavigationBar({ openModal }) {
-  const location = useLocation();
-  const path = location.pathname;
-  
-  return (
-    <nav className="absolute bottom-0 inset-x-0 bg-white/80 backdrop-blur-xl border-t border-gray-200/50 px-6 py-3 pb-8 flex justify-between items-center z-40">
-      <Link to="/" className={\`\${path === '/' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><Home className="w-7 h-7" fill={path === '/' ? 'currentColor' : 'none'} /></Link>
-      <Link to="/explore" className={\`\${path === '/explore' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><Search className="w-7 h-7" strokeWidth={path === '/explore' ? 3 : 2} /></Link>
-      
-      <div 
-        onClick={openModal}
-        className="w-14 h-14 bg-gradient-to-tr from-indigo-500 to-purple-600 text-white rounded-full flex items-center justify-center -mt-8 shadow-xl shadow-purple-500/30 cursor-pointer hover:scale-110 active:scale-95 transition-all"
-      >
-        <Plus className="w-7 h-7 font-bold" />
-      </div>
-      
-      <Link to="/reels" className={\`\${path === '/reels' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><PlaySquare className="w-7 h-7" fill={path === '/reels' ? 'currentColor' : 'none'} /></Link>
-      <Link to="/profile" className={\`\${path === '/profile' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><User className="w-7 h-7" fill={path === '/profile' ? 'currentColor' : 'none'} /></Link>
-    </nav>
-  );
-}
-
-export default function MobileApp() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+    );
+  };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 font-sans select-none overflow-hidden">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 font-sans select-none">
       {/* Phone Frame Simulator */}
-      <div className="w-full max-w-[400px] h-[800px] bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] relative flex flex-col border-[8px] border-gray-900 overflow-hidden ring-4 ring-gray-200">
+      <div className="w-full max-w-[400px] h-[800px] bg-white rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col border-[8px] border-gray-900">
         
         {/* Notch */}
-        <div className="absolute top-0 inset-x-0 h-7 bg-gray-900 rounded-b-3xl mx-auto w-40 z-50 flex items-center justify-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-gray-800"></div>
-          <div className="w-12 h-2 rounded-full bg-gray-800"></div>
-        </div>
-
-        {/* Status Bar Mock */}
-        <div className="px-6 pt-2 pb-1 flex justify-between items-center text-[10px] font-bold z-40 bg-white">
-          <span>9:41</span>
-          <div className="flex gap-1.5 items-center">
-             <div className="w-3 h-3 rounded-sm border border-black flex items-center justify-center"><div className="w-2 h-2 bg-black"></div></div>
-             <div className="w-4 h-2.5 bg-black rounded-sm relative"><div className="absolute -right-0.5 top-1 w-0.5 h-1 bg-black rounded-r-sm"></div></div>
-          </div>
-        </div>
-
-        {/* App Header */}
-        <header className="px-6 py-2 flex items-center justify-between bg-white sticky top-0 z-40">
-          <h1 className="text-2xl font-extrabold tracking-tight" style={{fontFamily: 'cursive'}}>VibeCheck</h1>
-          <div className="flex gap-5">
-            <button className="relative hover:scale-110 transition-transform">
-              <Heart className="w-6 h-6 text-gray-800" />
-              <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
-            <button className="hover:scale-110 transition-transform"><MessageCircle className="w-6 h-6 text-gray-800" /></button>
-          </div>
-        </header>
-
-        {/* Scrollable Main Area */}
-        <main className="flex-1 overflow-y-auto bg-white pb-20 relative hide-scrollbar">
-          <Routes>
-            <Route path="/" element={<HomeFeed />} />
-            <Route path="/explore" element={<ExplorePage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/reels" element={<div className="flex h-full items-center justify-center text-gray-400 bg-gray-900 text-white p-8 text-center animate-fade-in"><PlaySquare className="w-16 h-16 mb-4 opacity-30 mx-auto" /><h2 className="text-xl font-bold mb-2">Reels Mock</h2><p className="text-sm">Swipe up for more short videos!</p></div>} />
-          </Routes>
-        </main>
-
-        <NavigationBar openModal={() => setIsModalOpen(true)} />
-        
-        {/* Home Indicator (iOS Bar) */}
-        <div className="absolute bottom-2 inset-x-0 w-32 h-1 bg-black rounded-full mx-auto z-50"></div>
+        <div className="absolute top-0 inset-x-0 h-7 bg-gray-900 rounded-b-3xl mx-auto w-40 z-50"></div>
 
         {/* New Post Modal */}
         {isModalOpen && (
@@ -1054,26 +841,58 @@ export default function MobileApp() {
               <img src="https://i.pravatar.cc/150?img=33" className="w-10 h-10 rounded-full" alt="Me" />
               <textarea placeholder="Write a caption..." className="w-full resize-none outline-none mt-2" rows="4"></textarea>
             </div>
-            <div className="px-4 py-8 mt-auto border-t border-gray-100 flex justify-center bg-gray-50 h-full">
-               <div className="w-full aspect-square border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-100 transition-colors">
+            <div className="px-4 py-8 mt-auto border-t border-gray-100 flex justify-center bg-gray-50">
+               <div className="w-full aspect-square border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-100">
                  <Plus className="w-10 h-10 mb-2" />
-                 <span>Upload Photo or Video</span>
+                 <span>Upload Photo</span>
                </div>
             </div>
           </div>
         )}
+
+        {/* App Header */}
+        <header className="px-6 pt-12 pb-3 flex items-center justify-between bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100">
+          <h1 className="text-2xl font-extrabold tracking-tight cursor-pointer" onClick={() => setActiveTab('home')}>VibeCheck</h1>
+          <div className="flex gap-5">
+            <button className="relative hover:scale-110 transition-transform">
+              <Bell className="w-6 h-6 text-gray-800" />
+              <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+            </button>
+            <button className="hover:scale-110 transition-transform"><MessageCircle className="w-6 h-6 text-gray-800" /></button>
+          </div>
+        </header>
+
+        {/* Scrollable Main Area */}
+        <main className="flex-1 overflow-y-auto bg-white pb-20 relative">
+          {renderContent()}
+        </main>
+
+        {/* Bottom Navigation */}
+        <nav className="absolute bottom-0 inset-x-0 bg-white/90 backdrop-blur-md border-t border-gray-200 px-6 py-3 pb-8 flex justify-between items-center z-40">
+          <button onClick={() => setActiveTab('home')} className={\`\${activeTab === 'home' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><Home className="w-6 h-6" fill={activeTab === 'home' ? 'currentColor' : 'none'} /></button>
+          <button onClick={() => setActiveTab('search')} className={\`\${activeTab === 'search' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><Search className="w-6 h-6" strokeWidth={activeTab === 'search' ? 3 : 2} /></button>
+          
+          <div 
+            onClick={() => setIsModalOpen(true)}
+            className="w-12 h-12 bg-gradient-to-tr from-indigo-500 to-purple-600 text-white rounded-full flex items-center justify-center -mt-8 shadow-lg shadow-purple-500/30 cursor-pointer hover:scale-110 active:scale-95 transition-all"
+          >
+            <Plus className="w-6 h-6 font-bold" />
+          </div>
+          
+          <button onClick={() => setActiveTab('explore')} className={\`\${activeTab === 'explore' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><Compass className="w-6 h-6" fill={activeTab === 'explore' ? 'currentColor' : 'none'} /></button>
+          <button onClick={() => setActiveTab('profile')} className={\`\${activeTab === 'profile' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><User className="w-6 h-6" fill={activeTab === 'profile' ? 'currentColor' : 'none'} /></button>
+        </nav>
+        
+        {/* Home Indicator (iOS Bar) */}
+        <div className="absolute bottom-2 inset-x-0 w-32 h-1 bg-gray-900 rounded-full mx-auto z-50"></div>
       </div>
     </div>
   );
-}
-
-
-`;
+}`;
 
 // 4. DESKTOP TOOL TEMPLATE
 const desktopApp = `import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Folder, FolderOpen, File, ChevronRight, Terminal, Search, Settings, Cloud, Database, Play, CheckCircle2, AlertCircle, Loader2, X, Activity, Box, GitBranch } from 'lucide-react';
+import { Folder, FolderOpen, File, ChevronRight, ChevronDown, Terminal, Search, Settings, Cloud, Database, Play, CheckCircle2, AlertCircle, Loader2, X } from 'lucide-react';
 
 const mockFiles = {
   'init_schema.sql': {
@@ -1102,328 +921,247 @@ const pool = new Pool({
 
 module.exports = {
   query: (text, params) => pool.query(text, params),
-};\`
+};\`,
   }
 };
 
-function EditorView() {
-  const [activeTab, setActiveTab] = useState('connection.js');
-  const [bottomPaneTab, setBottomPaneTab] = useState('output');
+export default function DesktopTool() {
+  const [activeTab, setActiveTab] = useState('init_schema.sql');
+  const [openFiles, setOpenFiles] = useState(['init_schema.sql', 'connection.js']);
+  const [foldersOpen, setFoldersOpen] = useState({ src: true, migrations: true });
   const [isRunning, setIsRunning] = useState(false);
-  const [logs, setLogs] = useState([{ type: 'info', text: 'IDE Initialized. Ready.' }]);
+  const [logs, setLogs] = useState([
+    { type: 'success', text: 'Connected to localhost:5432 (PostgreSQL 14.2)' }
+  ]);
+  const [bottomPaneTab, setBottomPaneTab] = useState('output');
+
+  const toggleFolder = (folder) => setFoldersOpen(p => ({ ...p, [folder]: !p[folder] }));
+  
+  const openFile = (filename) => {
+    if(!openFiles.includes(filename)) setOpenFiles([...openFiles, filename]);
+    setActiveTab(filename);
+  };
+
+  const closeFile = (e, filename) => {
+    e.stopPropagation();
+    const newFiles = openFiles.filter(f => f !== filename);
+    setOpenFiles(newFiles);
+    if(activeTab === filename) setActiveTab(newFiles[newFiles.length - 1] || null);
+  };
 
   const runQuery = () => {
+    if(isRunning) return;
     setIsRunning(true);
-    setLogs(prev => [...prev, { type: 'info', text: 'Executing...' }]);
+    setBottomPaneTab('output');
+    setLogs(p => [...p, { type: 'info', text: \`Executing \${activeTab}...\` }]);
+    
     setTimeout(() => {
       setIsRunning(false);
-      setLogs(prev => [...prev, { type: 'success', text: 'Execution completed successfully in 1.2s' }]);
+      setLogs(p => [...p, { type: 'success', text: \`Execution completed successfully (42ms)\` }]);
+      if(activeTab.endsWith('.sql')) {
+        setLogs(p => [...p, { type: 'warning', text: 'Warning: No role specified for schema creation.' }]);
+      }
     }, 1500);
   };
 
   return (
-    <div className="flex-1 flex overflow-hidden bg-[#1e1e1e]">
-      {/* Sidebar: Explorer */}
-      <div className="w-64 border-r border-[#2d2d2d] bg-[#252526] flex flex-col hidden md:flex animate-slide-right">
-        <div className="px-4 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Explorer</div>
-        <div className="px-2 py-1 flex items-center gap-1 hover:bg-[#37373d] cursor-pointer text-sm">
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-          <FolderOpen className="w-4 h-4 text-blue-400" />
-          <span className="text-gray-300">myapp_backend</span>
-        </div>
-        <div className="pl-6">
-          <div className="px-2 py-1 flex items-center gap-1 hover:bg-[#37373d] cursor-pointer text-sm">
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-            <Folder className="w-4 h-4 text-emerald-500" />
-            <span className="text-gray-300">src</span>
-          </div>
-          <div className="pl-4">
-            <div 
-              className={\`px-2 py-1 flex items-center gap-1 cursor-pointer text-sm \${activeTab === 'connection.js' ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e] text-gray-400'}\`}
-              onClick={() => setActiveTab('connection.js')}
-            >
-              <File className="w-4 h-4 text-yellow-400" />
-              <span>connection.js</span>
-            </div>
-          </div>
-          <div className="px-2 py-1 flex items-center gap-1 hover:bg-[#37373d] cursor-pointer text-sm mt-1">
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-            <Folder className="w-4 h-4 text-purple-400" />
-            <span className="text-gray-300">migrations</span>
-          </div>
-          <div className="pl-4">
-            <div 
-              className={\`px-2 py-1 flex items-center gap-1 cursor-pointer text-sm \${activeTab === 'init_schema.sql' ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e] text-gray-400'}\`}
-              onClick={() => setActiveTab('init_schema.sql')}
-            >
-              <Database className="w-4 h-4 text-emerald-400" />
-              <span>init_schema.sql</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Editor Tabs */}
-        <div className="flex bg-[#252526] overflow-x-auto hide-scrollbar">
-          {Object.keys(mockFiles).map(file => (
-            <div 
-              key={file}
-              onClick={() => setActiveTab(file)}
-              className={\`flex items-center gap-2 px-3 py-2 text-sm cursor-pointer border-r border-[#2d2d2d] group \${activeTab === file ? 'bg-[#1e1e1e] text-white border-t-2 border-t-blue-500' : 'bg-[#2d2d2d] text-gray-400 hover:bg-[#1e1e1e]'}\`}
-            >
-              {file.endsWith('.sql') ? <Database className="w-4 h-4 text-emerald-400" /> : <File className="w-4 h-4 text-yellow-400" />}
-              {file}
-              <button className="opacity-0 group-hover:opacity-100 hover:bg-[#444] rounded p-0.5 ml-1"><X className="w-3 h-3" /></button>
-            </div>
-          ))}
-        </div>
-
-        {/* Toolbar */}
-        <div className="px-4 py-2 flex items-center justify-between border-b border-[#2d2d2d] bg-[#1e1e1e] shadow-sm z-10">
-          <div className="text-xs opacity-60 flex items-center gap-1">
-            project <ChevronRight className="w-3 h-3" /> {activeTab.endsWith('.sql') ? 'migrations' : 'src'} <ChevronRight className="w-3 h-3" /> {activeTab}
-          </div>
-          <div className="flex gap-2 animate-fade-in">
-            <button 
-              onClick={runQuery}
-              disabled={isRunning}
-              className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-semibold rounded transition-colors shadow-lg shadow-blue-900/20"
-            >
-              {isRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
-              {activeTab.endsWith('.sql') ? 'Run Query' : 'Execute Script'}
-            </button>
-          </div>
-        </div>
-
-        {/* Editor Content */}
-        <div className="flex-1 p-4 font-mono text-sm leading-relaxed overflow-y-auto bg-[#1e1e1e]">
-          <div className="flex animate-fade-in">
-            <div className="w-8 text-right pr-4 opacity-30 select-none flex flex-col">
-              {mockFiles[activeTab].code.split('\\\\n').map((_, i) => <span key={i}>{i+1}</span>)}
-            </div>
-            <div className="flex-1 whitespace-pre">
-              {activeTab.endsWith('.sql') ? (
-                <>
-                  <span className="text-[#569cd6]">CREATE TABLE</span> <span className="text-[#dcdcaa]">users</span> (<br/>
-                  &nbsp;&nbsp;id <span className="text-[#569cd6]">UUID PRIMARY KEY DEFAULT</span> <span className="text-[#4ec9b0]">uuid_generate_v4()</span>,<br/>
-                  &nbsp;&nbsp;email <span className="text-[#569cd6]">VARCHAR</span>(255) <span className="text-[#569cd6]">UNIQUE NOT NULL</span>,<br/>
-                  &nbsp;&nbsp;password_hash <span className="text-[#569cd6]">VARCHAR</span>(255) <span className="text-[#569cd6]">NOT NULL</span>,<br/>
-                  &nbsp;&nbsp;created_at <span className="text-[#569cd6]">TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP</span><br/>
-                  );<br/>
-                  <br/>
-                  <span className="text-[#6A9955]">-- Create index on email for faster lookups</span><br/>
-                  <span className="text-[#569cd6]">CREATE INDEX</span> idx_users_email <span className="text-[#569cd6]">ON</span> users(email);
-                </>
-              ) : (
-                <>
-                  <span className="text-[#569cd6]">const</span> {'{'} Pool {'}'} = <span className="text-[#4ec9b0]">require</span>(<span className="text-[#ce9178]">'pg'</span>);<br/><br/>
-                  <span className="text-[#569cd6]">const</span> pool = <span className="text-[#569cd6]">new</span> <span className="text-[#4ec9b0]">Pool</span>({'{'}<br/>
-                  &nbsp;&nbsp;host: <span className="text-[#4fc1ff]">process</span>.env.DB_HOST || <span className="text-[#ce9178]">'localhost'</span>,<br/>
-                  &nbsp;&nbsp;user: <span className="text-[#4fc1ff]">process</span>.env.DB_USER || <span className="text-[#ce9178]">'admin'</span>,<br/>
-                  &nbsp;&nbsp;password: <span className="text-[#4fc1ff]">process</span>.env.DB_PASSWORD,<br/>
-                  &nbsp;&nbsp;database: <span className="text-[#ce9178]">'myapp_db'</span>,<br/>
-                  &nbsp;&nbsp;port: <span className="text-[#b5cea8]">5432</span>,<br/>
-                  {'}'});<br/><br/>
-                  <span className="text-[#4fc1ff]">module</span>.exports = {'{'}<br/>
-                  &nbsp;&nbsp;<span className="text-[#dcdcaa]">query</span>: (text, params) <span className="text-[#569cd6]">=&gt;</span> pool.<span className="text-[#dcdcaa]">query</span>(text, params),<br/>
-                  {'}'};
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Terminal */}
-        <div className="h-48 border-t border-[#2d2d2d] flex flex-col bg-[#1e1e1e]">
-          <div className="flex border-b border-[#2d2d2d] px-2 bg-[#252526]">
-            <div 
-              onClick={() => setBottomPaneTab('output')}
-              className={\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer \${bottomPaneTab === 'output' ? 'border-b border-blue-500 text-white' : 'opacity-50 hover:opacity-100'}\`}
-            >
-              Output
-            </div>
-            <div 
-              onClick={() => setBottomPaneTab('terminal')}
-              className={\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer \${bottomPaneTab === 'terminal' ? 'border-b border-blue-500 text-white' : 'opacity-50 hover:opacity-100'}\`}
-            >
-              Terminal
-            </div>
-          </div>
-          
-          <div className="flex-1 p-3 font-mono text-xs overflow-y-auto space-y-2">
-            {bottomPaneTab === 'output' ? (
-              logs.map((log, i) => (
-                <div key={i} className={\`flex gap-2 animate-slide-up \${log.type === 'success' ? 'text-emerald-400' : log.type === 'warning' ? 'text-yellow-400' : log.type === 'error' ? 'text-rose-400' : 'text-gray-400'}\`}>
-                  {log.type === 'success' && <CheckCircle2 className="w-4 h-4 flex-shrink-0" />}
-                  {log.type === 'warning' && <AlertCircle className="w-4 h-4 flex-shrink-0" />}
-                  {log.type === 'info' && <Terminal className="w-4 h-4 flex-shrink-0" />}
-                  <span>[{new Date().toLocaleTimeString()}] {log.text}</span>
-                </div>
-              ))
-            ) : (
-              <div className="text-gray-400">
-                <span className="text-emerald-400">user@dev-machine</span>:<span className="text-blue-400">~/projects/myapp</span>$ <span className="animate-pulse">_</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DatabaseView() {
-  return (
-    <div className="flex-1 flex items-center justify-center bg-[#1e1e1e] text-white animate-fade-in flex-col p-8 text-center">
-      <Database className="w-24 h-24 text-emerald-500 opacity-80 mb-6" />
-      <h2 className="text-2xl font-bold mb-2">Database Explorer</h2>
-      <p className="text-gray-400 max-w-md">Connect to your PostgreSQL or MySQL database to view schemas, write queries, and manage your data.</p>
-      <button className="mt-8 px-6 py-2 bg-emerald-600 hover:bg-emerald-500 rounded text-sm font-semibold transition-colors">Connect Database</button>
-    </div>
-  );
-}
-
-function ExtensionsView() {
-  return (
-    <div className="flex-1 flex flex-col bg-[#1e1e1e] text-white animate-fade-in p-8">
-      <div className="flex items-center gap-4 mb-8">
-        <Box className="w-10 h-10 text-purple-400" />
-        <h2 className="text-2xl font-bold">Extensions Marketplace</h2>
-      </div>
-      <div className="relative mb-8 w-full max-w-md">
-        <Search className="absolute left-3 top-2.5 w-5 h-5 text-gray-500" />
-        <input type="text" placeholder="Search extensions in Marketplace..." className="w-full bg-[#252526] border border-[#3c3c3c] rounded px-10 py-2 focus:outline-none focus:border-blue-500" />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[
-          { name: 'Prettier - Code formatter', author: 'Prettier', icon: '🎨' },
-          { name: 'ESLint', author: 'Microsoft', icon: '✅' },
-          { name: 'GitLens', author: 'GitKraken', icon: '🔍' },
-          { name: 'Tailwind CSS IntelliSense', author: 'Tailwind Labs', icon: '🌊' }
-        ].map((ext, i) => (
-          <div key={i} className="flex items-start gap-4 p-4 bg-[#252526] border border-[#3c3c3c] rounded hover:border-gray-400 transition-colors cursor-pointer">
-            <div className="w-12 h-12 bg-[#333] rounded flex items-center justify-center text-2xl">{ext.icon}</div>
-            <div>
-              <h3 className="font-bold text-sm">{ext.name}</h3>
-              <p className="text-xs text-gray-400 mb-2">{ext.author}</p>
-              <button className="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-xs">Install</button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function SettingsView() {
-  return (
-    <div className="flex-1 flex flex-col bg-[#1e1e1e] text-white animate-fade-in p-8 overflow-y-auto">
-      <h2 className="text-2xl font-bold mb-8 flex items-center gap-3"><Settings className="w-6 h-6" /> Settings</h2>
-      <div className="max-w-3xl space-y-8">
-        <section>
-          <h3 className="text-lg font-semibold border-b border-[#3c3c3c] pb-2 mb-4">Text Editor</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div><p className="font-medium">Font Size</p><p className="text-xs text-gray-400">Controls the font size in pixels.</p></div>
-              <input type="number" defaultValue={14} className="bg-[#3c3c3c] border border-transparent rounded px-3 py-1 w-20 text-center focus:border-blue-500 focus:outline-none" />
-            </div>
-            <div className="flex justify-between items-center">
-              <div><p className="font-medium">Word Wrap</p><p className="text-xs text-gray-400">Controls how lines should wrap.</p></div>
-              <select className="bg-[#3c3c3c] border border-transparent rounded px-3 py-1 w-32 focus:border-blue-500 focus:outline-none">
-                <option>off</option>
-                <option>on</option>
-                <option>wordWrapColumn</option>
-              </select>
-            </div>
-          </div>
-        </section>
-        <section>
-          <h3 className="text-lg font-semibold border-b border-[#3c3c3c] pb-2 mb-4">Workbench</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div><p className="font-medium">Color Theme</p><p className="text-xs text-gray-400">Specifies the color theme used in the workbench.</p></div>
-              <select className="bg-[#3c3c3c] border border-transparent rounded px-3 py-1 w-48 focus:border-blue-500 focus:outline-none">
-                <option>Dark+ (default dark)</option>
-                <option>One Dark Pro</option>
-                <option>Dracula</option>
-                <option>GitHub Dark</option>
-              </select>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
-export default function DesktopApp() {
-  const location = useLocation();
-
-  return (
-    <div className="flex flex-col h-screen bg-[#1e1e1e] text-white font-sans selection:bg-blue-500/30 overflow-hidden shadow-2xl ring-1 ring-white/10">
-      
-      {/* Title Bar Mock */}
-      <div className="h-8 bg-[#323233] border-b border-[#1e1e1e] flex items-center justify-between px-4 draggable">
+    <div className="h-screen bg-[#1e1e1e] text-[#cccccc] font-sans flex flex-col overflow-hidden select-none">
+      {/* Titlebar */}
+      <div className="h-9 bg-[#323233] flex items-center justify-between px-4 border-b border-[#111111] shadow-sm">
         <div className="flex gap-2">
-          <div className="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e]"></div>
-          <div className="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123]"></div>
-          <div className="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29]"></div>
+          <div className="w-3 h-3 rounded-full bg-[#ff5f56] hover:bg-[#ff4033] cursor-pointer"></div>
+          <div className="w-3 h-3 rounded-full bg-[#ffbd2e] hover:bg-[#ffaa00] cursor-pointer"></div>
+          <div className="w-3 h-3 rounded-full bg-[#27c93f] hover:bg-[#1fa133] cursor-pointer"></div>
         </div>
-        <div className="text-xs text-gray-400 font-medium">Nexus Studio - {location.pathname === '/' ? 'Editor' : location.pathname.substring(1).charAt(0).toUpperCase() + location.pathname.substring(2)}</div>
+        <div className="text-xs font-medium opacity-70 flex items-center gap-2 tracking-wide">
+          <Database className="w-3 h-3" /> DataGrip Studio Pro <span className="opacity-50">- {activeTab || 'Welcome'}</span>
+        </div>
         <div className="w-12"></div>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Activity Bar (Sidebar Icons) */}
-        <div className="w-12 bg-[#333333] flex flex-col items-center py-4 gap-6 shrink-0 z-20">
-          <Link to="/" className={\`relative cursor-pointer group \${location.pathname === '/' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\`}>
-            {location.pathname === '/' && <div className="absolute -left-[14px] top-0 bottom-0 w-[2px] bg-blue-500"></div>}
-            <File className="w-6 h-6" />
-          </Link>
-          <Link to="/database" className={\`relative cursor-pointer group \${location.pathname === '/database' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\`}>
-            {location.pathname === '/database' && <div className="absolute -left-[14px] top-0 bottom-0 w-[2px] bg-blue-500"></div>}
-            <Database className="w-6 h-6" />
-          </Link>
-          <Link to="/extensions" className={\`relative cursor-pointer group \${location.pathname === '/extensions' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\`}>
-            {location.pathname === '/extensions' && <div className="absolute -left-[14px] top-0 bottom-0 w-[2px] bg-blue-500"></div>}
-            <Box className="w-6 h-6" />
-          </Link>
-          <div className="mt-auto relative cursor-pointer group">
-            <GitBranch className="w-6 h-6 text-gray-500 hover:text-white transition-colors" />
-          </div>
-          <Link to="/settings" className={\`relative cursor-pointer group \${location.pathname === '/settings' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\`}>
-            {location.pathname === '/settings' && <div className="absolute -left-[14px] top-0 bottom-0 w-[2px] bg-blue-500"></div>}
-            <Settings className="w-6 h-6" />
-          </Link>
+        {/* Activity Bar */}
+        <div className="w-12 bg-[#333333] flex flex-col items-center py-4 gap-6 border-r border-[#252526] z-10 shadow-xl">
+          <div className="p-2 bg-[#1e1e1e] rounded-lg text-blue-400 cursor-pointer border-l-2 border-blue-400"><Folder className="w-5 h-5" /></div>
+          <div className="p-2 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"><Search className="w-5 h-5" /></div>
+          <div className="p-2 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"><Database className="w-5 h-5" /></div>
+          <div className="p-2 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"><Cloud className="w-5 h-5" /></div>
+          <div className="mt-auto p-2 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"><Settings className="w-5 h-5" /></div>
         </div>
 
-        {/* Main Routed Area */}
-        <Routes>
-          <Route path="/" element={<EditorView />} />
-          <Route path="/database" element={<DatabaseView />} />
-          <Route path="/extensions" element={<ExtensionsView />} />
-          <Route path="/settings" element={<SettingsView />} />
-        </Routes>
-      </div>
+        {/* Sidebar */}
+        <div className="w-64 bg-[#252526] border-r border-[#1e1e1e] flex flex-col shadow-lg z-0">
+          <div className="h-9 px-4 flex items-center text-xs font-bold tracking-wider text-gray-400 uppercase">Explorer</div>
+          <div className="flex-1 overflow-y-auto py-2 text-sm">
+            {/* src Folder */}
+            <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#2a2d2e] cursor-pointer" onClick={() => toggleFolder('src')}>
+              {foldersOpen.src ? <ChevronDown className="w-4 h-4 opacity-70" /> : <ChevronRight className="w-4 h-4 opacity-70" />}
+              {foldersOpen.src ? <FolderOpen className="w-4 h-4 text-yellow-500" /> : <Folder className="w-4 h-4 text-yellow-500" />}
+              <span>src</span>
+            </div>
+            {foldersOpen.src && (
+              <div 
+                className={\`flex items-center gap-1.5 px-2 py-1 ml-6 cursor-pointer \${activeTab === 'connection.js' ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e]'}\`}
+                onClick={() => openFile('connection.js')}
+              >
+                <File className="w-4 h-4 text-blue-400" /> <span>connection.js</span>
+              </div>
+            )}
 
+            {/* migrations Folder */}
+            <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#2a2d2e] cursor-pointer mt-1" onClick={() => toggleFolder('migrations')}>
+              {foldersOpen.migrations ? <ChevronDown className="w-4 h-4 opacity-70" /> : <ChevronRight className="w-4 h-4 opacity-70" />}
+              {foldersOpen.migrations ? <FolderOpen className="w-4 h-4 text-emerald-500" /> : <Folder className="w-4 h-4 text-emerald-500" />}
+              <span>migrations</span>
+            </div>
+            {foldersOpen.migrations && (
+              <>
+                <div 
+                  className={\`flex items-center gap-1.5 px-2 py-1 ml-6 cursor-pointer \${activeTab === 'init_schema.sql' ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e]'}\`}
+                  onClick={() => openFile('init_schema.sql')}
+                >
+                  <Database className="w-4 h-4 text-emerald-400" /> <span>init_schema.sql</span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Main Editor Area */}
+        <div className="flex-1 flex flex-col min-w-0 bg-[#1e1e1e]">
+          {/* Editor Tabs */}
+          <div className="flex bg-[#2d2d2d] overflow-x-auto hide-scrollbar border-b border-[#1e1e1e]">
+            {openFiles.length === 0 && <div className="p-2 text-sm opacity-50 italic">No files open</div>}
+            {openFiles.map(file => (
+              <div 
+                key={file}
+                onClick={() => setActiveTab(file)}
+                className={\`group flex items-center gap-2 px-4 py-2 border-r border-[#1e1e1e] cursor-pointer text-sm \${activeTab === file ? 'bg-[#1e1e1e] text-white border-t-2 border-t-blue-500' : 'bg-[#2d2d2d] opacity-60 hover:bg-[#252526] hover:opacity-100 border-t-2 border-t-transparent'}\`}
+              >
+                {file.endsWith('.sql') ? <Database className="w-4 h-4 text-emerald-400" /> : <File className="w-4 h-4 text-blue-400" />}
+                {file}
+                <button onClick={(e) => closeFile(e, file)} className="opacity-0 group-hover:opacity-100 hover:bg-[#444] rounded p-0.5 ml-1"><X className="w-3 h-3" /></button>
+              </div>
+            ))}
+          </div>
+
+          {activeTab ? (
+            <>
+              {/* Breadcrumbs & Toolbar */}
+              <div className="px-4 py-2 flex items-center justify-between border-b border-[#2d2d2d] bg-[#1e1e1e] shadow-sm z-10">
+                <div className="text-xs opacity-60 flex items-center gap-1">
+                  project <ChevronRight className="w-3 h-3" /> {activeTab.endsWith('.sql') ? 'migrations' : 'src'} <ChevronRight className="w-3 h-3" /> {activeTab}
+                </div>
+                <div className="flex gap-2 animate-fade-in">
+                  <button 
+                    onClick={runQuery}
+                    disabled={isRunning}
+                    className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-semibold rounded transition-colors shadow-lg shadow-emerald-900/20"
+                  >
+                    {isRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
+                    {activeTab.endsWith('.sql') ? 'Run Query' : 'Execute Script'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Code Editor Mock */}
+              <div className="flex-1 p-4 font-mono text-sm leading-relaxed overflow-y-auto bg-[#1e1e1e]">
+                <div className="flex animate-fade-in">
+                  <div className="w-8 text-right pr-4 opacity-30 select-none flex flex-col">
+                    {mockFiles[activeTab].code.split('\\n').map((_, i) => <span key={i}>{i+1}</span>)}
+                  </div>
+                  <div className="flex-1 whitespace-pre">
+                    {activeTab.endsWith('.sql') ? (
+                      <>
+                        <span className="text-[#569cd6]">CREATE TABLE</span> <span className="text-[#dcdcaa]">users</span> (<br/>
+                        &nbsp;&nbsp;id <span className="text-[#569cd6]">UUID PRIMARY KEY DEFAULT</span> <span className="text-[#4ec9b0]">uuid_generate_v4()</span>,<br/>
+                        &nbsp;&nbsp;email <span className="text-[#569cd6]">VARCHAR</span>(255) <span className="text-[#569cd6]">UNIQUE NOT NULL</span>,<br/>
+                        &nbsp;&nbsp;password_hash <span className="text-[#569cd6]">VARCHAR</span>(255) <span className="text-[#569cd6]">NOT NULL</span>,<br/>
+                        &nbsp;&nbsp;created_at <span className="text-[#569cd6]">TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP</span><br/>
+                        );<br/>
+                        <br/>
+                        <span className="text-[#6A9955]">-- Create index on email for faster lookups</span><br/>
+                        <span className="text-[#569cd6]">CREATE INDEX</span> idx_users_email <span className="text-[#569cd6]">ON</span> users(email);
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-[#569cd6]">const</span> {'{'} Pool {'}'} = <span className="text-[#4ec9b0]">require</span>(<span className="text-[#ce9178]">'pg'</span>);<br/><br/>
+                        <span className="text-[#569cd6]">const</span> pool = <span className="text-[#569cd6]">new</span> <span className="text-[#4ec9b0]">Pool</span>({'{'}<br/>
+                        &nbsp;&nbsp;host: <span className="text-[#4fc1ff]">process</span>.env.DB_HOST || <span className="text-[#ce9178]">'localhost'</span>,<br/>
+                        &nbsp;&nbsp;user: <span className="text-[#4fc1ff]">process</span>.env.DB_USER || <span className="text-[#ce9178]">'admin'</span>,<br/>
+                        &nbsp;&nbsp;password: <span className="text-[#4fc1ff]">process</span>.env.DB_PASSWORD,<br/>
+                        &nbsp;&nbsp;database: <span className="text-[#ce9178]">'myapp_db'</span>,<br/>
+                        &nbsp;&nbsp;port: <span className="text-[#b5cea8]">5432</span>,<br/>
+                        {'}'});<br/><br/>
+                        <span className="text-[#4fc1ff]">module</span>.exports = {'{'}<br/>
+                        &nbsp;&nbsp;<span className="text-[#dcdcaa]">query</span>: (text, params) <span className="text-[#569cd6]">=&gt;</span> pool.<span className="text-[#dcdcaa]">query</span>(text, params),<br/>
+                        {'}'};
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center opacity-30 select-none">
+              <Database className="w-24 h-24 mb-4" />
+              <h2 className="text-xl">DataGrip Studio Pro</h2>
+              <p>Select a file from the explorer to begin.</p>
+            </div>
+          )}
+
+          {/* Bottom Panel (Terminal/Output) */}
+          <div className="h-48 border-t border-[#2d2d2d] flex flex-col bg-[#1e1e1e]">
+            <div className="flex border-b border-[#2d2d2d] px-2 bg-[#252526]">
+              <div 
+                onClick={() => setBottomPaneTab('output')}
+                className={\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer \${bottomPaneTab === 'output' ? 'border-b border-blue-500 text-white' : 'opacity-50 hover:opacity-100'}\`}
+              >
+                Output
+              </div>
+              <div 
+                onClick={() => setBottomPaneTab('terminal')}
+                className={\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer \${bottomPaneTab === 'terminal' ? 'border-b border-blue-500 text-white' : 'opacity-50 hover:opacity-100'}\`}
+              >
+                Terminal
+              </div>
+            </div>
+            
+            <div className="flex-1 p-3 font-mono text-xs overflow-y-auto space-y-2">
+              {bottomPaneTab === 'output' ? (
+                logs.map((log, i) => (
+                  <div key={i} className={\`flex gap-2 animate-slide-up \${log.type === 'success' ? 'text-emerald-400' : log.type === 'warning' ? 'text-yellow-400' : log.type === 'error' ? 'text-rose-400' : 'text-gray-400'}\`}>
+                    {log.type === 'success' && <CheckCircle2 className="w-4 h-4 flex-shrink-0" />}
+                    {log.type === 'warning' && <AlertCircle className="w-4 h-4 flex-shrink-0" />}
+                    {log.type === 'info' && <Terminal className="w-4 h-4 flex-shrink-0" />}
+                    <span>[{new Date().toLocaleTimeString()}] {log.text}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-gray-400">
+                  <span className="text-emerald-400">user@dev-machine</span>:<span className="text-blue-400">~/projects/myapp</span>$ <span className="animate-pulse">_</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      
       {/* Status Bar */}
-      <div className="h-6 bg-[#007acc] text-white text-[11px] flex items-center justify-between px-3 font-mono z-20">
+      <div className="h-6 bg-[#007acc] text-white text-[11px] flex items-center justify-between px-3 font-mono">
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1 cursor-pointer hover:bg-white/20 px-1 rounded transition-colors"><Cloud className="w-3 h-3" /> main*</span>
           <span className="flex items-center gap-1 cursor-pointer hover:bg-white/20 px-1 rounded transition-colors"><CheckCircle2 className="w-3 h-3" /> 0 ⚠ 1</span>
         </div>
         <div className="flex items-center gap-4">
+          {activeTab && <span>Ln 1, Col 1</span>}
           <span>UTF-8</span>
-          <span>Nexus Engine v2.1</span>
+          {activeTab && <span>{mockFiles[activeTab]?.lang}</span>}
         </div>
       </div>
     </div>
   );
-}
-
-
-`;
+}`;
 
 // 5. AI CHATBOT TEMPLATE
 const chatbotApp = `import React, { useState, useRef, useEffect } from 'react';
