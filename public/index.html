@@ -3493,6 +3493,29 @@ async function execTerminalCmd(cmd) {
                 addBuildLog("❌ WebContainer tidak ditemukan. Mohon ulangi proses install.", "error");
                 return;
             }
+            
+            try {
+                let pkgJson = await window.webcontainerInstance.fs.readFile('package.json', 'utf-8');
+                let pkg = JSON.parse(pkgJson);
+                let modified = false;
+                if (pkg.scripts && pkg.scripts.dev) {
+                    if (pkg.scripts.dev.includes('vite') && !pkg.scripts.dev.includes('--host')) {
+                        pkg.scripts.dev = pkg.scripts.dev.replace('vite', 'vite --host');
+                        modified = true;
+                    }
+                    if (pkg.scripts.dev.includes('next dev') && !pkg.scripts.dev.includes('-H')) {
+                        pkg.scripts.dev = pkg.scripts.dev.replace('next dev', 'next dev -H 0.0.0.0');
+                        modified = true;
+                    }
+                }
+                if (modified) {
+                    await window.webcontainerInstance.fs.writeFile('package.json', JSON.stringify(pkg, null, 2));
+                    addBuildLog("⚙️ Menyesuaikan konfigurasi server agar dapat diakses...", "info");
+                }
+            } catch(e) {
+                console.log("Could not patch package.json for --host", e);
+            }
+
             const devProcess = await window.webcontainerInstance.spawn('npm', ['run', 'dev']);
             devProcess.output.pipeTo(new WritableStream({
                 write(data) {
