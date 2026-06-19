@@ -6083,34 +6083,34 @@ RESPOND ONLY with valid JSON:
         await sleep(800);
 
         const safeName = (projectName || 'project').toLowerCase().replace(/\s+/g, '-');
-        const devopsPrompt = `You are a SENIOR DEVOPS ENGINEER.
+        const devopsPrompt = `You are an ELITE CLOUD INFRASTRUCTURE & DEVOPS ARCHITECT.
 
 PROJECT: ${projectName} | Deploy: ${dep} | Stack: ${fe} | ${be} | ${db}
 
 FILES TO CREATE:
-1. vercel.json — valid JSON config for Vercel SPA deployment
-2. .gitignore — comprehensive (Node, Python, OS, env files)
-3. README.md — professional with emoji headers, features table, setup steps, deployment guide
-4. package.json — with name="${safeName}", scripts: dev, build, start
+1. vercel.json — production-grade edge caching, security headers, routing.
+2. .gitignore — comprehensive (Node, Python, OS, env files).
+3. README.md — world-class open-source quality README with stunning emoji headers, feature tables, architecture diagrams (mermaid), and deep deployment guide.
+4. package.json — robust scripts, correct dependencies for ${fe}, AND MUST INCLUDE "type": "module".
 
 STRICT RULES:
-1. All files must be complete and immediately usable
-2. README.md must be impressive and professional
-3. package.json "dev" script: "npx serve ."
+1. package.json MUST ALWAYS contain "type": "module" at the root level to prevent WebContainer ESM parse warnings.
+2. The package.json scripts must intelligently run the actual framework (e.g. "vite", "next dev", or "npx serve ." depending on stack).
+3. All files must be bulletproof and enterprise-ready.
 
 RESPOND ONLY with valid JSON:
 {
-  "logs": ["Configuring ${dep}...", "Writing .gitignore...", "Generating README.md..."],
+  "logs": ["Deploying world-class Edge config...", "Injecting ESM type:module...", "Generating stellar README.md..."],
   "files": [
     {"path": "vercel.json", "content": "{\\"version\\": 2, \\"routes\\": [{\\"src\\": \\"/(.*)\\"..}]}"},
     {"path": ".gitignore", "content": "node_modules/\\n.env\\n.DS_Store\\ndist/"},
     {"path": "README.md", "content": "# ${projectName}\\n\\n...COMPLETE README..."},
-    {"path": "package.json", "content": "{\\"name\\": \\"${safeName}\\", \\"scripts\\": {\\"dev\\": \\"npx serve .\\"}}"}
+    {"path": "package.json", "content": "{\\"name\\": \\"${safeName}\\", \\"type\\": \\"module\\", \\"scripts\\": {\\"dev\\": \\"vite\\"}}"}
   ]
 }`;
 
         await processBuildStep(
-            `You are a SENIOR DEVOPS ENGINEER. Create complete, production-ready config files. Respond only in valid JSON.`,
+            `You are an ELITE DEVOPS ARCHITECT. Create perfect, production-ready config files. Respond only in valid JSON.`,
             devopsPrompt
         );
         S.agentStatus.devops = 'done';
@@ -6217,7 +6217,7 @@ RESPOND ONLY with valid JSON:
         render();
         await sleep(800);
 
-        const qaPrompt = `You are a SENIOR QA ENGINEER (static analysis + browser compatibility expert).
+        const qaPrompt = `You are an ELITE QA ARCHITECT & STATIC ANALYSIS EXPERT.
 
 PROJECT: ${projectName}
 FILES: ${workspaceFiles}
@@ -6225,23 +6225,22 @@ CODE:
 ${wsSnap4}
 
 FIND AND FIX:
-1. Broken HTML (unclosed tags, missing attributes)
-2. JS errors (undefined vars, broken selectors, missing null checks)
-3. CSS issues (missing units, broken responsiveness)
-4. Dead code and unused functions
-5. Missing try/catch around fetch() calls
-6. Accessibility (missing alt, aria-labels, poor contrast)
+1. Silent errors, race conditions, memory leaks in React/JS code.
+2. Accessibility violations (WAI-ARIA compliance).
+3. Verify that package.json explicitly contains "type": "module" if missing!
+4. Ensure 100% responsiveness without CSS overflow bugs.
+5. Provide extremely detailed logs of the fixes made.
 
 OUTPUT: Fixed files only. Skip unchanged files. Log exactly what was fixed.
 
 RESPOND ONLY with valid JSON:
 {
-  "logs": ["Fixed: undefined variable in app.js...", "Fixed: missing alt on images..."],
+  "logs": ["Patched memory leak in useEffect...", "Added ESM type module support..."],
   "files": [{"path": "app.js", "content": "// Fixed...COMPLETE..."}]
 }`;
 
         await processBuildStep(
-            `You are a SENIOR QA ENGINEER. Find and fix real bugs. Respond only in valid JSON.`,
+            `You are an ELITE QA ARCHITECT. Enforce flawless reliability. Respond only in valid JSON.`,
             qaPrompt
         );
         S.agentStatus.qa = 'done';
@@ -6255,31 +6254,30 @@ RESPOND ONLY with valid JSON:
         render();
         await sleep(800);
 
-        const secPrompt = `You are a SENIOR SECURITY ENGINEER (OWASP Top 10 specialist).
+        const secPrompt = `You are an ELITE SECURITY RESEARCHER & CYBERSECURITY ARCHITECT.
 
 PROJECT: ${projectName}
 FILES: ${workspaceFiles}
 CODE:
 ${wsSnap4}
 
-CHECK AND FIX:
-1. XSS vulnerabilities (innerHTML with user input → use textContent)
-2. Exposed secrets in frontend code
-3. Missing Content-Security-Policy meta tag → add to index.html
-4. eval() / Function() usage → remove
-5. Unvalidated form inputs
-6. IMPORTANT: Do NOT add integrity= attributes to <link>/<script> tags (breaks blob preview)
+HARDEN THE APP TO MILITARY-GRADE:
+1. Obliterate any XSS vectors (DOM clobbering, prototype pollution).
+2. Setup strict Content-Security-Policy headers in HTML/Vercel JSON.
+3. Validate and sanitize ALL inputs.
+4. Prevent prototype pollution via deep cloning fixes.
+5. IMPORTANT: Do NOT add integrity= attributes to <link>/<script> tags (breaks blob preview).
 
 Add security.config.js if significant hardening applied.
 
 RESPOND ONLY with valid JSON:
 {
-  "logs": ["Scanning XSS vectors...", "Adding CSP meta tag...", "Sanitizing inputs..."],
+  "logs": ["Mitigating XSS vectors...", "Deploying strict CSP...", "Hardening form handlers..."],
   "files": [{"path": "index.html", "content": "...COMPLETE SECURED HTML..."}]
 }`;
 
         await processBuildStep(
-            `You are a SENIOR SECURITY ENGINEER. Apply OWASP best practices. Respond only in valid JSON.`,
+            `You are an ELITE SECURITY ARCHITECT. Fortify the application against all threats. Respond only in valid JSON.`,
             secPrompt
         );
         S.agentStatus.security = 'done';
@@ -6329,22 +6327,21 @@ RESPOND ONLY with valid JSON:
         render();
         await sleep(800);
 
-        const testerPrompt = `You are a SENIOR TEST ENGINEER (browser-based testing specialist).
+        const testerPrompt = `You are an ELITE AUTOMATION & TEST ENGINEER.
 
 PROJECT: ${projectName}
 FILES: ${workspaceFiles}
 
-WRITE:
-1. tests/app.test.js — Pure vanilla JS test suite:
-   - Tests for all major app.js functions
-   - DOM interaction tests (simulated clicks, form submissions)
-   - localStorage read/write tests
-   - Outputs results to console.table()
-2. tests/run-tests.html — Visual test runner page
+WRITE A WORLD-CLASS TEST SUITE:
+1. tests/app.test.js — Advanced test runner:
+   - Exhaustive tests covering state, DOM, and utility functions.
+   - Mocking layers for fetch requests and localStorage.
+   - Outputs results to a beautifully formatted console.table().
+2. tests/run-tests.html — A gorgeous visual dashboard for the test runner.
 
 RESPOND ONLY with valid JSON:
 {
-  "logs": ["Writing unit tests...", "Adding DOM tests...", "Creating test runner..."],
+  "logs": ["Writing exhaustive unit tests...", "Mocking browser APIs...", "Creating stunning test runner UI..."],
   "files": [
     {"path": "tests/app.test.js", "content": "const results = [];\\n...COMPLETE TESTS..."},
     {"path": "tests/run-tests.html", "content": "<!DOCTYPE html>...COMPLETE RUNNER..."}
@@ -6352,7 +6349,7 @@ RESPOND ONLY with valid JSON:
 }`;
 
         await processBuildStep(
-            `You are a SENIOR TEST ENGINEER. Write complete runnable tests. Respond only in valid JSON.`,
+            `You are an ELITE TEST ENGINEER. Write bulletproof test coverage. Respond only in valid JSON.`,
             testerPrompt
         );
         S.agentStatus.tester = 'done';
