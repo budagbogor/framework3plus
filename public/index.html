@@ -5232,12 +5232,23 @@ function openLivePreview(urlOverride, forceNewTab = false) {
     // Cegah fallback blob jika workspace punya package.json (butuh WebContainer)
     if (workspace['package.json']) {
         if (!S.isInstalled) {
+            S.autoDeploying = true;
+            render();
             addBuildLog("⚡ Mengotomatisasi proses instalasi dan persiapan server untuk Anda...", "agent");
             execTerminalCmd('install').then(() => {
                 if (S.isInstalled) {
                     addBuildLog("⚡ Instalasi selesai, langsung menjalankan server...", "agent");
-                    execTerminalCmd('dev');
+                    execTerminalCmd('dev').then(() => {
+                        S.autoDeploying = false;
+                        render();
+                    });
+                } else {
+                    S.autoDeploying = false;
+                    render();
                 }
+            }).catch(() => {
+                S.autoDeploying = false;
+                render();
             });
             return;
         }
@@ -5699,6 +5710,15 @@ function renderBuilderPanel(){
                     <div style="flex:1; display:flex; position:relative; overflow:hidden;">
                         <div class="term-body" id="buildTerminal" style="width:100%; height:100%; padding:20px; overflow-y:auto; font-family:var(--mono); font-size:13px; line-height:1.6; color: rgba(255,255,255,0.85);">${logs || '<div style="opacity:0.3">Waiting for logs...</div>'}</div>
                         <iframe id="previewIframe" allow="cross-origin-isolated" style="display:none; width:100%; height:100%; border:none; background:#fff;"></iframe>
+                        ${S.autoDeploying ? `
+                            <div style="position:absolute; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:10; color:#fff;">
+                                <div style="width:60px; height:60px; border-radius:50%; background:conic-gradient(from 0deg, transparent, #00f0ff, #3fb950); animation:spin 1s linear infinite; display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
+                                    <div style="width:52px; height:52px; background:#010409; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px;">🚀</div>
+                                </div>
+                                <h3 style="margin:0 0 10px 0; letter-spacing:2px; font-weight:700; color:#00f0ff; text-transform:uppercase;">Menyiapkan Server</h3>
+                                <p style="opacity:0.7; max-width:80%; text-align:center; font-size:14px; line-height:1.5;">Sedang mengunduh dependensi dan menyalakan server lokal.<br>Mohon tunggu sekitar 1-2 menit...</p>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
                 
@@ -6292,9 +6312,16 @@ RESPOND ONLY with valid JSON:
     render();
     
     if (S.virtualWorkspace['package.json']) {
-        await execTerminalCmd('install');
-        if (S.isInstalled) {
-            await execTerminalCmd('dev');
+        S.autoDeploying = true;
+        render();
+        try {
+            await execTerminalCmd('install');
+            if (S.isInstalled) {
+                await execTerminalCmd('dev');
+            }
+        } finally {
+            S.autoDeploying = false;
+            render();
         }
     } else {
         addBuildLog("💡 Selesai! Silakan klik tombol '🌐 Preview' untuk melihat hasilnya.", "info");
