@@ -5232,15 +5232,18 @@ function openLivePreview(urlOverride, forceNewTab = false) {
     // Cegah fallback blob jika workspace punya package.json (butuh WebContainer)
     if (workspace['package.json']) {
         if (!S.isInstalled) {
-            const msg = "Proyek ini menggunakan Node.js/React. Silakan klik tombol '📦 install' terlebih dahulu, lalu klik '🚀 dev'.";
-            addBuildLog(msg, "amber");
-            alert(msg);
+            addBuildLog("⚡ Mengotomatisasi proses instalasi dan persiapan server untuk Anda...", "agent");
+            execTerminalCmd('install').then(() => {
+                if (S.isInstalled) {
+                    addBuildLog("⚡ Instalasi selesai, langsung menjalankan server...", "agent");
+                    execTerminalCmd('dev');
+                }
+            });
             return;
         }
         if (!S.isDevRunning) {
-            const msg = "Silakan klik tombol '🚀 dev' untuk menyalakan server.";
-            addBuildLog(msg, "amber");
-            alert(msg);
+            addBuildLog("⚡ Menyalakan server secara otomatis...", "agent");
+            execTerminalCmd('dev');
             return;
         }
         const msg = "Server sedang memulai... Harap tunggu hingga muncul log 'Dev server siap' di terminal sebelum membuka Preview.";
@@ -6285,8 +6288,17 @@ RESPOND ONLY with valid JSON:
 
     S.activeAgent = null;
     S.building = false;
-    addBuildLog("🎉 PEMBANGUNAN MULTI-AGENT SELESAI 100% — Klik Preview untuk melihat hasilnya!", "success");
+    addBuildLog("🎉 PEMBANGUNAN MULTI-AGENT SELESAI 100% — Menyiapkan server lokal secara otomatis...", "success");
     render();
+    
+    if (S.virtualWorkspace['package.json']) {
+        await execTerminalCmd('install');
+        if (S.isInstalled) {
+            await execTerminalCmd('dev');
+        }
+    } else {
+        addBuildLog("💡 Selesai! Silakan klik tombol '🌐 Preview' untuk melihat hasilnya.", "info");
+    }
 }
 
 async function runSimulationLoop(){
