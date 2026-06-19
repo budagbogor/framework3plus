@@ -1608,16 +1608,55 @@ function setLevel(l){
     }
   }
 }
-function quickStart(name){
+async function quickStart(name){
   const T={
-    'E-Commerce':{mode:'sdlc',answers:{projectName:'My E-Commerce Store',appType:'fullstack',audience:'b2c',frontend:['nextjs'],backend:['nextjs-api'],database:['supabase'],uiLib:['tailwind-shadcn'],auth:['supabase-auth'],payment:['midtrans'],deployment:['vercel'],scale:'small',outputPref:['structure','prd','prompts','configs']}},
-    'Dashboard':{mode:'sdlc',answers:{projectName:'Admin Dashboard',appType:'webapp',audience:'internal',frontend:['nextjs'],backend:['nextjs-api'],database:['supabase'],uiLib:['tailwind-shadcn'],auth:['supabase-auth'],payment:[],deployment:['vercel'],scale:'small',outputPref:['structure','prd','prompts']}},
-    'Mobile App':{mode:'sdlc',answers:{projectName:'My Mobile App',appType:'mobile',audience:'b2c',frontend:['expo'],backend:['supabase-edge'],database:['supabase'],uiLib:['chakra'],auth:['supabase-auth'],payment:[],deployment:['vercel'],scale:'mvp',outputPref:['structure','prd','prompts']}},
-    'Desktop Tool':{mode:'desktop',answers:{desktopName:'My Desktop App',desktopType:'utility',targetOS:['windows'],desktopFramework:'electron',database:['sqlite'],uiLib:['tailwind-shadcn'],installer:['electron-builder'],payment:[],scale:'mvp',outputPref:['structure','prd','prompts']}},
-    'AI Chatbot':{mode:'adlc',answers:{agentName:'My AI Chatbot',agentType:'rag',llm:'claude',orchestration:['langchain'],memory:['context','supabase-vector'],agentTools:['web-search'],autonomy:'checkpoint',deployment:['railway'],complexity:'simple',outputPref:['structure','prd','prompts','code']}},
+    'E-Commerce':{mode:'sdlc', file:'ecommerce.json', answers:{projectName:'My E-Commerce Store',appType:'fullstack',audience:'b2c',frontend:['nextjs'],backend:['nextjs-api'],database:['supabase'],uiLib:['tailwind-shadcn'],auth:['supabase-auth'],payment:['midtrans'],deployment:['vercel'],scale:'small',outputPref:['structure','prd','prompts','configs']}},
+    'Dashboard':{mode:'sdlc', file:'dashboard.json', answers:{projectName:'Admin Dashboard',appType:'webapp',audience:'internal',frontend:['nextjs'],backend:['nextjs-api'],database:['supabase'],uiLib:['tailwind-shadcn'],auth:['supabase-auth'],payment:[],deployment:['vercel'],scale:'small',outputPref:['structure','prd','prompts']}},
+    'Mobile App':{mode:'sdlc', file:'mobileapp.json', answers:{projectName:'My Mobile App',appType:'mobile',audience:'b2c',frontend:['expo'],backend:['supabase-edge'],database:['supabase'],uiLib:['chakra'],auth:['supabase-auth'],payment:[],deployment:['vercel'],scale:'mvp',outputPref:['structure','prd','prompts']}},
+    'Desktop Tool':{mode:'desktop', file:'desktoptool.json', answers:{desktopName:'My Desktop App',desktopType:'utility',targetOS:['windows'],desktopFramework:'electron',database:['sqlite'],uiLib:['tailwind-shadcn'],installer:['electron-builder'],payment:[],scale:'mvp',outputPref:['structure','prd','prompts']}},
+    'AI Chatbot':{mode:'adlc', file:'aichatbot.json', answers:{agentName:'My AI Chatbot',agentType:'rag',llm:'claude',orchestration:['langchain'],memory:['context','supabase-vector'],agentTools:['web-search'],autonomy:'checkpoint',deployment:['railway'],complexity:'simple',outputPref:['structure','prd','prompts','code']}},
   };
   const t=T[name]; if(!t)return;
-  S.mode=t.mode; S.answers={...t.answers}; doGenerate();
+  
+  S.mode=t.mode; 
+  S.answers={...t.answers}; 
+  
+  S.generating = true;
+  render();
+  
+  try {
+      const res = await fetch(`templates/${t.file}`);
+      if (!res.ok) throw new Error("Template file not found");
+      const workspace = await res.json();
+      
+      S.virtualWorkspace = workspace;
+      S.generated = { 
+          name: slug(t.answers.projectName || t.answers.desktopName || t.answers.agentName || name),
+          mode: t.mode,
+          fe: t.answers.frontend?.[0] || 'React'
+      };
+      S.generating = false;
+      S.building = false;
+      S.isInstalled = false;
+      S.isDevRunning = false;
+      window.webcontainerUrl = null;
+      
+      render();
+      
+      // Delay sedikit agar DOM Terminal sudah ter-render sebelum inject log
+      setTimeout(() => {
+          const buildLogEl = document.getElementById('buildLog');
+          if (buildLogEl) buildLogEl.innerHTML = '';
+          addBuildLog(`✅ Template instan '${name}' berhasil dimuat tanpa waktu tunggu!`, "success");
+          addBuildLog(`💡 File sudah langsung tersedia di Workspace Explorer.`, "info");
+          addBuildLog(`💡 Anda bisa melihat kodenya atau langsung tekan '📦 install' untuk menyalakan WebContainers.`, "agent");
+      }, 300);
+      
+  } catch (err) {
+      alert("Gagal memuat template instan: " + err.message);
+      S.generating = false;
+      render();
+  }
 }
 
 function getRec(techKey, answers){
