@@ -1636,7 +1636,7 @@ async function quickStart(name){
   render();
   
   try {
-      const res = await fetch(`templates/${t.file}`);
+      const res = await fetch(`templates/${t.file}?v=${Date.now()}`);
       if (!res.ok) throw new Error("Template file not found");
       const workspace = await res.json();
       
