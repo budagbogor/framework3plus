@@ -530,7 +530,7 @@ function About() {
 
 // 2. DASHBOARD TEMPLATE
 const dashboardApp = `import React, { useState } from 'react';
-import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, CreditCard, Activity, Bell, Search, Settings, MoreVertical, ArrowUpRight, ArrowDownRight, Menu, X, Loader2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -697,7 +697,7 @@ function PlaceholderPage({ title, description, icon: Icon }) {
   );
 }
 
-export default function DashboardApp() {
+function DashboardAppLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
