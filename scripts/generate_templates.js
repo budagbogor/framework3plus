@@ -591,12 +591,12 @@ function DashboardHome() {
           { label: 'Active Users', value: '45.2K', trend: '+8.2%', up: true, color: 'text-emerald-400' },
           { label: 'Churn Rate', value: '1.2%', trend: '-0.4%', up: false, color: 'text-rose-400' }
         ].map((stat, i) => (
-          <div key={i} className="glass-dark bg-white/5 border border-white/10 p-6 rounded-2xl relative overflow-hidden group animate-slide-up" style={{animationDelay: \\\`\\\${i * 100}ms\\\`}}>
+          <div key={i} className="glass-dark bg-white/5 border border-white/10 p-6 rounded-2xl relative overflow-hidden group animate-slide-up" style={{animationDelay: \`\${i * 100}ms\`}}>
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-indigo-500/20 transition-all"></div>
             <h3 className="text-gray-400 text-sm font-medium mb-2">{stat.label}</h3>
             <div className="flex items-end gap-4">
               <span className="text-4xl font-bold tracking-tight">{stat.value}</span>
-              <span className={\\\`flex items-center text-sm font-medium \\\${stat.color} mb-1\\\`}>
+              <span className={\`flex items-center text-sm font-medium \${stat.color} mb-1\`}>
                 {stat.up ? <ArrowUpRight className="w-4 h-4 mr-1" /> : <ArrowDownRight className="w-4 h-4 mr-1" />}
                 {stat.trend}
               </span>
@@ -660,7 +660,7 @@ function DashboardHome() {
               transactions.map(t => (
                 <div key={t.id} className="flex items-center justify-between group cursor-pointer">
                   <div className="flex items-center gap-4">
-                    <div className={\\\`w-10 h-10 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 \\\${t.type === 'in' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}\\\`}>
+                    <div className={\`w-10 h-10 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 \${t.type === 'in' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}\`}>
                       {t.type === 'in' ? <ArrowDownRight className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
                     </div>
                     <div>
@@ -669,7 +669,7 @@ function DashboardHome() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={\\\`font-semibold text-sm \\\${t.type === 'in' ? 'text-emerald-400' : 'text-white'}\\\`}>{t.amount}</p>
+                    <p className={\`font-semibold text-sm \${t.type === 'in' ? 'text-emerald-400' : 'text-white'}\`}>{t.amount}</p>
                     <p className="text-xs text-gray-500 mt-0.5">{t.status}</p>
                   </div>
                 </div>
@@ -711,9 +711,9 @@ export default function DashboardApp() {
           key={item.label}
           to={item.path}
           onClick={() => setMobileMenuOpen(false)}
-          className={\\\`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all \\\${location.pathname === item.path ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}\\\`}
+          className={\`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all \${location.pathname === item.path ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}\`}
         >
-          <item.icon className={\\\`w-5 h-5 \\\${location.pathname === item.path ? 'text-indigo-400' : ''}\\\`} /> {item.label}
+          <item.icon className={\`w-5 h-5 \${location.pathname === item.path ? 'text-indigo-400' : ''}\`} /> {item.label}
         </Link>
       ))}
     </>
@@ -833,7 +833,7 @@ function HomeFeed() {
         {[1,2,3,4,5,6].map(i => (
           <div key={i} className="flex flex-col items-center gap-1 min-w-[72px] cursor-pointer hover:opacity-80 transition-opacity">
             <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-red-500 to-fuchsia-600">
-              <img src={\\\`https://i.pravatar.cc/150?img=\\\${i+20}\\\`} className="w-full h-full rounded-full border-2 border-white object-cover" alt="Story" />
+              <img src={\`https://i.pravatar.cc/150?img=\${i+20}\`} className="w-full h-full rounded-full border-2 border-white object-cover" alt="Story" />
             </div>
             <span className="text-[10px] font-medium text-gray-800 truncate w-full text-center mt-1">User {i}</span>
           </div>
@@ -843,7 +843,7 @@ function HomeFeed() {
       {/* Feed */}
       <div className="space-y-4 bg-gray-50/50 py-2">
         {posts.map((post, idx) => (
-          <article key={post.id} className="bg-white pb-4 animate-slide-up shadow-sm border-y border-gray-100" style={{animationDelay: \\\`\\\${idx * 100}ms\\\`}}>
+          <article key={post.id} className="bg-white pb-4 animate-slide-up shadow-sm border-y border-gray-100" style={{animationDelay: \`\${idx * 100}ms\`}}>
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3 cursor-pointer">
                 <img src={post.avatar} className="w-10 h-10 rounded-full object-cover border border-gray-100" alt={post.user} />
@@ -866,7 +866,7 @@ function HomeFeed() {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-4">
                   <button onClick={() => toggleLike(post.id)} className="transition-transform active:scale-75">
-                    <Heart className={\\\`w-7 h-7 \\\${post.liked ? 'fill-red-500 text-red-500' : 'text-gray-800 hover:text-gray-500'}\\\`} />
+                    <Heart className={\`w-7 h-7 \${post.liked ? 'fill-red-500 text-red-500' : 'text-gray-800 hover:text-gray-500'}\`} />
                   </button>
                   <button className="hover:opacity-70 transition-opacity"><MessageCircle className="w-7 h-7 text-gray-800" /></button>
                   <button className="hover:opacity-70 transition-opacity"><Share2 className="w-6 h-6 text-gray-800" /></button>
@@ -899,8 +899,8 @@ function ExplorePage() {
       </div>
       <div className="grid grid-cols-3 gap-1 px-1">
         {[...Array(15)].map((_, i) => (
-          <div key={i} className={\\\`bg-gray-200 relative group cursor-pointer \\\${i === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-square'}\\\`}>
-            <img src={\\\`https://images.unsplash.com/photo-\\\${1500000000000 + i}?auto=format&fit=crop&w=\\\${i===0?600:300}&q=80\\\`} className="w-full h-full object-cover" alt="Explore" />
+          <div key={i} className={\`bg-gray-200 relative group cursor-pointer \${i === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-square'}\`}>
+            <img src={\`https://images.unsplash.com/photo-\${1500000000000 + i}?auto=format&fit=crop&w=\${i===0?600:300}&q=80\`} className="w-full h-full object-cover" alt="Explore" />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <Heart className="w-6 h-6 text-white fill-white" />
             </div>
@@ -959,7 +959,7 @@ function ProfilePage() {
       <div className="grid grid-cols-3 gap-0.5">
         {[...Array(9)].map((_, i) => (
           <div key={i} className="aspect-square bg-gray-200 relative group cursor-pointer">
-            <img src={\\\`https://images.unsplash.com/photo-\\\${1400000000000 + i * 1000}?auto=format&fit=crop&w=300&q=80\\\`} className="w-full h-full object-cover" alt="Post" />
+            <img src={\`https://images.unsplash.com/photo-\${1400000000000 + i * 1000}?auto=format&fit=crop&w=300&q=80\`} className="w-full h-full object-cover" alt="Post" />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
               <Heart className="w-4 h-4 text-white fill-white" /> <span className="text-white text-xs font-bold">1.2K</span>
             </div>
@@ -976,8 +976,8 @@ function NavigationBar({ openModal }) {
   
   return (
     <nav className="absolute bottom-0 inset-x-0 bg-white/80 backdrop-blur-xl border-t border-gray-200/50 px-6 py-3 pb-8 flex justify-between items-center z-40">
-      <Link to="/" className={\\\`\\\${path === '/' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\\\`}><Home className="w-7 h-7" fill={path === '/' ? 'currentColor' : 'none'} /></Link>
-      <Link to="/explore" className={\\\`\\\${path === '/explore' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\\\`}><Search className="w-7 h-7" strokeWidth={path === '/explore' ? 3 : 2} /></Link>
+      <Link to="/" className={\`\${path === '/' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><Home className="w-7 h-7" fill={path === '/' ? 'currentColor' : 'none'} /></Link>
+      <Link to="/explore" className={\`\${path === '/explore' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><Search className="w-7 h-7" strokeWidth={path === '/explore' ? 3 : 2} /></Link>
       
       <div 
         onClick={openModal}
@@ -986,8 +986,8 @@ function NavigationBar({ openModal }) {
         <Plus className="w-7 h-7 font-bold" />
       </div>
       
-      <Link to="/reels" className={\\\`\\\${path === '/reels' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\\\`}><PlaySquare className="w-7 h-7" fill={path === '/reels' ? 'currentColor' : 'none'} /></Link>
-      <Link to="/profile" className={\\\`\\\${path === '/profile' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\\\`}><User className="w-7 h-7" fill={path === '/profile' ? 'currentColor' : 'none'} /></Link>
+      <Link to="/reels" className={\`\${path === '/reels' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><PlaySquare className="w-7 h-7" fill={path === '/reels' ? 'currentColor' : 'none'} /></Link>
+      <Link to="/profile" className={\`\${path === '/profile' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><User className="w-7 h-7" fill={path === '/profile' ? 'currentColor' : 'none'} /></Link>
     </nav>
   );
 }
@@ -1078,7 +1078,7 @@ import { Folder, FolderOpen, File, ChevronRight, Terminal, Search, Settings, Clo
 const mockFiles = {
   'init_schema.sql': {
     lang: 'SQL',
-    code: \\\`CREATE TABLE users (
+    code: \`CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
@@ -1086,11 +1086,11 @@ const mockFiles = {
 );
 
 -- Create index on email for faster lookups
-CREATE INDEX idx_users_email ON users(email);\\\`
+CREATE INDEX idx_users_email ON users(email);\`
   },
   'connection.js': {
     lang: 'JavaScript',
-    code: \\\`const { Pool } = require('pg');
+    code: \`const { Pool } = require('pg');
 
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
@@ -1102,7 +1102,7 @@ const pool = new Pool({
 
 module.exports = {
   query: (text, params) => pool.query(text, params),
-};\\\`
+};\`
   }
 };
 
@@ -1139,7 +1139,7 @@ function EditorView() {
           </div>
           <div className="pl-4">
             <div 
-              className={\\\`px-2 py-1 flex items-center gap-1 cursor-pointer text-sm \\\${activeTab === 'connection.js' ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e] text-gray-400'}\\\`}
+              className={\`px-2 py-1 flex items-center gap-1 cursor-pointer text-sm \${activeTab === 'connection.js' ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e] text-gray-400'}\`}
               onClick={() => setActiveTab('connection.js')}
             >
               <File className="w-4 h-4 text-yellow-400" />
@@ -1153,7 +1153,7 @@ function EditorView() {
           </div>
           <div className="pl-4">
             <div 
-              className={\\\`px-2 py-1 flex items-center gap-1 cursor-pointer text-sm \\\${activeTab === 'init_schema.sql' ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e] text-gray-400'}\\\`}
+              className={\`px-2 py-1 flex items-center gap-1 cursor-pointer text-sm \${activeTab === 'init_schema.sql' ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e] text-gray-400'}\`}
               onClick={() => setActiveTab('init_schema.sql')}
             >
               <Database className="w-4 h-4 text-emerald-400" />
@@ -1170,7 +1170,7 @@ function EditorView() {
             <div 
               key={file}
               onClick={() => setActiveTab(file)}
-              className={\\\`flex items-center gap-2 px-3 py-2 text-sm cursor-pointer border-r border-[#2d2d2d] group \\\${activeTab === file ? 'bg-[#1e1e1e] text-white border-t-2 border-t-blue-500' : 'bg-[#2d2d2d] text-gray-400 hover:bg-[#1e1e1e]'}\\\`}
+              className={\`flex items-center gap-2 px-3 py-2 text-sm cursor-pointer border-r border-[#2d2d2d] group \${activeTab === file ? 'bg-[#1e1e1e] text-white border-t-2 border-t-blue-500' : 'bg-[#2d2d2d] text-gray-400 hover:bg-[#1e1e1e]'}\`}
             >
               {file.endsWith('.sql') ? <Database className="w-4 h-4 text-emerald-400" /> : <File className="w-4 h-4 text-yellow-400" />}
               {file}
@@ -1239,13 +1239,13 @@ function EditorView() {
           <div className="flex border-b border-[#2d2d2d] px-2 bg-[#252526]">
             <div 
               onClick={() => setBottomPaneTab('output')}
-              className={\\\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer \\\${bottomPaneTab === 'output' ? 'border-b border-blue-500 text-white' : 'opacity-50 hover:opacity-100'}\\\`}
+              className={\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer \${bottomPaneTab === 'output' ? 'border-b border-blue-500 text-white' : 'opacity-50 hover:opacity-100'}\`}
             >
               Output
             </div>
             <div 
               onClick={() => setBottomPaneTab('terminal')}
-              className={\\\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer \\\${bottomPaneTab === 'terminal' ? 'border-b border-blue-500 text-white' : 'opacity-50 hover:opacity-100'}\\\`}
+              className={\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer \${bottomPaneTab === 'terminal' ? 'border-b border-blue-500 text-white' : 'opacity-50 hover:opacity-100'}\`}
             >
               Terminal
             </div>
@@ -1254,7 +1254,7 @@ function EditorView() {
           <div className="flex-1 p-3 font-mono text-xs overflow-y-auto space-y-2">
             {bottomPaneTab === 'output' ? (
               logs.map((log, i) => (
-                <div key={i} className={\\\`flex gap-2 animate-slide-up \\\${log.type === 'success' ? 'text-emerald-400' : log.type === 'warning' ? 'text-yellow-400' : log.type === 'error' ? 'text-rose-400' : 'text-gray-400'}\\\`}>
+                <div key={i} className={\`flex gap-2 animate-slide-up \${log.type === 'success' ? 'text-emerald-400' : log.type === 'warning' ? 'text-yellow-400' : log.type === 'error' ? 'text-rose-400' : 'text-gray-400'}\`}>
                   {log.type === 'success' && <CheckCircle2 className="w-4 h-4 flex-shrink-0" />}
                   {log.type === 'warning' && <AlertCircle className="w-4 h-4 flex-shrink-0" />}
                   {log.type === 'info' && <Terminal className="w-4 h-4 flex-shrink-0" />}
@@ -1377,22 +1377,22 @@ export default function DesktopApp() {
       <div className="flex-1 flex overflow-hidden">
         {/* Activity Bar (Sidebar Icons) */}
         <div className="w-12 bg-[#333333] flex flex-col items-center py-4 gap-6 shrink-0 z-20">
-          <Link to="/" className={\\\`relative cursor-pointer group \\\${location.pathname === '/' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\\\`}>
+          <Link to="/" className={\`relative cursor-pointer group \${location.pathname === '/' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\`}>
             {location.pathname === '/' && <div className="absolute -left-[14px] top-0 bottom-0 w-[2px] bg-blue-500"></div>}
             <File className="w-6 h-6" />
           </Link>
-          <Link to="/database" className={\\\`relative cursor-pointer group \\\${location.pathname === '/database' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\\\`}>
+          <Link to="/database" className={\`relative cursor-pointer group \${location.pathname === '/database' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\`}>
             {location.pathname === '/database' && <div className="absolute -left-[14px] top-0 bottom-0 w-[2px] bg-blue-500"></div>}
             <Database className="w-6 h-6" />
           </Link>
-          <Link to="/extensions" className={\\\`relative cursor-pointer group \\\${location.pathname === '/extensions' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\\\`}>
+          <Link to="/extensions" className={\`relative cursor-pointer group \${location.pathname === '/extensions' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\`}>
             {location.pathname === '/extensions' && <div className="absolute -left-[14px] top-0 bottom-0 w-[2px] bg-blue-500"></div>}
             <Box className="w-6 h-6" />
           </Link>
           <div className="mt-auto relative cursor-pointer group">
             <GitBranch className="w-6 h-6 text-gray-500 hover:text-white transition-colors" />
           </div>
-          <Link to="/settings" className={\\\`relative cursor-pointer group \\\${location.pathname === '/settings' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\\\`}>
+          <Link to="/settings" className={\`relative cursor-pointer group \${location.pathname === '/settings' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\`}>
             {location.pathname === '/settings' && <div className="absolute -left-[14px] top-0 bottom-0 w-[2px] bg-blue-500"></div>}
             <Settings className="w-6 h-6" />
           </Link>
