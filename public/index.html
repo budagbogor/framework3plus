@@ -559,6 +559,17 @@ pre{padding:16px;overflow-x:auto;overflow-y:auto;font-family:var(--mono);font-si
     min-width: 0;
 }
 
+.fullscreen-mode {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 99999 !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+}
+
 .terminal-panel {
     height: 300px;
     background: #010409;
@@ -5218,6 +5229,7 @@ function togglePreview() {
     const iframe = document.getElementById('previewIframe');
     const btn = document.getElementById('btnTogglePreview');
     const btnTab = document.getElementById('btnOpenNewTab');
+    const btnFs = document.getElementById('btnFullscreen');
     
     if (!term || !iframe || !btn) return;
 
@@ -5226,14 +5238,32 @@ function togglePreview() {
         iframe.style.display = 'none';
         btn.innerHTML = '🌐 Preview';
         if(btnTab) btnTab.style.display = 'none';
+        if(btnFs) btnFs.style.display = 'none';
     } else {
         openLivePreview();
         if (window.webcontainerUrl || !(S.virtualWorkspace && S.virtualWorkspace['package.json'])) {
             term.style.display = 'none';
             iframe.style.display = 'block';
             btn.innerHTML = '💻 Terminal';
-            if(btnTab && window.webcontainerUrl) btnTab.style.display = 'inline-block';
+            if(btnTab) btnTab.style.display = 'inline-block';
+            if(btnFs) btnFs.style.display = 'inline-block';
         }
+    }
+}
+
+function toggleFullscreen() {
+    const panel = document.getElementById('terminalPanel');
+    const btn = document.getElementById('btnFullscreen');
+    if (!panel) return;
+    
+    if (panel.classList.contains('fullscreen-mode')) {
+        panel.classList.remove('fullscreen-mode');
+        if(btn) btn.innerHTML = '🔲 Perbesar';
+        document.body.style.overflow = '';
+    } else {
+        panel.classList.add('fullscreen-mode');
+        if(btn) btn.innerHTML = '🔳 Perkecil';
+        document.body.style.overflow = 'hidden';
     }
 }
 
@@ -5721,7 +5751,7 @@ function renderBuilderPanel(){
                     </div>
                 </div>
 
-                <div class="terminal-panel" style="background: #010409; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; min-height: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+                <div class="terminal-panel" id="terminalPanel" style="background: #010409; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; min-height: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
                     <div class="terminal-header" style="background: rgba(255, 255, 255, 0.03); padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
                         <div class="term-dots" style="display: flex; gap: 6px;"><div style="width: 11px; height: 11px; border-radius: 50%; background:#ff5f56"></div><div style="width: 11px; height: 11px; border-radius: 50%; background:#ffbd2e"></div><div style="width: 11px; height: 11px; border-radius: 50%; background:#27c93f"></div></div>
                         <span style="font-family:var(--mono); font-size:11px; opacity:0.5; letter-spacing: 0.1em; margin-left:10px">AGENT CONSOLE — ${S.building ? 'ACTIVE' : 'READY'}</span>
@@ -5731,6 +5761,7 @@ function renderBuilderPanel(){
                         <button class="term-btn ${S.isInstalled?'active':''}" onclick="execTerminalCmd('install')" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;" title="Harap tunggu AI selesai merakit kode..."' : ''}>📦 install</button>
                         <button class="term-btn ${S.isDevRunning?'active':''}" onclick="execTerminalCmd('dev')" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;" title="Harap tunggu AI selesai merakit kode..."' : ''}>🚀 dev</button>
                         <button class="term-btn preview-btn" id="btnTogglePreview" onclick="togglePreview()" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;" title="Harap tunggu AI selesai merakit kode..."' : ''}>🌐 Preview</button>
+                        <button class="term-btn preview-btn" id="btnFullscreen" style="display:none;" onclick="toggleFullscreen()" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;"' : ''}>🔲 Perbesar</button>
                         <button class="term-btn preview-btn" id="btnOpenNewTab" style="display:none;" onclick="openLivePreview(null, true)" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;"' : ''}>↗️ Tab Baru</button>
                     </div>
                     <div style="flex:1; display:flex; position:relative; overflow:hidden;">
