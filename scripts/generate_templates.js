@@ -16,6 +16,7 @@ const packageJson = JSON.stringify({
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
     "lucide-react": "^0.292.0",
     "recharts": "^2.10.3",
     "clsx": "^2.0.0",
@@ -104,36 +105,45 @@ const indexCss = `@tailwind base;
 
 const mainJsx = `import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>
 );`;
 
 // 1. E-COMMERCE TEMPLATE
-const ecommerceApp = `import React, { useState } from 'react';
-import { ShoppingCart, Search, Menu, Star, ChevronRight, Heart, ShoppingBag, X, CheckCircle2 } from 'lucide-react';
+const ecommerceApp = `import React, { useState, useEffect } from 'react';
+import { Routes, Route, Link, useNavigate, useParams, useLocation } from 'react-router-dom';
+import { ShoppingCart, Search, Menu, Star, ChevronRight, Heart, ShoppingBag, X, CheckCircle2, ArrowLeft, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
 
 const allProducts = [
-  { id: 1, name: 'Premium Wireless Headphones', price: 299, rating: 4.8, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800', category: 'Audio' },
-  { id: 2, name: 'Minimalist Smart Watch', price: 199, rating: 4.6, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800', category: 'Wearables' },
-  { id: 3, name: 'Professional DSLR Camera', price: 899, rating: 4.9, image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=800', category: 'Photography' },
-  { id: 4, name: 'Ergonomic Workspace Chair', price: 349, rating: 4.7, image: 'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?auto=format&fit=crop&q=80&w=800', category: 'Furniture' },
-  { id: 5, name: 'Studio Microphones Set', price: 150, rating: 4.5, image: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=800', category: 'Audio' },
-  { id: 6, name: 'Mechanical Keyboard', price: 129, rating: 4.8, image: 'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=800', category: 'Furniture' },
+  { id: 1, name: 'Premium Wireless Headphones', price: 299, rating: 4.8, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800', category: 'Audio', desc: 'Experience studio-quality sound with active noise cancellation and 30-hour battery life. Hand-crafted with premium materials for ultimate comfort.' },
+  { id: 2, name: 'Minimalist Smart Watch', price: 199, rating: 4.6, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800', category: 'Wearables', desc: 'Track your health and stay connected with elegant precision. Features an always-on retina display and titanium case.' },
+  { id: 3, name: 'Professional DSLR Camera', price: 899, rating: 4.9, image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=800', category: 'Photography', desc: 'Capture stunning 4K video and 45MP stills with our flagship full-frame mirrorless camera. Perfect for professionals.' },
+  { id: 4, name: 'Ergonomic Workspace Chair', price: 349, rating: 4.7, image: 'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?auto=format&fit=crop&q=80&w=800', category: 'Furniture', desc: 'Designed for 8+ hours of comfortable seating. Features dynamic lumbar support and breathable mesh back.' },
+  { id: 5, name: 'Studio Microphones Set', price: 150, rating: 4.5, image: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=800', category: 'Audio', desc: 'Broadcast-quality dynamic microphone ideal for podcasting, streaming, and vocal recording.' },
+  { id: 6, name: 'Mechanical Keyboard', price: 129, rating: 4.8, image: 'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=800', category: 'Workspace', desc: 'Tactile, clicky mechanical switches enclosed in a solid aluminum frame. Customizable RGB backlight.' },
+  { id: 7, name: 'Curved Ultrawide Monitor', price: 599, rating: 4.9, image: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&q=80&w=800', category: 'Workspace', desc: 'Immersive 34-inch curved display with 144Hz refresh rate and true 1ms response time.' },
+  { id: 8, name: 'Portable SSD 2TB', price: 219, rating: 4.7, image: 'https://images.unsplash.com/photo-1531492746076-161ca9bcad58?auto=format&fit=crop&q=80&w=800', category: 'Accessories', desc: 'Blazing fast NVMe portable drive with read speeds up to 1050 MB/s. Drop resistant and pocket sized.' }
 ];
 
-export default function EcommerceApp() {
+export default function App() {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [category, setCategory] = useState('All');
-  const [toast, setToast] = useState(null);
   const [wishlist, setWishlist] = useState([]);
+  const [toast, setToast] = useState(null);
+  const location = useLocation();
 
-  const products = category === 'All' ? allProducts : allProducts.filter(p => p.category === category);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -147,57 +157,36 @@ export default function EcommerceApp() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const removeFromCart = (id) => {
-    setCart(prev => prev.filter(item => item.id !== id));
-  };
-
+  const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
+  
   const toggleWishlist = (id) => {
     setWishlist(prev => prev.includes(id) ? prev.filter(wid => wid !== id) : [...prev, id]);
   };
 
-  const checkout = () => {
-    if(cart.length === 0) return;
-    setToast("Processing payment...");
-    setTimeout(() => {
-      setCart([]);
-      setIsCartOpen(false);
-      setToast("Payment successful! Order #12093 placed.");
-      setTimeout(() => setToast(null), 4000);
-    }, 1500);
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 font-sans relative">
-      {/* Toast Notification */}
+    <div className="min-h-screen bg-gray-50 font-sans relative overflow-x-hidden">
       {toast && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-black text-white px-6 py-3 rounded-full font-medium shadow-2xl flex items-center gap-2 animate-fade-in">
           <CheckCircle2 className="w-5 h-5 text-emerald-400" /> {toast}
         </div>
       )}
 
-      {/* Navigation */}
-      <nav className="sticky top-0 z-40 glass px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => setCategory('All')}>
+      <nav className="sticky top-0 z-40 bg-white/70 backdrop-blur-md border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2 cursor-pointer transition-transform hover:scale-105 active:scale-95">
           <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
             <ShoppingBag className="w-5 h-5 text-white" />
           </div>
           <span className="text-xl font-bold tracking-tight">LUXE</span>
-        </div>
+        </Link>
         
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-500">
-          {['All', 'Audio', 'Wearables', 'Photography', 'Furniture'].map(cat => (
-            <button 
-              key={cat} 
-              onClick={() => setCategory(cat)}
-              className={\`transition-colors \${category === cat ? 'text-black font-bold' : 'hover:text-black'}\`}
-            >
-              {cat}
-            </button>
-          ))}
+          <Link to="/" className={\`transition-colors hover:text-black \${location.pathname === '/' ? 'text-black font-bold' : ''}\`}>Home</Link>
+          <Link to="/shop" className={\`transition-colors hover:text-black \${location.pathname.startsWith('/shop') ? 'text-black font-bold' : ''}\`}>Shop</Link>
+          <Link to="/about" className={\`transition-colors hover:text-black \${location.pathname === '/about' ? 'text-black font-bold' : ''}\`}>About</Link>
         </div>
 
         <div className="flex items-center gap-6">
-          <button className="text-gray-600 hover:text-black transition-colors"><Search className="w-5 h-5" /></button>
+          <button className="text-gray-600 hover:text-black transition-colors hidden sm:block"><Search className="w-5 h-5" /></button>
           <button className="text-gray-600 hover:text-black transition-colors relative" onClick={() => setIsCartOpen(true)}>
             <ShoppingCart className="w-5 h-5" />
             {cartItemsCount > 0 && (
@@ -206,31 +195,31 @@ export default function EcommerceApp() {
               </span>
             )}
           </button>
-          <button className="md:hidden text-gray-600"><Menu className="w-5 h-5" /></button>
+          <button className="md:hidden text-gray-600 hover:text-black"><Menu className="w-5 h-5" /></button>
         </div>
       </nav>
 
-      {/* Cart Drawer */}
       {isCartOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setIsCartOpen(false)} />
           <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-slide-up md:animate-fade-in">
             <div className="p-6 border-b flex items-center justify-between">
               <h2 className="text-xl font-bold">Your Cart ({cartItemsCount})</h2>
-              <button onClick={() => setIsCartOpen(false)} className="p-2 hover:bg-gray-100 rounded-full"><X className="w-5 h-5" /></button>
+              <button onClick={() => setIsCartOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X className="w-5 h-5" /></button>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {cart.length === 0 ? (
                 <div className="text-center text-gray-500 mt-20 flex flex-col items-center">
                   <ShoppingCart className="w-16 h-16 mb-4 opacity-20" />
                   <p>Your cart is empty.</p>
+                  <Link to="/shop" onClick={() => setIsCartOpen(false)} className="mt-4 text-black font-bold underline">Continue Shopping</Link>
                 </div>
               ) : (
                 cart.map(item => (
                   <div key={item.id} className="flex gap-4">
                     <img src={item.image} className="w-20 h-20 object-cover rounded-lg bg-gray-100" />
                     <div className="flex-1">
-                      <h4 className="font-semibold">{item.name}</h4>
+                      <h4 className="font-semibold line-clamp-1">{item.name}</h4>
                       <p className="text-gray-500 text-sm mb-2">Qty: {item.quantity}</p>
                       <div className="flex items-center justify-between">
                         <p className="font-bold">$\{(item.price * item.quantity).toFixed(2)}</p>
@@ -246,19 +235,51 @@ export default function EcommerceApp() {
                 <span className="font-semibold text-gray-600">Subtotal</span>
                 <span className="font-bold text-xl">$\{cartTotal.toFixed(2)}</span>
               </div>
-              <button 
-                onClick={checkout}
-                disabled={cart.length === 0}
-                className="w-full bg-black text-white py-4 rounded-xl font-bold hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              <Link 
+                to="/checkout"
+                onClick={() => setIsCartOpen(false)}
+                className={\`w-full bg-black text-white py-4 rounded-xl font-bold hover:bg-gray-800 flex justify-center transition-transform active:scale-95 \${cart.length === 0 ? 'opacity-50 pointer-events-none' : ''}\`}
               >
-                Checkout Now
-              </button>
+                Proceed to Checkout
+              </Link>
             </div>
           </div>
         </div>
       )}
 
-      {/* Hero Section */}
+      <main className="min-h-[80vh]">
+        <Routes>
+          <Route path="/" element={<Home products={allProducts} addToCart={addToCart} wishlist={wishlist} toggleWishlist={toggleWishlist} />} />
+          <Route path="/shop" element={<Shop products={allProducts} addToCart={addToCart} wishlist={wishlist} toggleWishlist={toggleWishlist} />} />
+          <Route path="/product/:id" element={<ProductDetail products={allProducts} addToCart={addToCart} />} />
+          <Route path="/checkout" element={<Checkout cart={cart} total={cartTotal} clearCart={() => setCart([])} />} />
+          <Route path="/success" element={<Success />} />
+          <Route path="/about" element={<About />} />
+        </Routes>
+      </main>
+
+      <footer className="bg-black text-white py-12 px-6 mt-12">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center"><ShoppingBag className="w-5 h-5 text-black" /></div>
+              <span className="text-xl font-bold tracking-tight">LUXE</span>
+            </div>
+            <p className="text-gray-400 text-sm">Premium electronics and lifestyle accessories for the modern world.</p>
+          </div>
+          <div><h4 className="font-bold mb-4">Shop</h4><ul className="space-y-2 text-sm text-gray-400"><li><Link to="/shop">All Products</Link></li><li><Link to="/shop">New Arrivals</Link></li></ul></div>
+          <div><h4 className="font-bold mb-4">Support</h4><ul className="space-y-2 text-sm text-gray-400"><li>FAQ</li><li>Shipping</li><li>Returns</li></ul></div>
+          <div><h4 className="font-bold mb-4">Newsletter</h4><p className="text-sm text-gray-400 mb-2">Subscribe for 10% off your first order.</p><div className="flex"><input type="email" placeholder="Your email" className="bg-white/10 px-3 py-2 rounded-l-lg outline-none text-sm w-full" /><button className="bg-white text-black px-4 font-bold rounded-r-lg">Join</button></div></div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function Home({ products, addToCart, wishlist, toggleWishlist }) {
+  const trending = products.slice(0, 4);
+  return (
+    <div className="animate-fade-in">
       <section className="relative px-6 py-20 md:py-32 overflow-hidden bg-black text-white">
         <div className="absolute inset-0 opacity-40">
           <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=2000" alt="Hero" className="w-full h-full object-cover" />
@@ -272,310 +293,435 @@ export default function EcommerceApp() {
           <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl animate-fade-in" style={{animationDelay:'200ms'}}>
             Discover our curated selection of premium electronics and lifestyle accessories designed for the modern aesthetic.
           </p>
-          <button className="bg-white text-black px-8 py-4 rounded-full font-bold hover:bg-gray-100 transition-transform hover:scale-105 active:scale-95 flex items-center gap-2">
+          <Link to="/shop" className="bg-white inline-flex text-black px-8 py-4 rounded-full font-bold hover:bg-gray-100 transition-transform hover:scale-105 active:scale-95 items-center gap-2">
             Shop the Collection <ChevronRight className="w-5 h-5" />
-          </button>
+          </Link>
         </div>
       </section>
 
-      {/* Featured Products */}
       <section className="max-w-7xl mx-auto px-6 py-20">
         <div className="flex items-end justify-between mb-10">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight mb-2">Trending Now</h2>
-            <p className="text-gray-500">{category === 'All' ? 'Our most popular premium picks.' : \`Showing \${category} products.\`}</p>
-          </div>
-          <button className="text-sm font-semibold hover:underline hidden md:block">View All</button>
+          <div><h2 className="text-3xl font-bold tracking-tight mb-2">Trending Now</h2><p className="text-gray-500">Our most popular premium picks.</p></div>
+          <Link to="/shop" className="text-sm font-semibold hover:underline hidden md:block">View All</Link>
         </div>
+        <ProductGrid products={trending} addToCart={addToCart} wishlist={wishlist} toggleWishlist={toggleWishlist} />
+      </section>
+    </div>
+  );
+}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.map((product, idx) => (
-            <div key={product.id} className="group cursor-pointer animate-slide-up" style={{animationDelay: \`\${idx * 100}ms\`}}>
-              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden mb-4 bg-gray-100 shadow-sm group-hover:shadow-xl transition-all duration-300">
-                <img 
-                  src={product.image} 
-                  alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <button 
-                  onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
-                  className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
-                >
-                  <Heart className={\`w-4 h-4 \${wishlist.includes(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-900'}\`} />
-                </button>
-                <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                    className="w-full bg-black/90 backdrop-blur-md text-white py-3 rounded-xl font-medium hover:bg-black active:scale-95 transition-transform"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
+function Shop({ products, addToCart, wishlist, toggleWishlist }) {
+  const [category, setCategory] = useState('All');
+  const filtered = category === 'All' ? products : products.filter(p => p.category === category);
+  const categories = ['All', ...new Set(products.map(p => p.category))];
+
+  return (
+    <div className="max-w-7xl mx-auto px-6 py-12 animate-fade-in">
+      <div className="flex flex-col md:flex-row items-center justify-between mb-8">
+        <h1 className="text-4xl font-bold tracking-tight mb-4 md:mb-0">All Products</h1>
+        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto hide-scrollbar">
+          {categories.map(cat => (
+            <button key={cat} onClick={() => setCategory(cat)} className={\`px-4 py-2 rounded-full font-medium whitespace-nowrap transition-colors \${category === cat ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}\`}>
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+      <ProductGrid products={filtered} addToCart={addToCart} wishlist={wishlist} toggleWishlist={toggleWishlist} />
+    </div>
+  );
+}
+
+function ProductGrid({ products, addToCart, wishlist, toggleWishlist }) {
+  const navigate = useNavigate();
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      {products.map((product, idx) => (
+        <div key={product.id} className="group cursor-pointer animate-slide-up" style={{animationDelay: \`\${(idx%4) * 100}ms\`}} onClick={() => navigate(\`/product/\${product.id}\`)}>
+          <div className="relative aspect-[4/5] rounded-2xl overflow-hidden mb-4 bg-gray-100 shadow-sm group-hover:shadow-xl transition-all duration-300">
+            <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <button onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }} className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white">
+              <Heart className={\`w-4 h-4 \${wishlist.includes(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-900'}\`} />
+            </button>
+            <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+              <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="w-full bg-black/90 backdrop-blur-md text-white py-3 rounded-xl font-medium hover:bg-black active:scale-95 transition-transform">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+          <div className="flex items-start justify-between gap-4 px-1">
+            <div>
+              <h3 className="font-semibold text-gray-900 group-hover:text-black line-clamp-1">{product.name}</h3>
+              <span className="text-sm text-gray-500">{product.category}</span>
+            </div>
+            <div className="text-right">
+              <p className="font-bold text-gray-900">$\{product.price}</p>
+              <div className="flex items-center gap-1 text-xs text-gray-500 mt-1"><Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />{product.rating}</div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ProductDetail({ products, addToCart }) {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const product = products.find(p => p.id === parseInt(id));
+
+  if(!product) return <div className="text-center py-32"><h1 className="text-2xl font-bold">Product not found</h1><button onClick={() => navigate('/shop')} className="mt-4 underline">Go back to shop</button></div>;
+
+  return (
+    <div className="max-w-7xl mx-auto px-6 py-12 animate-fade-in">
+      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-500 hover:text-black mb-8 transition-colors"><ArrowLeft className="w-4 h-4" /> Back</button>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div className="aspect-square rounded-3xl overflow-hidden bg-gray-100 shadow-xl">
+          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+        </div>
+        <div className="flex flex-col justify-center">
+          <span className="text-indigo-600 font-semibold mb-2">{product.category}</span>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">{product.name}</h1>
+          <div className="flex items-center gap-4 mb-6">
+            <span className="text-3xl font-bold">$\{product.price}</span>
+            <div className="flex items-center gap-1 bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-sm font-medium"><Star className="w-4 h-4 fill-yellow-500 text-yellow-500" /> {product.rating} Rating</div>
+          </div>
+          <p className="text-gray-600 text-lg mb-8 leading-relaxed">{product.desc}</p>
+          
+          <div className="space-y-4 mb-8">
+            <div className="flex items-center gap-3 text-sm text-gray-600"><ShieldCheck className="w-5 h-5 text-emerald-500" /> 2-Year Premium Warranty included</div>
+            <div className="flex items-center gap-3 text-sm text-gray-600"><Truck className="w-5 h-5 text-blue-500" /> Free shipping on orders over $100</div>
+            <div className="flex items-center gap-3 text-sm text-gray-600"><RotateCcw className="w-5 h-5 text-purple-500" /> 30-day hassle-free returns</div>
+          </div>
+
+          <div className="flex gap-4">
+            <button onClick={() => addToCart(product)} className="flex-1 bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-transform active:scale-95 shadow-lg shadow-black/20">Add to Cart</button>
+            <button className="p-4 border-2 border-gray-200 rounded-xl hover:border-black transition-colors"><Heart className="w-6 h-6" /></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Checkout({ cart, total, clearCart }) {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  if(cart.length === 0) {
+    return <div className="text-center py-32 animate-fade-in"><h1 className="text-2xl font-bold mb-4">Your cart is empty</h1><Link to="/shop" className="bg-black text-white px-6 py-3 rounded-xl font-bold inline-block">Go Shopping</Link></div>;
+  }
+
+  const handlePay = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setTimeout(() => {
+      clearCart();
+      navigate('/success');
+    }, 2000);
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-6 py-12 animate-fade-in">
+      <h1 className="text-3xl font-bold mb-8">Secure Checkout</h1>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <div className="lg:col-span-7">
+          <form onSubmit={handlePay} className="space-y-8">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+              <h2 className="text-xl font-bold mb-4">Contact Information</h2>
+              <input required type="email" placeholder="Email Address" className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-black transition-all" />
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+              <h2 className="text-xl font-bold mb-4">Shipping Address</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <input required type="text" placeholder="First Name" className="border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-black outline-none" />
+                <input required type="text" placeholder="Last Name" className="border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-black outline-none" />
+                <input required type="text" placeholder="Address" className="col-span-2 border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-black outline-none" />
+                <input required type="text" placeholder="City" className="border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-black outline-none" />
+                <input required type="text" placeholder="Postal Code" className="border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-black outline-none" />
               </div>
-              <div className="flex items-start justify-between gap-4 px-1">
-                <div>
-                  <h3 className="font-semibold text-gray-900 group-hover:text-black line-clamp-1">{product.name}</h3>
-                  <span className="text-sm text-gray-500">{product.category}</span>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-gray-900">$\{product.price}</p>
-                  <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    {product.rating}
-                  </div>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+              <h2 className="text-xl font-bold mb-4">Payment Method</h2>
+              <div className="space-y-4">
+                <input required type="text" placeholder="Card Number" className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-black outline-none" />
+                <div className="grid grid-cols-2 gap-4">
+                  <input required type="text" placeholder="MM/YY" className="border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-black outline-none" />
+                  <input required type="text" placeholder="CVC" className="border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-black outline-none" />
                 </div>
               </div>
             </div>
-          ))}
+            <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-transform active:scale-95 disabled:opacity-50 flex justify-center items-center gap-2 shadow-xl shadow-black/10">
+              {loading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : \`Pay $\${total.toFixed(2)}\`}
+            </button>
+          </form>
         </div>
-      </section>
+        <div className="lg:col-span-5">
+          <div className="bg-gray-100 p-8 rounded-3xl sticky top-24">
+            <h2 className="text-xl font-bold mb-6">Order Summary</h2>
+            <div className="space-y-4 mb-6">
+              {cart.map(item => (
+                <div key={item.id} className="flex gap-4">
+                  <img src={item.image} className="w-16 h-16 rounded-lg object-cover" />
+                  <div className="flex-1">
+                    <p className="font-semibold line-clamp-1">{item.name}</p>
+                    <p className="text-gray-500 text-sm">Qty: {item.quantity}</p>
+                  </div>
+                  <p className="font-bold">$\{(item.price * item.quantity).toFixed(2)}</p>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-gray-300 pt-4 space-y-2 mb-4 text-sm">
+              <div className="flex justify-between"><span className="text-gray-600">Subtotal</span><span className="font-semibold">$\{total.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span className="text-gray-600">Shipping</span><span className="text-emerald-600 font-semibold">Free</span></div>
+              <div className="flex justify-between"><span className="text-gray-600">Taxes</span><span className="font-semibold">$0.00</span></div>
+            </div>
+            <div className="border-t border-gray-300 pt-4 flex justify-between items-center">
+              <span className="font-bold text-lg">Total</span>
+              <span className="font-extrabold text-2xl">$\{total.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Success() {
+  return (
+    <div className="min-h-[80vh] flex flex-col items-center justify-center text-center px-6 animate-fade-in">
+      <div className="w-24 h-24 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mb-6">
+        <CheckCircle2 className="w-12 h-12" />
+      </div>
+      <h1 className="text-4xl font-extrabold tracking-tight mb-4">Payment Successful!</h1>
+      <p className="text-gray-500 max-w-md mb-8">Thank you for your order. We've sent a confirmation email to you with the order details.</p>
+      <Link to="/shop" className="bg-black text-white px-8 py-4 rounded-xl font-bold hover:bg-gray-800 transition-colors inline-block">Continue Shopping</Link>
+    </div>
+  );
+}
+
+function About() {
+  return (
+    <div className="max-w-4xl mx-auto px-6 py-20 text-center animate-fade-in">
+      <h1 className="text-5xl font-extrabold tracking-tight mb-8">Crafting the Future</h1>
+      <p className="text-xl text-gray-600 leading-relaxed mb-8">LUXE is a premier destination for modern lifestyle tech and design. We believe that everyday objects should inspire creativity and elevate your environment. Every product in our collection is strictly vetted for uncompromising quality, durability, and aesthetics.</p>
+      <img src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80&w=1200" className="rounded-3xl shadow-2xl w-full" />
     </div>
   );
 }`;
 
 // 2. DASHBOARD TEMPLATE
-const dashboardApp = `import React, { useState } from 'react';
-import { LayoutDashboard, Users, CreditCard, Activity, Bell, Search, Settings, MoreVertical, ArrowUpRight, ArrowDownRight, Menu, X, Loader2 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+const dashboardApp = `import React, { useState, useEffect } from 'react';
+import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Users, CreditCard, Activity, Bell, Search, Settings, MoreVertical, ArrowUpRight, ArrowDownRight, Menu, X, Loader2, PieChart, TrendingUp, BarChart3, Database, ShieldCheck, Download } from 'lucide-react';
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
-const allData = {
-  'Last 7 months': [
-    { name: 'Jan', value: 4000 }, { name: 'Feb', value: 3000 }, { name: 'Mar', value: 5000 },
-    { name: 'Apr', value: 4500 }, { name: 'May', value: 6000 }, { name: 'Jun', value: 5500 },
-    { name: 'Jul', value: 7000 },
-  ],
-  'This Year': [
-    { name: 'Q1', value: 12000 }, { name: 'Q2', value: 16000 }, { name: 'Q3', value: 14500 }, { name: 'Q4', value: 21000 }
-  ]
-};
-
-const allTransactions = [
-  { id: 1, name: 'Stripe Payment', date: 'Today, 10:23 AM', amount: '+$4,230.00', status: 'Completed', type: 'in' },
-  { id: 2, name: 'AWS Services', date: 'Yesterday, 08:45 AM', amount: '-$1,240.50', status: 'Pending', type: 'out' },
-  { id: 3, name: 'GitHub Enterprise', date: 'Oct 12, 14:30 PM', amount: '-$840.00', status: 'Completed', type: 'out' },
-  { id: 4, name: 'Client Retainer', date: 'Oct 10, 09:15 AM', amount: '+$8,500.00', status: 'Completed', type: 'in' },
-  { id: 5, name: 'Vercel Hosting', date: 'Oct 09, 11:00 AM', amount: '-$250.00', status: 'Completed', type: 'out' },
+const data = [
+  { name: 'Jan', revenue: 4000, users: 2400 },
+  { name: 'Feb', revenue: 3000, users: 1398 },
+  { name: 'Mar', revenue: 2000, users: 9800 },
+  { name: 'Apr', revenue: 2780, users: 3908 },
+  { name: 'May', revenue: 1890, users: 4800 },
+  { name: 'Jun', revenue: 2390, users: 3800 },
+  { name: 'Jul', revenue: 3490, users: 4300 },
 ];
 
-export default function DashboardApp() {
-  const [activeTab, setActiveTab] = useState('Dashboard');
-  const [timeRange, setTimeRange] = useState('Last 7 months');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const customerData = [
+  { id: 1, name: 'Alex Johnson', email: 'alex@example.com', status: 'Active', spent: '$1,200', joined: 'Oct 24, 2023' },
+  { id: 2, name: 'Sarah Williams', email: 'sarah.w@example.com', status: 'Inactive', spent: '$340', joined: 'Sep 12, 2023' },
+  { id: 3, name: 'Michael Chen', email: 'm.chen@example.com', status: 'Active', spent: '$2,450', joined: 'Nov 01, 2023' },
+  { id: 4, name: 'Emma Davis', email: 'emma.d@example.com', status: 'Active', spent: '$890', joined: 'Oct 15, 2023' },
+  { id: 5, name: 'James Wilson', email: 'j.wilson@example.com', status: 'Pending', spent: '$0', joined: 'Dec 02, 2023' },
+];
 
-  const transactions = allTransactions.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  const data = allData[timeRange];
+export default function App() {
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const location = useLocation();
 
-  const handleDownload = () => {
-    setIsDownloading(true);
-    setTimeout(() => {
-      setIsDownloading(false);
-      alert('Report downloaded successfully!');
-    }, 2000);
-  };
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+      if (window.innerWidth < 1024) setSidebarOpen(false);
+      else setSidebarOpen(true);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-  const NavLinks = () => (
-    <>
-      {[{icon: LayoutDashboard, label: 'Dashboard'}, {icon: Activity, label: 'Analytics'}, {icon: Users, label: 'Customers'}, {icon: CreditCard, label: 'Billing'}].map(item => (
-        <button 
-          key={item.label}
-          onClick={() => { setActiveTab(item.label); setMobileMenuOpen(false); }}
-          className={\`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all \${activeTab === item.label ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}\`}
-        >
-          <item.icon className={\`w-5 h-5 \${activeTab === item.label ? 'text-indigo-400' : ''}\`} /> {item.label}
-        </button>
-      ))}
-    </>
-  );
+  const menuItems = [
+    { icon: LayoutDashboard, label: 'Overview', path: '/' },
+    { icon: Activity, label: 'Analytics', path: '/analytics' },
+    { icon: Users, label: 'Customers', path: '/customers' },
+    { icon: Settings, label: 'Settings', path: '/settings' },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white flex font-sans selection:bg-indigo-500/30">
-      
-      {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-[#0A0A0A] p-6 lg:hidden flex flex-col">
-          <div className="flex justify-between items-center mb-8">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg shadow-indigo-500/20" />
-              <span className="text-xl font-bold tracking-wide">NEXUS</span>
-            </div>
-            <button onClick={() => setMobileMenuOpen(false)}><X className="w-6 h-6" /></button>
-          </div>
-          <nav className="space-y-2"><NavLinks /></nav>
-        </div>
+    <div className="min-h-screen bg-gray-50/50 flex font-sans text-gray-900">
+      {isMobile && isSidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar Desktop */}
-      <aside className="w-64 border-r border-white/10 hidden lg:flex flex-col relative z-20 bg-[#0A0A0A]">
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg shadow-indigo-500/20" />
-          <span className="text-xl font-bold tracking-wide">NEXUS</span>
+      <aside className={\`fixed lg:sticky top-0 h-screen bg-white border-r border-gray-200 w-72 flex flex-col transition-transform duration-300 z-50 \${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-20'}\`}>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <Database className="w-5 h-5 text-white" />
+            </div>
+            {isSidebarOpen && <span className="font-bold text-xl tracking-tight text-gray-900">NEXUS</span>}
+          </div>
+          {isMobile && (
+            <button onClick={() => setSidebarOpen(false)} className="text-gray-500 hover:text-gray-900">
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
-        <nav className="flex-1 px-4 py-4 space-y-1"><NavLinks /></nav>
-        <div className="p-4 border-t border-white/10">
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl font-medium transition-all">
-            <Settings className="w-5 h-5" /> Settings
-          </button>
+
+        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+          {menuItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.label}
+                to={item.path}
+                onClick={() => isMobile && setSidebarOpen(false)}
+                className={\`flex items-center gap-3 px-4 py-3 rounded-xl transition-all \${isActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}\`}
+              >
+                <item.icon className={\`w-5 h-5 \${isActive ? 'text-indigo-600' : 'text-gray-400'}\`} />
+                {isSidebarOpen && <span>{item.label}</span>}
+              </Link>
+            )
+          })}
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* Header */}
-        <header className="h-20 border-b border-white/10 glass-dark px-6 lg:px-8 flex items-center justify-between sticky top-0 z-10">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 z-30 sticky top-0">
           <div className="flex items-center gap-4">
-            <button className="lg:hidden text-white" onClick={() => setMobileMenuOpen(true)}><Menu className="w-6 h-6" /></button>
-            <div className="relative w-48 lg:w-96 hidden sm:block animate-fade-in">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="Search transactions..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-500 transition-all"
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-4 lg:gap-6">
-            <button className="relative text-gray-400 hover:text-white transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#0A0A0A] animate-pulse"></span>
+            <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-lg lg:hidden">
+              <Menu className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-3 cursor-pointer pl-4 lg:pl-6 border-l border-white/10 hover:bg-white/5 p-1 lg:pr-4 rounded-full transition-colors">
-              <img src="https://i.pravatar.cc/150?img=11" alt="User" className="w-8 h-8 lg:w-9 lg:h-9 rounded-full border border-white/20" />
-              <div className="hidden md:block">
-                <p className="text-sm font-semibold">Alex Doe</p>
-                <p className="text-xs text-gray-400">Admin</p>
-              </div>
+            <div className="relative hidden sm:block w-64 lg:w-96">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input type="text" placeholder="Search anything..." className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
             </div>
           </div>
         </header>
 
-        {/* Content Scrollable */}
-        <div className="flex-1 overflow-y-auto p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto space-y-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-              <div className="animate-slide-up">
-                <h1 className="text-2xl font-bold">{activeTab}</h1>
-                <p className="text-gray-400 text-sm mt-1">Here's what's happening with your projects today.</p>
-              </div>
-              <button 
-                onClick={handleDownload}
-                disabled={isDownloading}
-                className="bg-white text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center gap-2 disabled:opacity-70 disabled:cursor-wait w-full sm:w-auto justify-center"
-              >
-                {isDownloading ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</> : 'Download Report'}
-              </button>
-            </div>
-
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                { label: 'Total Revenue', value: '$128,430', trend: '+14.5%', up: true, color: 'text-emerald-400' },
-                { label: 'Active Users', value: '45.2K', trend: '+8.2%', up: true, color: 'text-emerald-400' },
-                { label: 'Churn Rate', value: '1.2%', trend: '-0.4%', up: false, color: 'text-rose-400' }
-              ].map((stat, i) => (
-                <div key={i} className="glass-dark p-6 rounded-2xl relative overflow-hidden group animate-slide-up" style={{animationDelay: \`\${i * 100}ms\`}}>
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-indigo-500/20 transition-all"></div>
-                  <h3 className="text-gray-400 text-sm font-medium mb-2">{stat.label}</h3>
-                  <div className="flex items-end gap-4">
-                    <span className="text-4xl font-bold tracking-tight">{stat.value}</span>
-                    <span className={\`flex items-center text-sm font-medium \${stat.color} mb-1\`}>
-                      {stat.up ? <ArrowUpRight className="w-4 h-4 mr-1" /> : <ArrowDownRight className="w-4 h-4 mr-1" />}
-                      {stat.trend}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Chart */}
-              <div className="lg:col-span-2 glass-dark p-6 rounded-2xl animate-fade-in" style={{animationDelay: '300ms'}}>
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-semibold text-lg">Revenue Overview</h3>
-                  <select 
-                    value={timeRange} 
-                    onChange={(e) => setTimeRange(e.target.value)}
-                    className="bg-[#171717] border border-white/20 text-sm text-gray-300 rounded-lg px-3 py-1.5 outline-none focus:border-indigo-500 transition-colors cursor-pointer"
-                  >
-                    <option value="Last 7 months">Last 7 months</option>
-                    <option value="This Year">This Year</option>
-                  </select>
-                </div>
-                <div className="h-72 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                      <XAxis dataKey="name" stroke="#ffffff50" axisLine={false} tickLine={false} tick={{fontSize: 12}} dy={10} />
-                      <YAxis stroke="#ffffff50" axisLine={false} tickLine={false} tick={{fontSize: 12}} />
-                      <Tooltip contentStyle={{backgroundColor: '#171717', borderColor: '#ffffff20', borderRadius: '8px'}} itemStyle={{color: '#fff'}} />
-                      <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" animationDuration={1000} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Recent Transactions */}
-              <div className="glass-dark p-6 rounded-2xl flex flex-col animate-fade-in" style={{animationDelay: '400ms'}}>
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-semibold text-lg">Recent Transfers</h3>
-                  <button className="text-gray-400 hover:text-white"><MoreVertical className="w-5 h-5" /></button>
-                </div>
-                
-                {/* Mobile Search inside panel if window is small */}
-                <div className="sm:hidden mb-4">
-                  <input 
-                    type="text" 
-                    placeholder="Search transfers..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-indigo-500 text-white placeholder-gray-500 transition-all"
-                  />
-                </div>
-
-                <div className="flex-1 space-y-6 overflow-y-auto pr-2">
-                  {transactions.length === 0 ? (
-                     <p className="text-gray-500 text-sm text-center mt-10">No transactions found.</p>
-                  ) : (
-                    transactions.map(t => (
-                      <div key={t.id} className="flex items-center justify-between group cursor-pointer">
-                        <div className="flex items-center gap-4">
-                          <div className={\`w-10 h-10 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 \${t.type === 'in' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}\`}>
-                            {t.type === 'in' ? <ArrowDownRight className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm group-hover:text-indigo-300 transition-colors">{t.name}</p>
-                            <p className="text-xs text-gray-500 mt-0.5">{t.date}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className={\`font-semibold text-sm \${t.type === 'in' ? 'text-emerald-400' : 'text-white'}\`}>{t.amount}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">{t.status}</p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-                <button className="w-full mt-6 py-2.5 rounded-xl border border-white/10 text-sm font-medium text-gray-300 hover:bg-white/5 transition-colors">
-                  View All Activity
-                </button>
-              </div>
-            </div>
-            
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto">
+            <Routes>
+              <Route path="/" element={<Overview />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/customers" element={<Customers />} />
+              <Route path="/settings" element={<SettingsView />} />
+            </Routes>
           </div>
         </div>
       </main>
     </div>
   );
-}`;
+}
+
+function Overview() {
+  return (
+    <div className="animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
+          <p className="text-gray-500 text-sm mt-1">Here's what's happening with your projects today.</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {[
+          { title: 'Total Revenue', value: '$45,231.89', change: '+20.1%', trend: 'up', icon: CreditCard },
+          { title: 'Active Users', value: '2,350', change: '+15.2%', trend: 'up', icon: Users },
+          { title: 'New Signups', value: '1,203', change: '-4.1%', trend: 'down', icon: Activity },
+          { title: 'Conversion Rate', value: '3.24%', change: '+1.2%', trend: 'up', icon: TrendingUp },
+        ].map((stat, i) => (
+          <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex justify-between items-start mb-4">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <stat.icon className="w-5 h-5" />
+              </div>
+              <div className={\`flex items-center gap-1 text-sm font-medium \${stat.trend === 'up' ? 'text-emerald-600' : 'text-red-500'}\`}>
+                {stat.trend === 'up' ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                {stat.change}
+              </div>
+            </div>
+            <h3 className="text-gray-500 text-sm font-medium mb-1">{stat.title}</h3>
+            <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Analytics() {
+  return (
+    <div className="animate-fade-in">
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">Analytics</h1>
+      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+        <h3 className="text-lg font-bold text-gray-900 mb-6">User Growth</h3>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} dy={10} />
+              <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
+              <Tooltip cursor={{fill: '#f3f4f6'}} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+              <Bar dataKey="users" fill="#4f46e5" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Customers() {
+  return (
+    <div className="animate-fade-in">
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">Customers</h1>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-gray-500">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+              <tr>
+                <th className="px-6 py-4 font-semibold">Name</th>
+                <th className="px-6 py-4 font-semibold">Status</th>
+                <th className="px-6 py-4 font-semibold">Spent</th>
+              </tr>
+            </thead>
+            <tbody>
+              {customerData.map((c) => (
+                <tr key={c.id} className="border-b border-gray-50">
+                  <td className="px-6 py-4 font-medium text-gray-900">{c.name}</td>
+                  <td className="px-6 py-4">{c.status}</td>
+                  <td className="px-6 py-4 text-gray-900">{c.spent}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsView() {
+  return (
+    <div className="animate-fade-in">
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">Settings</h1>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <p className="text-gray-500">Settings page content goes here.</p>
+      </div>
+    </div>
+  );
+}
+`;
 
 // 3. MOBILE APP TEMPLATE
 const mobileApp = `import React, { useState } from 'react';
