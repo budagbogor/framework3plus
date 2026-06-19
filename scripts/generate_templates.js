@@ -1076,12 +1076,13 @@ export default function MobileApp() {
 
 // 4. DESKTOP TOOL TEMPLATE
 const desktopApp = `import React, { useState } from 'react';
-import { Folder, FolderOpen, File, ChevronRight, ChevronDown, Terminal, Search, Settings, Cloud, Database, Play, CheckCircle2, AlertCircle, Loader2, X } from 'lucide-react';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Folder, FolderOpen, File, ChevronRight, Terminal, Search, Settings, Cloud, Database, Play, CheckCircle2, AlertCircle, Loader2, X, Activity, Box, GitBranch } from 'lucide-react';
 
 const mockFiles = {
   'init_schema.sql': {
     lang: 'SQL',
-    code: \`CREATE TABLE users (
+    code: \\\`CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
@@ -1089,11 +1090,11 @@ const mockFiles = {
 );
 
 -- Create index on email for faster lookups
-CREATE INDEX idx_users_email ON users(email);\`
+CREATE INDEX idx_users_email ON users(email);\\\`
   },
   'connection.js': {
     lang: 'JavaScript',
-    code: \`const { Pool } = require('pg');
+    code: \\\`const { Pool } = require('pg');
 
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
@@ -1105,247 +1106,334 @@ const pool = new Pool({
 
 module.exports = {
   query: (text, params) => pool.query(text, params),
-};\`,
+};\\\`
   }
 };
 
-export default function DesktopTool() {
-  const [activeTab, setActiveTab] = useState('init_schema.sql');
-  const [openFiles, setOpenFiles] = useState(['init_schema.sql', 'connection.js']);
-  const [foldersOpen, setFoldersOpen] = useState({ src: true, migrations: true });
-  const [isRunning, setIsRunning] = useState(false);
-  const [logs, setLogs] = useState([
-    { type: 'success', text: 'Connected to localhost:5432 (PostgreSQL 14.2)' }
-  ]);
+function EditorView() {
+  const [activeTab, setActiveTab] = useState('connection.js');
   const [bottomPaneTab, setBottomPaneTab] = useState('output');
-
-  const toggleFolder = (folder) => setFoldersOpen(p => ({ ...p, [folder]: !p[folder] }));
-  
-  const openFile = (filename) => {
-    if(!openFiles.includes(filename)) setOpenFiles([...openFiles, filename]);
-    setActiveTab(filename);
-  };
-
-  const closeFile = (e, filename) => {
-    e.stopPropagation();
-    const newFiles = openFiles.filter(f => f !== filename);
-    setOpenFiles(newFiles);
-    if(activeTab === filename) setActiveTab(newFiles[newFiles.length - 1] || null);
-  };
+  const [isRunning, setIsRunning] = useState(false);
+  const [logs, setLogs] = useState([{ type: 'info', text: 'IDE Initialized. Ready.' }]);
 
   const runQuery = () => {
-    if(isRunning) return;
     setIsRunning(true);
-    setBottomPaneTab('output');
-    setLogs(p => [...p, { type: 'info', text: \`Executing \${activeTab}...\` }]);
-    
+    setLogs(prev => [...prev, { type: 'info', text: 'Executing...' }]);
     setTimeout(() => {
       setIsRunning(false);
-      setLogs(p => [...p, { type: 'success', text: \`Execution completed successfully (42ms)\` }]);
-      if(activeTab.endsWith('.sql')) {
-        setLogs(p => [...p, { type: 'warning', text: 'Warning: No role specified for schema creation.' }]);
-      }
+      setLogs(prev => [...prev, { type: 'success', text: 'Execution completed successfully in 1.2s' }]);
     }, 1500);
   };
 
   return (
-    <div className="h-screen bg-[#1e1e1e] text-[#cccccc] font-sans flex flex-col overflow-hidden select-none">
-      {/* Titlebar */}
-      <div className="h-9 bg-[#323233] flex items-center justify-between px-4 border-b border-[#111111] shadow-sm">
-        <div className="flex gap-2">
-          <div className="w-3 h-3 rounded-full bg-[#ff5f56] hover:bg-[#ff4033] cursor-pointer"></div>
-          <div className="w-3 h-3 rounded-full bg-[#ffbd2e] hover:bg-[#ffaa00] cursor-pointer"></div>
-          <div className="w-3 h-3 rounded-full bg-[#27c93f] hover:bg-[#1fa133] cursor-pointer"></div>
+    <div className="flex-1 flex overflow-hidden bg-[#1e1e1e]">
+      {/* Sidebar: Explorer */}
+      <div className="w-64 border-r border-[#2d2d2d] bg-[#252526] flex flex-col hidden md:flex animate-slide-right">
+        <div className="px-4 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Explorer</div>
+        <div className="px-2 py-1 flex items-center gap-1 hover:bg-[#37373d] cursor-pointer text-sm">
+          <ChevronRight className="w-4 h-4 text-gray-400" />
+          <FolderOpen className="w-4 h-4 text-blue-400" />
+          <span className="text-gray-300">myapp_backend</span>
         </div>
-        <div className="text-xs font-medium opacity-70 flex items-center gap-2 tracking-wide">
-          <Database className="w-3 h-3" /> DataGrip Studio Pro <span className="opacity-50">- {activeTab || 'Welcome'}</span>
+        <div className="pl-6">
+          <div className="px-2 py-1 flex items-center gap-1 hover:bg-[#37373d] cursor-pointer text-sm">
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <Folder className="w-4 h-4 text-emerald-500" />
+            <span className="text-gray-300">src</span>
+          </div>
+          <div className="pl-4">
+            <div 
+              className={\\\`px-2 py-1 flex items-center gap-1 cursor-pointer text-sm \\\${activeTab === 'connection.js' ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e] text-gray-400'}\\\`}
+              onClick={() => setActiveTab('connection.js')}
+            >
+              <File className="w-4 h-4 text-yellow-400" />
+              <span>connection.js</span>
+            </div>
+          </div>
+          <div className="px-2 py-1 flex items-center gap-1 hover:bg-[#37373d] cursor-pointer text-sm mt-1">
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <Folder className="w-4 h-4 text-purple-400" />
+            <span className="text-gray-300">migrations</span>
+          </div>
+          <div className="pl-4">
+            <div 
+              className={\\\`px-2 py-1 flex items-center gap-1 cursor-pointer text-sm \\\${activeTab === 'init_schema.sql' ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e] text-gray-400'}\\\`}
+              onClick={() => setActiveTab('init_schema.sql')}
+            >
+              <Database className="w-4 h-4 text-emerald-400" />
+              <span>init_schema.sql</span>
+            </div>
+          </div>
         </div>
-        <div className="w-12"></div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Activity Bar */}
-        <div className="w-12 bg-[#333333] flex flex-col items-center py-4 gap-6 border-r border-[#252526] z-10 shadow-xl">
-          <div className="p-2 bg-[#1e1e1e] rounded-lg text-blue-400 cursor-pointer border-l-2 border-blue-400"><Folder className="w-5 h-5" /></div>
-          <div className="p-2 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"><Search className="w-5 h-5" /></div>
-          <div className="p-2 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"><Database className="w-5 h-5" /></div>
-          <div className="p-2 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"><Cloud className="w-5 h-5" /></div>
-          <div className="mt-auto p-2 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"><Settings className="w-5 h-5" /></div>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Editor Tabs */}
+        <div className="flex bg-[#252526] overflow-x-auto hide-scrollbar">
+          {Object.keys(mockFiles).map(file => (
+            <div 
+              key={file}
+              onClick={() => setActiveTab(file)}
+              className={\\\`flex items-center gap-2 px-3 py-2 text-sm cursor-pointer border-r border-[#2d2d2d] group \\\${activeTab === file ? 'bg-[#1e1e1e] text-white border-t-2 border-t-blue-500' : 'bg-[#2d2d2d] text-gray-400 hover:bg-[#1e1e1e]'}\\\`}
+            >
+              {file.endsWith('.sql') ? <Database className="w-4 h-4 text-emerald-400" /> : <File className="w-4 h-4 text-yellow-400" />}
+              {file}
+              <button className="opacity-0 group-hover:opacity-100 hover:bg-[#444] rounded p-0.5 ml-1"><X className="w-3 h-3" /></button>
+            </div>
+          ))}
         </div>
 
-        {/* Sidebar */}
-        <div className="w-64 bg-[#252526] border-r border-[#1e1e1e] flex flex-col shadow-lg z-0">
-          <div className="h-9 px-4 flex items-center text-xs font-bold tracking-wider text-gray-400 uppercase">Explorer</div>
-          <div className="flex-1 overflow-y-auto py-2 text-sm">
-            {/* src Folder */}
-            <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#2a2d2e] cursor-pointer" onClick={() => toggleFolder('src')}>
-              {foldersOpen.src ? <ChevronDown className="w-4 h-4 opacity-70" /> : <ChevronRight className="w-4 h-4 opacity-70" />}
-              {foldersOpen.src ? <FolderOpen className="w-4 h-4 text-yellow-500" /> : <Folder className="w-4 h-4 text-yellow-500" />}
-              <span>src</span>
-            </div>
-            {foldersOpen.src && (
-              <div 
-                className={\`flex items-center gap-1.5 px-2 py-1 ml-6 cursor-pointer \${activeTab === 'connection.js' ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e]'}\`}
-                onClick={() => openFile('connection.js')}
-              >
-                <File className="w-4 h-4 text-blue-400" /> <span>connection.js</span>
-              </div>
-            )}
-
-            {/* migrations Folder */}
-            <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#2a2d2e] cursor-pointer mt-1" onClick={() => toggleFolder('migrations')}>
-              {foldersOpen.migrations ? <ChevronDown className="w-4 h-4 opacity-70" /> : <ChevronRight className="w-4 h-4 opacity-70" />}
-              {foldersOpen.migrations ? <FolderOpen className="w-4 h-4 text-emerald-500" /> : <Folder className="w-4 h-4 text-emerald-500" />}
-              <span>migrations</span>
-            </div>
-            {foldersOpen.migrations && (
-              <>
-                <div 
-                  className={\`flex items-center gap-1.5 px-2 py-1 ml-6 cursor-pointer \${activeTab === 'init_schema.sql' ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e]'}\`}
-                  onClick={() => openFile('init_schema.sql')}
-                >
-                  <Database className="w-4 h-4 text-emerald-400" /> <span>init_schema.sql</span>
-                </div>
-              </>
-            )}
+        {/* Toolbar */}
+        <div className="px-4 py-2 flex items-center justify-between border-b border-[#2d2d2d] bg-[#1e1e1e] shadow-sm z-10">
+          <div className="text-xs opacity-60 flex items-center gap-1">
+            project <ChevronRight className="w-3 h-3" /> {activeTab.endsWith('.sql') ? 'migrations' : 'src'} <ChevronRight className="w-3 h-3" /> {activeTab}
+          </div>
+          <div className="flex gap-2 animate-fade-in">
+            <button 
+              onClick={runQuery}
+              disabled={isRunning}
+              className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-semibold rounded transition-colors shadow-lg shadow-blue-900/20"
+            >
+              {isRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
+              {activeTab.endsWith('.sql') ? 'Run Query' : 'Execute Script'}
+            </button>
           </div>
         </div>
 
-        {/* Main Editor Area */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#1e1e1e]">
-          {/* Editor Tabs */}
-          <div className="flex bg-[#2d2d2d] overflow-x-auto hide-scrollbar border-b border-[#1e1e1e]">
-            {openFiles.length === 0 && <div className="p-2 text-sm opacity-50 italic">No files open</div>}
-            {openFiles.map(file => (
-              <div 
-                key={file}
-                onClick={() => setActiveTab(file)}
-                className={\`group flex items-center gap-2 px-4 py-2 border-r border-[#1e1e1e] cursor-pointer text-sm \${activeTab === file ? 'bg-[#1e1e1e] text-white border-t-2 border-t-blue-500' : 'bg-[#2d2d2d] opacity-60 hover:bg-[#252526] hover:opacity-100 border-t-2 border-t-transparent'}\`}
-              >
-                {file.endsWith('.sql') ? <Database className="w-4 h-4 text-emerald-400" /> : <File className="w-4 h-4 text-blue-400" />}
-                {file}
-                <button onClick={(e) => closeFile(e, file)} className="opacity-0 group-hover:opacity-100 hover:bg-[#444] rounded p-0.5 ml-1"><X className="w-3 h-3" /></button>
-              </div>
-            ))}
-          </div>
-
-          {activeTab ? (
-            <>
-              {/* Breadcrumbs & Toolbar */}
-              <div className="px-4 py-2 flex items-center justify-between border-b border-[#2d2d2d] bg-[#1e1e1e] shadow-sm z-10">
-                <div className="text-xs opacity-60 flex items-center gap-1">
-                  project <ChevronRight className="w-3 h-3" /> {activeTab.endsWith('.sql') ? 'migrations' : 'src'} <ChevronRight className="w-3 h-3" /> {activeTab}
-                </div>
-                <div className="flex gap-2 animate-fade-in">
-                  <button 
-                    onClick={runQuery}
-                    disabled={isRunning}
-                    className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-semibold rounded transition-colors shadow-lg shadow-emerald-900/20"
-                  >
-                    {isRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
-                    {activeTab.endsWith('.sql') ? 'Run Query' : 'Execute Script'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Code Editor Mock */}
-              <div className="flex-1 p-4 font-mono text-sm leading-relaxed overflow-y-auto bg-[#1e1e1e]">
-                <div className="flex animate-fade-in">
-                  <div className="w-8 text-right pr-4 opacity-30 select-none flex flex-col">
-                    {mockFiles[activeTab].code.split('\\n').map((_, i) => <span key={i}>{i+1}</span>)}
-                  </div>
-                  <div className="flex-1 whitespace-pre">
-                    {activeTab.endsWith('.sql') ? (
-                      <>
-                        <span className="text-[#569cd6]">CREATE TABLE</span> <span className="text-[#dcdcaa]">users</span> (<br/>
-                        &nbsp;&nbsp;id <span className="text-[#569cd6]">UUID PRIMARY KEY DEFAULT</span> <span className="text-[#4ec9b0]">uuid_generate_v4()</span>,<br/>
-                        &nbsp;&nbsp;email <span className="text-[#569cd6]">VARCHAR</span>(255) <span className="text-[#569cd6]">UNIQUE NOT NULL</span>,<br/>
-                        &nbsp;&nbsp;password_hash <span className="text-[#569cd6]">VARCHAR</span>(255) <span className="text-[#569cd6]">NOT NULL</span>,<br/>
-                        &nbsp;&nbsp;created_at <span className="text-[#569cd6]">TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP</span><br/>
-                        );<br/>
-                        <br/>
-                        <span className="text-[#6A9955]">-- Create index on email for faster lookups</span><br/>
-                        <span className="text-[#569cd6]">CREATE INDEX</span> idx_users_email <span className="text-[#569cd6]">ON</span> users(email);
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-[#569cd6]">const</span> {'{'} Pool {'}'} = <span className="text-[#4ec9b0]">require</span>(<span className="text-[#ce9178]">'pg'</span>);<br/><br/>
-                        <span className="text-[#569cd6]">const</span> pool = <span className="text-[#569cd6]">new</span> <span className="text-[#4ec9b0]">Pool</span>({'{'}<br/>
-                        &nbsp;&nbsp;host: <span className="text-[#4fc1ff]">process</span>.env.DB_HOST || <span className="text-[#ce9178]">'localhost'</span>,<br/>
-                        &nbsp;&nbsp;user: <span className="text-[#4fc1ff]">process</span>.env.DB_USER || <span className="text-[#ce9178]">'admin'</span>,<br/>
-                        &nbsp;&nbsp;password: <span className="text-[#4fc1ff]">process</span>.env.DB_PASSWORD,<br/>
-                        &nbsp;&nbsp;database: <span className="text-[#ce9178]">'myapp_db'</span>,<br/>
-                        &nbsp;&nbsp;port: <span className="text-[#b5cea8]">5432</span>,<br/>
-                        {'}'});<br/><br/>
-                        <span className="text-[#4fc1ff]">module</span>.exports = {'{'}<br/>
-                        &nbsp;&nbsp;<span className="text-[#dcdcaa]">query</span>: (text, params) <span className="text-[#569cd6]">=&gt;</span> pool.<span className="text-[#dcdcaa]">query</span>(text, params),<br/>
-                        {'}'};
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center opacity-30 select-none">
-              <Database className="w-24 h-24 mb-4" />
-              <h2 className="text-xl">DataGrip Studio Pro</h2>
-              <p>Select a file from the explorer to begin.</p>
+        {/* Editor Content */}
+        <div className="flex-1 p-4 font-mono text-sm leading-relaxed overflow-y-auto bg-[#1e1e1e]">
+          <div className="flex animate-fade-in">
+            <div className="w-8 text-right pr-4 opacity-30 select-none flex flex-col">
+              {mockFiles[activeTab].code.split('\\\\n').map((_, i) => <span key={i}>{i+1}</span>)}
             </div>
-          )}
-
-          {/* Bottom Panel (Terminal/Output) */}
-          <div className="h-48 border-t border-[#2d2d2d] flex flex-col bg-[#1e1e1e]">
-            <div className="flex border-b border-[#2d2d2d] px-2 bg-[#252526]">
-              <div 
-                onClick={() => setBottomPaneTab('output')}
-                className={\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer \${bottomPaneTab === 'output' ? 'border-b border-blue-500 text-white' : 'opacity-50 hover:opacity-100'}\`}
-              >
-                Output
-              </div>
-              <div 
-                onClick={() => setBottomPaneTab('terminal')}
-                className={\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer \${bottomPaneTab === 'terminal' ? 'border-b border-blue-500 text-white' : 'opacity-50 hover:opacity-100'}\`}
-              >
-                Terminal
-              </div>
-            </div>
-            
-            <div className="flex-1 p-3 font-mono text-xs overflow-y-auto space-y-2">
-              {bottomPaneTab === 'output' ? (
-                logs.map((log, i) => (
-                  <div key={i} className={\`flex gap-2 animate-slide-up \${log.type === 'success' ? 'text-emerald-400' : log.type === 'warning' ? 'text-yellow-400' : log.type === 'error' ? 'text-rose-400' : 'text-gray-400'}\`}>
-                    {log.type === 'success' && <CheckCircle2 className="w-4 h-4 flex-shrink-0" />}
-                    {log.type === 'warning' && <AlertCircle className="w-4 h-4 flex-shrink-0" />}
-                    {log.type === 'info' && <Terminal className="w-4 h-4 flex-shrink-0" />}
-                    <span>[{new Date().toLocaleTimeString()}] {log.text}</span>
-                  </div>
-                ))
+            <div className="flex-1 whitespace-pre">
+              {activeTab.endsWith('.sql') ? (
+                <>
+                  <span className="text-[#569cd6]">CREATE TABLE</span> <span className="text-[#dcdcaa]">users</span> (<br/>
+                  &nbsp;&nbsp;id <span className="text-[#569cd6]">UUID PRIMARY KEY DEFAULT</span> <span className="text-[#4ec9b0]">uuid_generate_v4()</span>,<br/>
+                  &nbsp;&nbsp;email <span className="text-[#569cd6]">VARCHAR</span>(255) <span className="text-[#569cd6]">UNIQUE NOT NULL</span>,<br/>
+                  &nbsp;&nbsp;password_hash <span className="text-[#569cd6]">VARCHAR</span>(255) <span className="text-[#569cd6]">NOT NULL</span>,<br/>
+                  &nbsp;&nbsp;created_at <span className="text-[#569cd6]">TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP</span><br/>
+                  );<br/>
+                  <br/>
+                  <span className="text-[#6A9955]">-- Create index on email for faster lookups</span><br/>
+                  <span className="text-[#569cd6]">CREATE INDEX</span> idx_users_email <span className="text-[#569cd6]">ON</span> users(email);
+                </>
               ) : (
-                <div className="text-gray-400">
-                  <span className="text-emerald-400">user@dev-machine</span>:<span className="text-blue-400">~/projects/myapp</span>$ <span className="animate-pulse">_</span>
-                </div>
+                <>
+                  <span className="text-[#569cd6]">const</span> {'{'} Pool {'}'} = <span className="text-[#4ec9b0]">require</span>(<span className="text-[#ce9178]">'pg'</span>);<br/><br/>
+                  <span className="text-[#569cd6]">const</span> pool = <span className="text-[#569cd6]">new</span> <span className="text-[#4ec9b0]">Pool</span>({'{'}<br/>
+                  &nbsp;&nbsp;host: <span className="text-[#4fc1ff]">process</span>.env.DB_HOST || <span className="text-[#ce9178]">'localhost'</span>,<br/>
+                  &nbsp;&nbsp;user: <span className="text-[#4fc1ff]">process</span>.env.DB_USER || <span className="text-[#ce9178]">'admin'</span>,<br/>
+                  &nbsp;&nbsp;password: <span className="text-[#4fc1ff]">process</span>.env.DB_PASSWORD,<br/>
+                  &nbsp;&nbsp;database: <span className="text-[#ce9178]">'myapp_db'</span>,<br/>
+                  &nbsp;&nbsp;port: <span className="text-[#b5cea8]">5432</span>,<br/>
+                  {'}'});<br/><br/>
+                  <span className="text-[#4fc1ff]">module</span>.exports = {'{'}<br/>
+                  &nbsp;&nbsp;<span className="text-[#dcdcaa]">query</span>: (text, params) <span className="text-[#569cd6]">=&gt;</span> pool.<span className="text-[#dcdcaa]">query</span>(text, params),<br/>
+                  {'}'};
+                </>
               )}
             </div>
           </div>
         </div>
+
+        {/* Bottom Terminal */}
+        <div className="h-48 border-t border-[#2d2d2d] flex flex-col bg-[#1e1e1e]">
+          <div className="flex border-b border-[#2d2d2d] px-2 bg-[#252526]">
+            <div 
+              onClick={() => setBottomPaneTab('output')}
+              className={\\\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer \\\${bottomPaneTab === 'output' ? 'border-b border-blue-500 text-white' : 'opacity-50 hover:opacity-100'}\\\`}
+            >
+              Output
+            </div>
+            <div 
+              onClick={() => setBottomPaneTab('terminal')}
+              className={\\\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer \\\${bottomPaneTab === 'terminal' ? 'border-b border-blue-500 text-white' : 'opacity-50 hover:opacity-100'}\\\`}
+            >
+              Terminal
+            </div>
+          </div>
+          
+          <div className="flex-1 p-3 font-mono text-xs overflow-y-auto space-y-2">
+            {bottomPaneTab === 'output' ? (
+              logs.map((log, i) => (
+                <div key={i} className={\\\`flex gap-2 animate-slide-up \\\${log.type === 'success' ? 'text-emerald-400' : log.type === 'warning' ? 'text-yellow-400' : log.type === 'error' ? 'text-rose-400' : 'text-gray-400'}\\\`}>
+                  {log.type === 'success' && <CheckCircle2 className="w-4 h-4 flex-shrink-0" />}
+                  {log.type === 'warning' && <AlertCircle className="w-4 h-4 flex-shrink-0" />}
+                  {log.type === 'info' && <Terminal className="w-4 h-4 flex-shrink-0" />}
+                  <span>[{new Date().toLocaleTimeString()}] {log.text}</span>
+                </div>
+              ))
+            ) : (
+              <div className="text-gray-400">
+                <span className="text-emerald-400">user@dev-machine</span>:<span className="text-blue-400">~/projects/myapp</span>$ <span className="animate-pulse">_</span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
+    </div>
+  );
+}
+
+function DatabaseView() {
+  return (
+    <div className="flex-1 flex items-center justify-center bg-[#1e1e1e] text-white animate-fade-in flex-col p-8 text-center">
+      <Database className="w-24 h-24 text-emerald-500 opacity-80 mb-6" />
+      <h2 className="text-2xl font-bold mb-2">Database Explorer</h2>
+      <p className="text-gray-400 max-w-md">Connect to your PostgreSQL or MySQL database to view schemas, write queries, and manage your data.</p>
+      <button className="mt-8 px-6 py-2 bg-emerald-600 hover:bg-emerald-500 rounded text-sm font-semibold transition-colors">Connect Database</button>
+    </div>
+  );
+}
+
+function ExtensionsView() {
+  return (
+    <div className="flex-1 flex flex-col bg-[#1e1e1e] text-white animate-fade-in p-8">
+      <div className="flex items-center gap-4 mb-8">
+        <Box className="w-10 h-10 text-purple-400" />
+        <h2 className="text-2xl font-bold">Extensions Marketplace</h2>
+      </div>
+      <div className="relative mb-8 w-full max-w-md">
+        <Search className="absolute left-3 top-2.5 w-5 h-5 text-gray-500" />
+        <input type="text" placeholder="Search extensions in Marketplace..." className="w-full bg-[#252526] border border-[#3c3c3c] rounded px-10 py-2 focus:outline-none focus:border-blue-500" />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[
+          { name: 'Prettier - Code formatter', author: 'Prettier', icon: '🎨' },
+          { name: 'ESLint', author: 'Microsoft', icon: '✅' },
+          { name: 'GitLens', author: 'GitKraken', icon: '🔍' },
+          { name: 'Tailwind CSS IntelliSense', author: 'Tailwind Labs', icon: '🌊' }
+        ].map((ext, i) => (
+          <div key={i} className="flex items-start gap-4 p-4 bg-[#252526] border border-[#3c3c3c] rounded hover:border-gray-400 transition-colors cursor-pointer">
+            <div className="w-12 h-12 bg-[#333] rounded flex items-center justify-center text-2xl">{ext.icon}</div>
+            <div>
+              <h3 className="font-bold text-sm">{ext.name}</h3>
+              <p className="text-xs text-gray-400 mb-2">{ext.author}</p>
+              <button className="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-xs">Install</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SettingsView() {
+  return (
+    <div className="flex-1 flex flex-col bg-[#1e1e1e] text-white animate-fade-in p-8 overflow-y-auto">
+      <h2 className="text-2xl font-bold mb-8 flex items-center gap-3"><Settings className="w-6 h-6" /> Settings</h2>
+      <div className="max-w-3xl space-y-8">
+        <section>
+          <h3 className="text-lg font-semibold border-b border-[#3c3c3c] pb-2 mb-4">Text Editor</h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div><p className="font-medium">Font Size</p><p className="text-xs text-gray-400">Controls the font size in pixels.</p></div>
+              <input type="number" defaultValue={14} className="bg-[#3c3c3c] border border-transparent rounded px-3 py-1 w-20 text-center focus:border-blue-500 focus:outline-none" />
+            </div>
+            <div className="flex justify-between items-center">
+              <div><p className="font-medium">Word Wrap</p><p className="text-xs text-gray-400">Controls how lines should wrap.</p></div>
+              <select className="bg-[#3c3c3c] border border-transparent rounded px-3 py-1 w-32 focus:border-blue-500 focus:outline-none">
+                <option>off</option>
+                <option>on</option>
+                <option>wordWrapColumn</option>
+              </select>
+            </div>
+          </div>
+        </section>
+        <section>
+          <h3 className="text-lg font-semibold border-b border-[#3c3c3c] pb-2 mb-4">Workbench</h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div><p className="font-medium">Color Theme</p><p className="text-xs text-gray-400">Specifies the color theme used in the workbench.</p></div>
+              <select className="bg-[#3c3c3c] border border-transparent rounded px-3 py-1 w-48 focus:border-blue-500 focus:outline-none">
+                <option>Dark+ (default dark)</option>
+                <option>One Dark Pro</option>
+                <option>Dracula</option>
+                <option>GitHub Dark</option>
+              </select>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function Layout() {
+  const location = useLocation();
+
+  return (
+    <div className="flex flex-col h-screen bg-[#1e1e1e] text-white font-sans selection:bg-blue-500/30 overflow-hidden shadow-2xl ring-1 ring-white/10">
       
+      {/* Title Bar Mock */}
+      <div className="h-8 bg-[#323233] border-b border-[#1e1e1e] flex items-center justify-between px-4 draggable">
+        <div className="flex gap-2">
+          <div className="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e]"></div>
+          <div className="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123]"></div>
+          <div className="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29]"></div>
+        </div>
+        <div className="text-xs text-gray-400 font-medium">Nexus Studio - {location.pathname === '/' ? 'Editor' : location.pathname.substring(1).charAt(0).toUpperCase() + location.pathname.substring(2)}</div>
+        <div className="w-12"></div>
+      </div>
+
+      <div className="flex-1 flex overflow-hidden">
+        {/* Activity Bar (Sidebar Icons) */}
+        <div className="w-12 bg-[#333333] flex flex-col items-center py-4 gap-6 shrink-0 z-20">
+          <Link to="/" className={\\\`relative cursor-pointer group \\\${location.pathname === '/' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\\\`}>
+            {location.pathname === '/' && <div className="absolute -left-[14px] top-0 bottom-0 w-[2px] bg-blue-500"></div>}
+            <File className="w-6 h-6" />
+          </Link>
+          <Link to="/database" className={\\\`relative cursor-pointer group \\\${location.pathname === '/database' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\\\`}>
+            {location.pathname === '/database' && <div className="absolute -left-[14px] top-0 bottom-0 w-[2px] bg-blue-500"></div>}
+            <Database className="w-6 h-6" />
+          </Link>
+          <Link to="/extensions" className={\\\`relative cursor-pointer group \\\${location.pathname === '/extensions' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\\\`}>
+            {location.pathname === '/extensions' && <div className="absolute -left-[14px] top-0 bottom-0 w-[2px] bg-blue-500"></div>}
+            <Box className="w-6 h-6" />
+          </Link>
+          <div className="mt-auto relative cursor-pointer group">
+            <GitBranch className="w-6 h-6 text-gray-500 hover:text-white transition-colors" />
+          </div>
+          <Link to="/settings" className={\\\`relative cursor-pointer group \\\${location.pathname === '/settings' ? 'text-white' : 'text-gray-500 hover:text-white transition-colors'}\\\`}>
+            {location.pathname === '/settings' && <div className="absolute -left-[14px] top-0 bottom-0 w-[2px] bg-blue-500"></div>}
+            <Settings className="w-6 h-6" />
+          </Link>
+        </div>
+
+        {/* Main Routed Area */}
+        <Routes>
+          <Route path="/" element={<EditorView />} />
+          <Route path="/database" element={<DatabaseView />} />
+          <Route path="/extensions" element={<ExtensionsView />} />
+          <Route path="/settings" element={<SettingsView />} />
+        </Routes>
+      </div>
+
       {/* Status Bar */}
-      <div className="h-6 bg-[#007acc] text-white text-[11px] flex items-center justify-between px-3 font-mono">
+      <div className="h-6 bg-[#007acc] text-white text-[11px] flex items-center justify-between px-3 font-mono z-20">
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1 cursor-pointer hover:bg-white/20 px-1 rounded transition-colors"><Cloud className="w-3 h-3" /> main*</span>
           <span className="flex items-center gap-1 cursor-pointer hover:bg-white/20 px-1 rounded transition-colors"><CheckCircle2 className="w-3 h-3" /> 0 ⚠ 1</span>
         </div>
         <div className="flex items-center gap-4">
-          {activeTab && <span>Ln 1, Col 1</span>}
           <span>UTF-8</span>
-          {activeTab && <span>{mockFiles[activeTab]?.lang}</span>}
+          <span>Nexus Engine v2.1</span>
         </div>
       </div>
     </div>
   );
-}`;
+}
+
+export default function DesktopApp() {
+  return (
+    <BrowserRouter>
+      <Layout />
+    </BrowserRouter>
+  );
+}
+`;
 
 // 5. AI CHATBOT TEMPLATE
 const chatbotApp = `import React, { useState, useRef, useEffect } from 'react';
