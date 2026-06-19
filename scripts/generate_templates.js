@@ -529,213 +529,267 @@ function About() {
 }`;
 
 // 2. DASHBOARD TEMPLATE
-const dashboardApp = `import React, { useState, useEffect } from 'react';
+const dashboardApp = `import React, { useState } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, CreditCard, Activity, Bell, Search, Settings, MoreVertical, ArrowUpRight, ArrowDownRight, Menu, X, Loader2, PieChart, TrendingUp, BarChart3, Database, ShieldCheck, Download } from 'lucide-react';
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LayoutDashboard, Users, CreditCard, Activity, Bell, Search, Settings, MoreVertical, ArrowUpRight, ArrowDownRight, Menu, X, Loader2 } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const data = [
-  { name: 'Jan', revenue: 4000, users: 2400 },
-  { name: 'Feb', revenue: 3000, users: 1398 },
-  { name: 'Mar', revenue: 2000, users: 9800 },
-  { name: 'Apr', revenue: 2780, users: 3908 },
-  { name: 'May', revenue: 1890, users: 4800 },
-  { name: 'Jun', revenue: 2390, users: 3800 },
-  { name: 'Jul', revenue: 3490, users: 4300 },
+const allData = {
+  'Last 7 months': [
+    { name: 'Jan', value: 4000 }, { name: 'Feb', value: 3000 }, { name: 'Mar', value: 5000 },
+    { name: 'Apr', value: 4500 }, { name: 'May', value: 6000 }, { name: 'Jun', value: 5500 },
+    { name: 'Jul', value: 7000 },
+  ],
+  'This Year': [
+    { name: 'Q1', value: 12000 }, { name: 'Q2', value: 16000 }, { name: 'Q3', value: 14500 }, { name: 'Q4', value: 21000 }
+  ]
+};
+
+const allTransactions = [
+  { id: 1, name: 'Stripe Payment', date: 'Today, 10:23 AM', amount: '+$4,230.00', status: 'Completed', type: 'in' },
+  { id: 2, name: 'AWS Services', date: 'Yesterday, 08:45 AM', amount: '-$1,240.50', status: 'Pending', type: 'out' },
+  { id: 3, name: 'GitHub Enterprise', date: 'Oct 12, 14:30 PM', amount: '-$840.00', status: 'Completed', type: 'out' },
+  { id: 4, name: 'Client Retainer', date: 'Oct 10, 09:15 AM', amount: '+$8,500.00', status: 'Completed', type: 'in' },
+  { id: 5, name: 'Vercel Hosting', date: 'Oct 09, 11:00 AM', amount: '-$250.00', status: 'Completed', type: 'out' },
 ];
 
-const customerData = [
-  { id: 1, name: 'Alex Johnson', email: 'alex@example.com', status: 'Active', spent: '$1,200', joined: 'Oct 24, 2023' },
-  { id: 2, name: 'Sarah Williams', email: 'sarah.w@example.com', status: 'Inactive', spent: '$340', joined: 'Sep 12, 2023' },
-  { id: 3, name: 'Michael Chen', email: 'm.chen@example.com', status: 'Active', spent: '$2,450', joined: 'Nov 01, 2023' },
-  { id: 4, name: 'Emma Davis', email: 'emma.d@example.com', status: 'Active', spent: '$890', joined: 'Oct 15, 2023' },
-  { id: 5, name: 'James Wilson', email: 'j.wilson@example.com', status: 'Pending', spent: '$0', joined: 'Dec 02, 2023' },
-];
+function DashboardHome() {
+  const [timeRange, setTimeRange] = useState('Last 7 months');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);
 
-export default function App() {
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
-  const location = useLocation();
+  const transactions = allTransactions.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const data = allData[timeRange];
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024);
-      if (window.innerWidth < 1024) setSidebarOpen(false);
-      else setSidebarOpen(true);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const menuItems = [
-    { icon: LayoutDashboard, label: 'Overview', path: '/' },
-    { icon: Activity, label: 'Analytics', path: '/analytics' },
-    { icon: Users, label: 'Customers', path: '/customers' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
-  ];
+  const handleDownload = () => {
+    setIsDownloading(true);
+    setTimeout(() => {
+      setIsDownloading(false);
+      alert('Report downloaded successfully!');
+    }, 2000);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 flex font-sans text-gray-900">
-      {isMobile && isSidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setSidebarOpen(false)} />
-      )}
+    <div className="max-w-7xl mx-auto space-y-8 animate-fade-in">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+        <div className="animate-slide-up">
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <p className="text-gray-400 text-sm mt-1">Here's what's happening with your projects today.</p>
+        </div>
+        <button 
+          onClick={handleDownload}
+          disabled={isDownloading}
+          className="bg-white text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center gap-2 disabled:opacity-70 disabled:cursor-wait w-full sm:w-auto justify-center"
+        >
+          {isDownloading ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</> : 'Download Report'}
+        </button>
+      </div>
 
-      <aside className={\`fixed lg:sticky top-0 h-screen bg-white border-r border-gray-200 w-72 flex flex-col transition-transform duration-300 z-50 \${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-20'}\`}>
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-              <Database className="w-5 h-5 text-white" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { label: 'Total Revenue', value: '$128,430', trend: '+14.5%', up: true, color: 'text-emerald-400' },
+          { label: 'Active Users', value: '45.2K', trend: '+8.2%', up: true, color: 'text-emerald-400' },
+          { label: 'Churn Rate', value: '1.2%', trend: '-0.4%', up: false, color: 'text-rose-400' }
+        ].map((stat, i) => (
+          <div key={i} className="glass-dark bg-white/5 border border-white/10 p-6 rounded-2xl relative overflow-hidden group animate-slide-up" style={{animationDelay: \\\`\\\${i * 100}ms\\\`}}>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-indigo-500/20 transition-all"></div>
+            <h3 className="text-gray-400 text-sm font-medium mb-2">{stat.label}</h3>
+            <div className="flex items-end gap-4">
+              <span className="text-4xl font-bold tracking-tight">{stat.value}</span>
+              <span className={\\\`flex items-center text-sm font-medium \\\${stat.color} mb-1\\\`}>
+                {stat.up ? <ArrowUpRight className="w-4 h-4 mr-1" /> : <ArrowDownRight className="w-4 h-4 mr-1" />}
+                {stat.trend}
+              </span>
             </div>
-            {isSidebarOpen && <span className="font-bold text-xl tracking-tight text-gray-900">NEXUS</span>}
           </div>
-          {isMobile && (
-            <button onClick={() => setSidebarOpen(false)} className="text-gray-500 hover:text-gray-900">
-              <X className="w-5 h-5" />
-            </button>
-          )}
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 glass-dark bg-white/5 border border-white/10 p-6 rounded-2xl animate-fade-in" style={{animationDelay: '300ms'}}>
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="font-semibold text-lg">Revenue Overview</h3>
+            <select 
+              value={timeRange} 
+              onChange={(e) => setTimeRange(e.target.value)}
+              className="bg-[#171717] border border-white/20 text-sm text-gray-300 rounded-lg px-3 py-1.5 outline-none focus:border-indigo-500 transition-colors cursor-pointer"
+            >
+              <option value="Last 7 months">Last 7 months</option>
+              <option value="This Year">This Year</option>
+            </select>
+          </div>
+          <div className="h-72 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                <XAxis dataKey="name" stroke="#ffffff50" axisLine={false} tickLine={false} tick={{fontSize: 12}} dy={10} />
+                <YAxis stroke="#ffffff50" axisLine={false} tickLine={false} tick={{fontSize: 12}} />
+                <Tooltip contentStyle={{backgroundColor: '#171717', borderColor: '#ffffff20', borderRadius: '8px'}} itemStyle={{color: '#fff'}} />
+                <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" animationDuration={1000} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
-          {menuItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.label}
-                to={item.path}
-                onClick={() => isMobile && setSidebarOpen(false)}
-                className={\`flex items-center gap-3 px-4 py-3 rounded-xl transition-all \${isActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}\`}
-              >
-                <item.icon className={\`w-5 h-5 \${isActive ? 'text-indigo-600' : 'text-gray-400'}\`} />
-                {isSidebarOpen && <span>{item.label}</span>}
-              </Link>
-            )
-          })}
+        <div className="glass-dark bg-white/5 border border-white/10 p-6 rounded-2xl flex flex-col animate-fade-in" style={{animationDelay: '400ms'}}>
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="font-semibold text-lg">Recent Transfers</h3>
+            <button className="text-gray-400 hover:text-white"><MoreVertical className="w-5 h-5" /></button>
+          </div>
+          
+          <div className="sm:hidden mb-4">
+            <input 
+              type="text" 
+              placeholder="Search transfers..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-indigo-500 text-white placeholder-gray-500 transition-all"
+            />
+          </div>
+
+          <div className="flex-1 space-y-6 overflow-y-auto pr-2">
+            {transactions.length === 0 ? (
+                <p className="text-gray-500 text-sm text-center mt-10">No transactions found.</p>
+            ) : (
+              transactions.map(t => (
+                <div key={t.id} className="flex items-center justify-between group cursor-pointer">
+                  <div className="flex items-center gap-4">
+                    <div className={\\\`w-10 h-10 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 \\\${t.type === 'in' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}\\\`}>
+                      {t.type === 'in' ? <ArrowDownRight className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm group-hover:text-indigo-300 transition-colors">{t.name}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{t.date}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={\\\`font-semibold text-sm \\\${t.type === 'in' ? 'text-emerald-400' : 'text-white'}\\\`}>{t.amount}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{t.status}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          <button className="w-full mt-6 py-2.5 rounded-xl border border-white/10 text-sm font-medium text-gray-300 hover:bg-white/5 transition-colors">
+            View All Activity
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlaceholderPage({ title, description, icon: Icon }) {
+  return (
+    <div className="h-full flex flex-col items-center justify-center text-center animate-fade-in p-8">
+      <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-6">
+        <Icon className="w-12 h-12 text-indigo-400 opacity-80" />
+      </div>
+      <h2 className="text-3xl font-bold mb-3">{title}</h2>
+      <p className="text-gray-400 max-w-md">{description}</p>
+    </div>
+  );
+}
+
+export default function DashboardApp() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+
+  const NavLinks = () => (
+    <>
+      {[{icon: LayoutDashboard, label: 'Dashboard', path: '/'}, 
+        {icon: Activity, label: 'Analytics', path: '/analytics'}, 
+        {icon: Users, label: 'Customers', path: '/customers'}, 
+        {icon: CreditCard, label: 'Billing', path: '/billing'}].map(item => (
+        <Link 
+          key={item.label}
+          to={item.path}
+          onClick={() => setMobileMenuOpen(false)}
+          className={\\\`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all \\\${location.pathname === item.path ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}\\\`}
+        >
+          <item.icon className={\\\`w-5 h-5 \\\${location.pathname === item.path ? 'text-indigo-400' : ''}\\\`} /> {item.label}
+        </Link>
+      ))}
+    </>
+  );
+
+  return (
+    <div className="min-h-screen bg-[#0A0A0A] text-white flex font-sans selection:bg-indigo-500/30">
+      
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 bg-[#0A0A0A] p-6 lg:hidden flex flex-col">
+          <div className="flex justify-between items-center mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg shadow-indigo-500/20" />
+              <span className="text-xl font-bold tracking-wide">NEXUS</span>
+            </div>
+            <button onClick={() => setMobileMenuOpen(false)}><X className="w-6 h-6" /></button>
+          </div>
+          <nav className="space-y-2"><NavLinks /></nav>
+        </div>
+      )}
+
+      {/* Sidebar Desktop */}
+      <aside className="w-64 border-r border-white/10 hidden lg:flex flex-col relative z-20 bg-[#0A0A0A]">
+        <div className="p-6 flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg shadow-indigo-500/20" />
+          <span className="text-xl font-bold tracking-wide">NEXUS</span>
+        </div>
+        <nav className="flex-1 px-4 py-4 space-y-1"><NavLinks /></nav>
+        <div className="p-4 border-t border-white/10">
+          <button className="w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl font-medium transition-all">
+            <Settings className="w-5 h-5" /> Settings
+          </button>
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 z-30 sticky top-0">
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col h-screen overflow-hidden">
+        {/* Header */}
+        <header className="h-20 border-b border-white/10 bg-[#0A0A0A]/80 backdrop-blur-md px-6 lg:px-8 flex items-center justify-between sticky top-0 z-10">
           <div className="flex items-center gap-4">
-            <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-lg lg:hidden">
-              <Menu className="w-5 h-5" />
+            <button className="lg:hidden text-white" onClick={() => setMobileMenuOpen(true)}><Menu className="w-6 h-6" /></button>
+            <div className="relative w-48 lg:w-96 hidden sm:block animate-fade-in">
+              <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                className="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-500 transition-all"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-4 lg:gap-6">
+            <button className="relative text-gray-400 hover:text-white transition-colors">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#0A0A0A] animate-pulse"></span>
             </button>
-            <div className="relative hidden sm:block w-64 lg:w-96">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input type="text" placeholder="Search anything..." className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
+            <div className="flex items-center gap-3 cursor-pointer pl-4 lg:pl-6 border-l border-white/10 hover:bg-white/5 p-1 lg:pr-4 rounded-full transition-colors">
+              <img src="https://i.pravatar.cc/150?img=11" alt="User" className="w-8 h-8 lg:w-9 lg:h-9 rounded-full border border-white/20" />
+              <div className="hidden md:block">
+                <p className="text-sm font-semibold">Alex Doe</p>
+                <p className="text-xs text-gray-400">Admin</p>
+              </div>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">
-            <Routes>
-              <Route path="/" element={<Overview />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/customers" element={<Customers />} />
-              <Route path="/settings" element={<SettingsView />} />
-            </Routes>
-          </div>
+        {/* Content Scrollable */}
+        <div className="flex-1 overflow-y-auto p-6 lg:p-8">
+          <Routes>
+            <Route path="/" element={<DashboardHome />} />
+            <Route path="/analytics" element={<PlaceholderPage title="Analytics" description="Deep dive into your user engagement and metric trends over time." icon={Activity} />} />
+            <Route path="/customers" element={<PlaceholderPage title="Customers" description="Manage your user base, view profiles, and track activity." icon={Users} />} />
+            <Route path="/billing" element={<PlaceholderPage title="Billing & Invoices" description="Manage your subscription, payment methods, and invoices." icon={CreditCard} />} />
+          </Routes>
         </div>
       </main>
-    </div>
-  );
-}
-
-function Overview() {
-  return (
-    <div className="animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
-          <p className="text-gray-500 text-sm mt-1">Here's what's happening with your projects today.</p>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {[
-          { title: 'Total Revenue', value: '$45,231.89', change: '+20.1%', trend: 'up', icon: CreditCard },
-          { title: 'Active Users', value: '2,350', change: '+15.2%', trend: 'up', icon: Users },
-          { title: 'New Signups', value: '1,203', change: '-4.1%', trend: 'down', icon: Activity },
-          { title: 'Conversion Rate', value: '3.24%', change: '+1.2%', trend: 'up', icon: TrendingUp },
-        ].map((stat, i) => (
-          <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                <stat.icon className="w-5 h-5" />
-              </div>
-              <div className={\`flex items-center gap-1 text-sm font-medium \${stat.trend === 'up' ? 'text-emerald-600' : 'text-red-500'}\`}>
-                {stat.trend === 'up' ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-                {stat.change}
-              </div>
-            </div>
-            <h3 className="text-gray-500 text-sm font-medium mb-1">{stat.title}</h3>
-            <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Analytics() {
-  return (
-    <div className="animate-fade-in">
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">Analytics</h1>
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-        <h3 className="text-lg font-bold text-gray-900 mb-6">User Growth</h3>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-              <Tooltip cursor={{fill: '#f3f4f6'}} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-              <Bar dataKey="users" fill="#4f46e5" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Customers() {
-  return (
-    <div className="animate-fade-in">
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">Customers</h1>
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-500">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-              <tr>
-                <th className="px-6 py-4 font-semibold">Name</th>
-                <th className="px-6 py-4 font-semibold">Status</th>
-                <th className="px-6 py-4 font-semibold">Spent</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customerData.map((c) => (
-                <tr key={c.id} className="border-b border-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-900">{c.name}</td>
-                  <td className="px-6 py-4">{c.status}</td>
-                  <td className="px-6 py-4 text-gray-900">{c.spent}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SettingsView() {
-  return (
-    <div className="animate-fade-in">
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">Settings</h1>
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <p className="text-gray-500">Settings page content goes here.</p>
-      </div>
     </div>
   );
 }
@@ -743,17 +797,16 @@ function SettingsView() {
 
 // 3. MOBILE APP TEMPLATE
 const mobileApp = `import React, { useState } from 'react';
-import { Home, Search, Compass, MessageCircle, User, Bell, Heart, Share2, MoreHorizontal, Plus, X } from 'lucide-react';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Home, Search, Compass, MessageCircle, User, Bell, Heart, Share2, MoreHorizontal, Plus, X, Settings as SettingsIcon, Bookmark, Grid, PlaySquare, ChevronLeft } from 'lucide-react';
 
 const initialPosts = [
-  { id: 1, user: 'Sarah Jenkins', avatar: 'https://i.pravatar.cc/150?img=47', image: 'https://images.unsplash.com/photo-1516483638261-f40af5aa339b?auto=format&fit=crop&q=80&w=600', likes: 1240, liked: false, caption: 'Exploring the hidden gems of Kyoto 🌸✨ #travel #japan' },
-  { id: 2, user: 'David Chen', avatar: 'https://i.pravatar.cc/150?img=12', image: 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&q=80&w=600', likes: 842, liked: true, caption: 'Morning coffee aesthetics ☕️' },
+  { id: 1, user: 'Sarah Jenkins', avatar: 'https://i.pravatar.cc/150?img=47', image: 'https://images.unsplash.com/photo-1516483638261-f40af5aa339b?auto=format&fit=crop&q=80&w=600', likes: 1240, liked: false, caption: 'Exploring the hidden gems of Kyoto ✨ #travel #japan' },
+  { id: 2, user: 'David Chen', avatar: 'https://i.pravatar.cc/150?img=12', image: 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&q=80&w=600', likes: 842, liked: true, caption: 'Morning coffee aesthetics ☕' },
 ];
 
-export default function MobileApp() {
-  const [activeTab, setActiveTab] = useState('home');
+function HomeFeed() {
   const [posts, setPosts] = useState(initialPosts);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const toggleLike = (id) => {
     setPosts(posts.map(p => {
@@ -764,88 +817,228 @@ export default function MobileApp() {
     }));
   };
 
-  const renderContent = () => {
-    if (activeTab === 'home') {
-      return (
-        <>
-          {/* Stories */}
-          <div className="flex gap-4 px-4 py-4 overflow-x-auto hide-scrollbar bg-white border-b border-gray-100">
-            <div className="flex flex-col items-center gap-1 min-w-[72px] cursor-pointer">
-              <div className="w-16 h-16 rounded-full p-[2px] bg-gray-200 relative">
-                <img src="https://i.pravatar.cc/150?img=33" className="w-full h-full rounded-full border-2 border-white object-cover" alt="Me" />
-                <div className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center border-2 border-white text-xs font-bold">+</div>
-              </div>
-              <span className="text-[10px] font-medium text-gray-500 truncate w-full text-center">Your Story</span>
+  return (
+    <div className="animate-fade-in">
+      {/* Stories */}
+      <div className="flex gap-4 px-4 py-4 overflow-x-auto hide-scrollbar bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-10">
+        <div className="flex flex-col items-center gap-1 min-w-[72px] cursor-pointer">
+          <div className="w-16 h-16 rounded-full p-[2px] bg-gray-200 relative">
+            <img src="https://i.pravatar.cc/150?img=33" className="w-full h-full rounded-full border-2 border-white object-cover" alt="Me" />
+            <div className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center border-2 border-white text-xs font-bold">+</div>
+          </div>
+          <span className="text-[10px] font-medium text-gray-500 truncate w-full text-center mt-1">Your Story</span>
+        </div>
+        {[1,2,3,4,5,6].map(i => (
+          <div key={i} className="flex flex-col items-center gap-1 min-w-[72px] cursor-pointer hover:opacity-80 transition-opacity">
+            <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-red-500 to-fuchsia-600">
+              <img src={\\\`https://i.pravatar.cc/150?img=\\\${i+20}\\\`} className="w-full h-full rounded-full border-2 border-white object-cover" alt="Story" />
             </div>
-            {[1,2,3,4,5,6].map(i => (
-              <div key={i} className="flex flex-col items-center gap-1 min-w-[72px] cursor-pointer hover:opacity-80 transition-opacity">
-                <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-red-500 to-fuchsia-600">
-                  <img src={\`https://i.pravatar.cc/150?img=\${i+20}\`} className="w-full h-full rounded-full border-2 border-white object-cover" alt="Story" />
-                </div>
-                <span className="text-[10px] font-medium text-gray-800 truncate w-full text-center">User {i}</span>
-              </div>
-            ))}
+            <span className="text-[10px] font-medium text-gray-800 truncate w-full text-center mt-1">User {i}</span>
           </div>
-
-          {/* Feed */}
-          <div className="space-y-2 bg-gray-50">
-            {posts.map(post => (
-              <article key={post.id} className="bg-white pb-4 animate-fade-in">
-                <div className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3 cursor-pointer">
-                    <img src={post.avatar} className="w-9 h-9 rounded-full object-cover border border-gray-100" alt={post.user} />
-                    <span className="font-semibold text-sm hover:underline">{post.user}</span>
-                  </div>
-                  <button className="p-1 hover:bg-gray-100 rounded-full"><MoreHorizontal className="w-5 h-5 text-gray-500" /></button>
-                </div>
-                
-                <div 
-                  className="aspect-[4/5] bg-gray-100 relative cursor-pointer group"
-                  onDoubleClick={() => { if(!post.liked) toggleLike(post.id); }}
-                >
-                  <img src={post.image} className="w-full h-full object-cover" alt="Post content" />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-active:opacity-100 transition-opacity duration-300">
-                    <Heart className="w-24 h-24 text-white fill-white drop-shadow-2xl animate-pulse-fast" />
-                  </div>
-                </div>
-
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-4">
-                      <button onClick={() => toggleLike(post.id)} className="transition-transform active:scale-75">
-                        <Heart className={\`w-7 h-7 \${post.liked ? 'fill-red-500 text-red-500' : 'text-gray-800 hover:text-gray-500'}\`} />
-                      </button>
-                      <button className="hover:opacity-70"><MessageCircle className="w-7 h-7 text-gray-800" /></button>
-                      <button className="hover:opacity-70"><Share2 className="w-6 h-6 text-gray-800" /></button>
-                    </div>
-                  </div>
-                  <p className="font-bold text-sm mb-1">{post.likes.toLocaleString()} likes</p>
-                  <p className="text-sm"><span className="font-semibold mr-2 cursor-pointer hover:underline">{post.user}</span>{post.caption}</p>
-                  <p className="text-gray-400 text-xs mt-2 uppercase">2 HOURS AGO</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </>
-      );
-    }
-    
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-gray-400 animate-fade-in p-8 text-center">
-        <Compass className="w-16 h-16 mb-4 opacity-20" />
-        <h2 className="text-xl font-bold text-gray-800 mb-2 capitalize">{activeTab} Page</h2>
-        <p className="text-sm">This is a mock screen for the {activeTab} section. In a real app, this would route to a different component.</p>
+        ))}
       </div>
-    );
-  };
+
+      {/* Feed */}
+      <div className="space-y-4 bg-gray-50/50 py-2">
+        {posts.map((post, idx) => (
+          <article key={post.id} className="bg-white pb-4 animate-slide-up shadow-sm border-y border-gray-100" style={{animationDelay: \\\`\\\${idx * 100}ms\\\`}}>
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-3 cursor-pointer">
+                <img src={post.avatar} className="w-10 h-10 rounded-full object-cover border border-gray-100" alt={post.user} />
+                <span className="font-semibold text-sm hover:underline">{post.user}</span>
+              </div>
+              <button className="p-1 hover:bg-gray-100 rounded-full"><MoreHorizontal className="w-5 h-5 text-gray-500" /></button>
+            </div>
+            
+            <div 
+              className="aspect-[4/5] bg-gray-100 relative cursor-pointer group overflow-hidden"
+              onDoubleClick={() => { if(!post.liked) toggleLike(post.id); }}
+            >
+              <img src={post.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Post content" />
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-active:opacity-100 transition-opacity duration-300 bg-black/10">
+                <Heart className="w-24 h-24 text-white fill-white drop-shadow-2xl animate-pulse-fast" />
+              </div>
+            </div>
+
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-4">
+                  <button onClick={() => toggleLike(post.id)} className="transition-transform active:scale-75">
+                    <Heart className={\\\`w-7 h-7 \\\${post.liked ? 'fill-red-500 text-red-500' : 'text-gray-800 hover:text-gray-500'}\\\`} />
+                  </button>
+                  <button className="hover:opacity-70 transition-opacity"><MessageCircle className="w-7 h-7 text-gray-800" /></button>
+                  <button className="hover:opacity-70 transition-opacity"><Share2 className="w-6 h-6 text-gray-800" /></button>
+                </div>
+                <button className="hover:opacity-70 transition-opacity"><Bookmark className="w-6 h-6 text-gray-800" /></button>
+              </div>
+              <p className="font-bold text-sm mb-1">{post.likes.toLocaleString()} likes</p>
+              <p className="text-sm"><span className="font-semibold mr-2 cursor-pointer hover:underline">{post.user}</span>{post.caption}</p>
+              <p className="text-gray-400 text-xs mt-2 uppercase font-medium">2 HOURS AGO</p>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ExplorePage() {
+  return (
+    <div className="animate-fade-in pb-4">
+      <div className="p-4 sticky top-0 bg-white/80 backdrop-blur-md z-10 border-b border-gray-100">
+        <div className="relative">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input 
+            type="text" 
+            placeholder="Search vibes..." 
+            className="w-full bg-gray-100 border-none rounded-xl py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 transition-all"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-1 px-1">
+        {[...Array(15)].map((_, i) => (
+          <div key={i} className={\\\`bg-gray-200 relative group cursor-pointer \\\${i === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-square'}\\\`}>
+            <img src={\\\`https://images.unsplash.com/photo-\\\${1500000000000 + i}?auto=format&fit=crop&w=\\\${i===0?600:300}&q=80\\\`} className="w-full h-full object-cover" alt="Explore" />
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <Heart className="w-6 h-6 text-white fill-white" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProfilePage() {
+  return (
+    <div className="animate-fade-in bg-white min-h-full pb-4">
+      <div className="flex items-center justify-between p-4 border-b border-gray-100 sticky top-0 bg-white/90 backdrop-blur-md z-10">
+        <div className="flex items-center gap-1 font-bold text-lg cursor-pointer">
+          alex_creator <ChevronDown className="w-4 h-4" />
+        </div>
+        <div className="flex gap-4">
+          <Plus className="w-6 h-6 text-gray-800" />
+          <Menu className="w-6 h-6 text-gray-800" />
+        </div>
+      </div>
+      
+      <div className="p-4">
+        <div className="flex items-center gap-6 mb-4">
+          <div className="relative">
+            <img src="https://i.pravatar.cc/150?img=33" className="w-20 h-20 rounded-full object-cover border border-gray-200 p-0.5" alt="Profile" />
+            <div className="absolute bottom-0 right-0 bg-blue-500 rounded-full p-1 border-2 border-white">
+              <Plus className="w-3 h-3 text-white font-bold" />
+            </div>
+          </div>
+          <div className="flex-1 flex justify-around text-center">
+            <div><p className="font-bold text-lg">128</p><p className="text-xs text-gray-500">Posts</p></div>
+            <div><p className="font-bold text-lg">45.2K</p><p className="text-xs text-gray-500">Followers</p></div>
+            <div><p className="font-bold text-lg">342</p><p className="text-xs text-gray-500">Following</p></div>
+          </div>
+        </div>
+        <div className="mb-4">
+          <h2 className="font-bold text-sm">Alex • Digital Creator</h2>
+          <p className="text-sm text-gray-800">UI/UX Designer & Traveler ✨</p>
+          <a href="#" className="text-sm text-blue-600 font-medium">linktr.ee/alexcreator</a>
+        </div>
+        <div className="flex gap-2">
+          <button className="flex-1 bg-gray-100 text-black py-1.5 rounded-lg font-semibold text-sm hover:bg-gray-200 transition-colors">Edit Profile</button>
+          <button className="flex-1 bg-gray-100 text-black py-1.5 rounded-lg font-semibold text-sm hover:bg-gray-200 transition-colors">Share Profile</button>
+          <button className="bg-gray-100 p-1.5 rounded-lg hover:bg-gray-200 transition-colors"><User className="w-5 h-5" /></button>
+        </div>
+      </div>
+
+      <div className="flex border-t border-gray-200">
+        <button className="flex-1 py-3 flex justify-center border-b-2 border-black"><Grid className="w-6 h-6" /></button>
+        <button className="flex-1 py-3 flex justify-center text-gray-400"><PlaySquare className="w-6 h-6" /></button>
+        <button className="flex-1 py-3 flex justify-center text-gray-400"><User className="w-6 h-6" /></button>
+      </div>
+
+      <div className="grid grid-cols-3 gap-0.5">
+        {[...Array(9)].map((_, i) => (
+          <div key={i} className="aspect-square bg-gray-200 relative group cursor-pointer">
+            <img src={\\\`https://images.unsplash.com/photo-\\\${1400000000000 + i * 1000}?auto=format&fit=crop&w=300&q=80\\\`} className="w-full h-full object-cover" alt="Post" />
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+              <Heart className="w-4 h-4 text-white fill-white" /> <span className="text-white text-xs font-bold">1.2K</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function NavigationBar({ openModal }) {
+  const location = useLocation();
+  const path = location.pathname;
+  
+  return (
+    <nav className="absolute bottom-0 inset-x-0 bg-white/80 backdrop-blur-xl border-t border-gray-200/50 px-6 py-3 pb-8 flex justify-between items-center z-40">
+      <Link to="/" className={\\\`\\\${path === '/' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\\\`}><Home className="w-7 h-7" fill={path === '/' ? 'currentColor' : 'none'} /></Link>
+      <Link to="/explore" className={\\\`\\\${path === '/explore' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\\\`}><Search className="w-7 h-7" strokeWidth={path === '/explore' ? 3 : 2} /></Link>
+      
+      <div 
+        onClick={openModal}
+        className="w-14 h-14 bg-gradient-to-tr from-indigo-500 to-purple-600 text-white rounded-full flex items-center justify-center -mt-8 shadow-xl shadow-purple-500/30 cursor-pointer hover:scale-110 active:scale-95 transition-all"
+      >
+        <Plus className="w-7 h-7 font-bold" />
+      </div>
+      
+      <Link to="/reels" className={\\\`\\\${path === '/reels' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\\\`}><PlaySquare className="w-7 h-7" fill={path === '/reels' ? 'currentColor' : 'none'} /></Link>
+      <Link to="/profile" className={\\\`\\\${path === '/profile' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\\\`}><User className="w-7 h-7" fill={path === '/profile' ? 'currentColor' : 'none'} /></Link>
+    </nav>
+  );
+}
+
+function MobileAppLayout() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 font-sans select-none">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 font-sans select-none overflow-hidden">
       {/* Phone Frame Simulator */}
-      <div className="w-full max-w-[400px] h-[800px] bg-white rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col border-[8px] border-gray-900">
+      <div className="w-full max-w-[400px] h-[800px] bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] relative flex flex-col border-[8px] border-gray-900 overflow-hidden ring-4 ring-gray-200">
         
         {/* Notch */}
-        <div className="absolute top-0 inset-x-0 h-7 bg-gray-900 rounded-b-3xl mx-auto w-40 z-50"></div>
+        <div className="absolute top-0 inset-x-0 h-7 bg-gray-900 rounded-b-3xl mx-auto w-40 z-50 flex items-center justify-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-gray-800"></div>
+          <div className="w-12 h-2 rounded-full bg-gray-800"></div>
+        </div>
+
+        {/* Status Bar Mock */}
+        <div className="px-6 pt-2 pb-1 flex justify-between items-center text-[10px] font-bold z-40 bg-white">
+          <span>9:41</span>
+          <div className="flex gap-1.5 items-center">
+             <div className="w-3 h-3 rounded-sm border border-black flex items-center justify-center"><div className="w-2 h-2 bg-black"></div></div>
+             <div className="w-4 h-2.5 bg-black rounded-sm relative"><div className="absolute -right-0.5 top-1 w-0.5 h-1 bg-black rounded-r-sm"></div></div>
+          </div>
+        </div>
+
+        {/* App Header */}
+        <header className="px-6 py-2 flex items-center justify-between bg-white sticky top-0 z-40">
+          <h1 className="text-2xl font-extrabold tracking-tight" style={{fontFamily: 'cursive'}}>VibeCheck</h1>
+          <div className="flex gap-5">
+            <button className="relative hover:scale-110 transition-transform">
+              <Heart className="w-6 h-6 text-gray-800" />
+              <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+            </button>
+            <button className="hover:scale-110 transition-transform"><MessageCircle className="w-6 h-6 text-gray-800" /></button>
+          </div>
+        </header>
+
+        {/* Scrollable Main Area */}
+        <main className="flex-1 overflow-y-auto bg-white pb-20 relative hide-scrollbar">
+          <Routes>
+            <Route path="/" element={<HomeFeed />} />
+            <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/reels" element={<div className="flex h-full items-center justify-center text-gray-400 bg-gray-900 text-white p-8 text-center animate-fade-in"><PlaySquare className="w-16 h-16 mb-4 opacity-30 mx-auto" /><h2 className="text-xl font-bold mb-2">Reels Mock</h2><p className="text-sm">Swipe up for more short videos!</p></div>} />
+          </Routes>
+        </main>
+
+        <NavigationBar openModal={() => setIsModalOpen(true)} />
+        
+        {/* Home Indicator (iOS Bar) */}
+        <div className="absolute bottom-2 inset-x-0 w-32 h-1 bg-black rounded-full mx-auto z-50"></div>
 
         {/* New Post Modal */}
         {isModalOpen && (
@@ -859,54 +1052,27 @@ export default function MobileApp() {
               <img src="https://i.pravatar.cc/150?img=33" className="w-10 h-10 rounded-full" alt="Me" />
               <textarea placeholder="Write a caption..." className="w-full resize-none outline-none mt-2" rows="4"></textarea>
             </div>
-            <div className="px-4 py-8 mt-auto border-t border-gray-100 flex justify-center bg-gray-50">
-               <div className="w-full aspect-square border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-100">
+            <div className="px-4 py-8 mt-auto border-t border-gray-100 flex justify-center bg-gray-50 h-full">
+               <div className="w-full aspect-square border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-100 transition-colors">
                  <Plus className="w-10 h-10 mb-2" />
-                 <span>Upload Photo</span>
+                 <span>Upload Photo or Video</span>
                </div>
             </div>
           </div>
         )}
-
-        {/* App Header */}
-        <header className="px-6 pt-12 pb-3 flex items-center justify-between bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100">
-          <h1 className="text-2xl font-extrabold tracking-tight cursor-pointer" onClick={() => setActiveTab('home')}>VibeCheck</h1>
-          <div className="flex gap-5">
-            <button className="relative hover:scale-110 transition-transform">
-              <Bell className="w-6 h-6 text-gray-800" />
-              <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
-            <button className="hover:scale-110 transition-transform"><MessageCircle className="w-6 h-6 text-gray-800" /></button>
-          </div>
-        </header>
-
-        {/* Scrollable Main Area */}
-        <main className="flex-1 overflow-y-auto bg-white pb-20 relative">
-          {renderContent()}
-        </main>
-
-        {/* Bottom Navigation */}
-        <nav className="absolute bottom-0 inset-x-0 bg-white/90 backdrop-blur-md border-t border-gray-200 px-6 py-3 pb-8 flex justify-between items-center z-40">
-          <button onClick={() => setActiveTab('home')} className={\`\${activeTab === 'home' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><Home className="w-6 h-6" fill={activeTab === 'home' ? 'currentColor' : 'none'} /></button>
-          <button onClick={() => setActiveTab('search')} className={\`\${activeTab === 'search' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><Search className="w-6 h-6" strokeWidth={activeTab === 'search' ? 3 : 2} /></button>
-          
-          <div 
-            onClick={() => setIsModalOpen(true)}
-            className="w-12 h-12 bg-gradient-to-tr from-indigo-500 to-purple-600 text-white rounded-full flex items-center justify-center -mt-8 shadow-lg shadow-purple-500/30 cursor-pointer hover:scale-110 active:scale-95 transition-all"
-          >
-            <Plus className="w-6 h-6 font-bold" />
-          </div>
-          
-          <button onClick={() => setActiveTab('explore')} className={\`\${activeTab === 'explore' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><Compass className="w-6 h-6" fill={activeTab === 'explore' ? 'currentColor' : 'none'} /></button>
-          <button onClick={() => setActiveTab('profile')} className={\`\${activeTab === 'profile' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><User className="w-6 h-6" fill={activeTab === 'profile' ? 'currentColor' : 'none'} /></button>
-        </nav>
-        
-        {/* Home Indicator (iOS Bar) */}
-        <div className="absolute bottom-2 inset-x-0 w-32 h-1 bg-gray-900 rounded-full mx-auto z-50"></div>
       </div>
     </div>
   );
-}`;
+}
+
+export default function MobileApp() {
+  return (
+    <BrowserRouter>
+      <MobileAppLayout />
+    </BrowserRouter>
+  );
+}
+`;
 
 // 4. DESKTOP TOOL TEMPLATE
 const desktopApp = `import React, { useState } from 'react';
