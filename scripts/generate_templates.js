@@ -793,6 +793,14 @@ function DashboardAppLayout() {
     </div>
   );
 }
+
+export default function DashboardApp() {
+  return (
+    <BrowserRouter>
+      <DashboardAppLayout />
+    </BrowserRouter>
+  );
+}
 `;
 
 // 3. MOBILE APP TEMPLATE
