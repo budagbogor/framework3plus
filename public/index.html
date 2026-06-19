@@ -3357,7 +3357,12 @@ async function initWebContainer() {
             S.isDevRunning = true;
             window.webcontainerUrl = url;
             render();
-            openLivePreview(url);
+            const btn = document.getElementById('btnTogglePreview');
+            if (btn && btn.innerHTML.includes('Preview')) {
+                togglePreview();
+            } else {
+                openLivePreview(url);
+            }
         });
         
         return window.webcontainerInstance;
@@ -5125,10 +5130,41 @@ function closeAIPanel(){
 
 setTimeout(updateNavAIBtn, 100);
 
-function openLivePreview(urlOverride) {
+function togglePreview() {
+    const term = document.getElementById('buildTerminal');
+    const iframe = document.getElementById('previewIframe');
+    const btn = document.getElementById('btnTogglePreview');
+    const btnTab = document.getElementById('btnOpenNewTab');
+    
+    if (!term || !iframe || !btn) return;
+
+    if (term.style.display === 'none') {
+        term.style.display = 'block';
+        iframe.style.display = 'none';
+        btn.innerHTML = '🌐 Preview';
+        if(btnTab) btnTab.style.display = 'none';
+    } else {
+        openLivePreview();
+        if (window.webcontainerUrl || !(S.virtualWorkspace && S.virtualWorkspace['package.json'])) {
+            term.style.display = 'none';
+            iframe.style.display = 'block';
+            btn.innerHTML = '💻 Terminal';
+            if(btnTab && window.webcontainerUrl) btnTab.style.display = 'inline-block';
+        }
+    }
+}
+
+function openLivePreview(urlOverride, forceNewTab = false) {
     if (urlOverride || window.webcontainerUrl) {
         const targetUrl = urlOverride || window.webcontainerUrl;
-        addBuildLog(`Membuka WebContainer URL: ${targetUrl}`, "info");
+        const iframe = document.getElementById('previewIframe');
+        if (iframe && !forceNewTab) {
+            addBuildLog(`Memuat WebContainer preview di dalam panel...`, "info");
+            if (iframe.src !== targetUrl) iframe.src = targetUrl;
+            return;
+        }
+
+        addBuildLog(`Membuka WebContainer URL di Tab Baru: ${targetUrl}`, "info");
         const w = window.open(targetUrl, '_blank');
         if(!w) alert('Mohon izinkan pop-up di browser Anda untuk melihat preview WebContainer.');
         return;
@@ -5234,10 +5270,16 @@ function openLivePreview(urlOverride) {
             : finalContent + inlineScripts;
     }
 
-    addBuildLog("Opening Live Preview in new tab...", "info");
+    addBuildLog("Memuat URL Blob Preview...", "info");
     const blob = new Blob([finalContent], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    
+    const iframe = document.getElementById('previewIframe');
+    if (iframe) {
+        iframe.src = url;
+    } else {
+        window.open(url, '_blank');
+    }
 }
 
 
@@ -5583,9 +5625,13 @@ function renderBuilderPanel(){
                     <div class="term-toolbar">
                         <button class="term-btn ${S.isInstalled?'active':''}" onclick="execTerminalCmd('install')" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;" title="Harap tunggu AI selesai merakit kode..."' : ''}>📦 install</button>
                         <button class="term-btn ${S.isDevRunning?'active':''}" onclick="execTerminalCmd('dev')" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;" title="Harap tunggu AI selesai merakit kode..."' : ''}>🚀 dev</button>
-                        <button class="term-btn preview-btn" onclick="openLivePreview()" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;" title="Harap tunggu AI selesai merakit kode..."' : ''}>🌐 Preview</button>
+                        <button class="term-btn preview-btn" id="btnTogglePreview" onclick="togglePreview()" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;" title="Harap tunggu AI selesai merakit kode..."' : ''}>🌐 Preview</button>
+                        <button class="term-btn preview-btn" id="btnOpenNewTab" style="display:none;" onclick="openLivePreview(null, true)" ${S.building ? 'style="opacity:0.5; cursor:not-allowed;"' : ''}>↗️ Tab Baru</button>
                     </div>
-                    <div class="term-body" id="buildTerminal" style="flex:1; padding:20px; overflow-y:auto; font-family:var(--mono); font-size:13px; line-height:1.6; color: rgba(255,255,255,0.85);">${logs || '<div style="opacity:0.3">Waiting for logs...</div>'}</div>
+                    <div style="flex:1; display:flex; position:relative; overflow:hidden;">
+                        <div class="term-body" id="buildTerminal" style="width:100%; height:100%; padding:20px; overflow-y:auto; font-family:var(--mono); font-size:13px; line-height:1.6; color: rgba(255,255,255,0.85);">${logs || '<div style="opacity:0.3">Waiting for logs...</div>'}</div>
+                        <iframe id="previewIframe" style="display:none; width:100%; height:100%; border:none; background:#fff;"></iframe>
+                    </div>
                 </div>
                 
                 <div class="chat-container">
