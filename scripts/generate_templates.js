@@ -697,7 +697,7 @@ function PlaceholderPage({ title, description, icon: Icon }) {
   );
 }
 
-function DashboardAppLayout() {
+export default function DashboardApp() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -794,13 +794,7 @@ function DashboardAppLayout() {
   );
 }
 
-export default function DashboardApp() {
-  return (
-    <BrowserRouter>
-      <DashboardAppLayout />
-    </BrowserRouter>
-  );
-}
+
 `;
 
 // 3. MOBILE APP TEMPLATE
@@ -998,7 +992,7 @@ function NavigationBar({ openModal }) {
   );
 }
 
-function MobileAppLayout() {
+export default function MobileApp() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -1073,13 +1067,7 @@ function MobileAppLayout() {
   );
 }
 
-export default function MobileApp() {
-  return (
-    <BrowserRouter>
-      <MobileAppLayout />
-    </BrowserRouter>
-  );
-}
+
 `;
 
 // 4. DESKTOP TOOL TEMPLATE
@@ -1369,7 +1357,7 @@ function SettingsView() {
   );
 }
 
-function Layout() {
+export default function DesktopApp() {
   const location = useLocation();
 
   return (
@@ -1434,13 +1422,7 @@ function Layout() {
   );
 }
 
-export default function DesktopApp() {
-  return (
-    <BrowserRouter>
-      <Layout />
-    </BrowserRouter>
-  );
-}
+
 `;
 
 // 5. AI CHATBOT TEMPLATE
