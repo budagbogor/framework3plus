@@ -76,9 +76,27 @@ const indexHtml = `<!DOCTYPE html>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Preview</title>
+    <style>
+      .app-loader {
+        position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: #0a0a0a; color: #fff; font-family: sans-serif; z-index: 9999;
+      }
+      .spinner {
+        width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-radius: 50%;
+        border-top-color: #00f0ff; animation: spin 1s ease-in-out infinite; margin-bottom: 20px;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .loading-text { font-size: 14px; letter-spacing: 2px; color: #888; animation: pulse 1.5s ease-in-out infinite; }
+      @keyframes pulse { 50% { opacity: 0.5; } }
+    </style>
   </head>
   <body class="bg-gray-50 text-gray-900 antialiased overflow-x-hidden">
-    <div id="root"></div>
+    <div id="root">
+      <div class="app-loader">
+        <div class="spinner"></div>
+        <div class="loading-text">INITIALIZING APP...</div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>`;
