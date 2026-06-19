@@ -5135,6 +5135,21 @@ function openLivePreview(urlOverride) {
     }
 
     const workspace = S.virtualWorkspace || {};
+    
+    // Cegah fallback blob jika workspace punya package.json (butuh WebContainer)
+    if (workspace['package.json']) {
+        if (!S.isInstalled) {
+            alert("Proyek ini menggunakan Node.js/React.\nSilakan klik tombol '📦 install' di terminal terlebih dahulu, lalu klik '🚀 dev'.");
+            return;
+        }
+        if (!S.isDevRunning) {
+            alert("Silakan klik tombol '🚀 dev' di terminal untuk menyalakan server.");
+            return;
+        }
+        alert("Server sedang memulai...\nHarap tunggu hingga log terminal menampilkan pesan 'Dev server siap' sebelum membuka Preview.");
+        return;
+    }
+
     let content = workspace['index.html'] || workspace['public/index.html'] || workspace['src/index.html'];
 
     if (!content) {
@@ -5687,12 +5702,22 @@ async function startAutonomousBuild(){
 function addBuildLog(msg, type='info'){
     const time = new Date().toLocaleTimeString();
     S.buildLogs.push({time, msg, type});
-    saveWorkspaceToLocal();
-    render();
-    setTimeout(() => {
-        const term = document.getElementById('buildTerminal');
-        if(term) term.scrollTop = term.scrollHeight;
-    }, 50);
+    
+    // Throttle save to prevent performance issues
+    clearTimeout(window._logSaveTimeout);
+    window._logSaveTimeout = setTimeout(() => {
+        try { saveWorkspaceToLocal(); } catch(e){}
+    }, 1500);
+
+    const term = document.getElementById('buildTerminal');
+    if (term) {
+        // Append log directly to DOM to prevent screen blinking/freezing
+        const div = document.createElement('div');
+        div.className = 'term-line';
+        div.innerHTML = `<span class="term-ts">[${time}]</span> <span class="term-msg ${type}">${msg}</span>`;
+        term.appendChild(div);
+        term.scrollTop = term.scrollHeight;
+    }
 }
 
 function viewVirtualFile(p){
