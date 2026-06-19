@@ -1454,7 +1454,17 @@ const S = {mode:null, step:0, answers:{}, generating:false, generated:null, acti
     try { return JSON.parse(localStorage.getItem('devforge_logs') || '[]'); } catch(e){ return []; }
   })(), 
   virtualWorkspace: (() => {
-    try { return JSON.parse(localStorage.getItem('devforge_workspace') || '{}'); } catch(e){ return {}; }
+    try {
+      const ws = JSON.parse(localStorage.getItem('devforge_workspace') || '{}');
+      for (const file in ws) {
+        if (typeof ws[file] === 'string' && (ws[file].includes('\\`https://i.pravatar.cc') || ws[file].includes('\\${i+20}'))) {
+          console.warn("Mendeteksi workspace rusak di localStorage, membersihkan cache...");
+          localStorage.removeItem('devforge_workspace');
+          return {};
+        }
+      }
+      return ws;
+    } catch(e){ return {}; }
   })(), 
   activeFile: null,
   isInstalled: false, isDevRunning: false, activePreviewUrl: null,

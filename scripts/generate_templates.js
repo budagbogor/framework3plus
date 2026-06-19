@@ -141,14 +141,14 @@ import { Routes, Route, Link, useNavigate, useParams, useLocation } from 'react-
 import { ShoppingCart, Search, Menu, Star, ChevronRight, Heart, ShoppingBag, X, CheckCircle2, ArrowLeft, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
 
 const allProducts = [
-  { id: 1, name: 'Premium Wireless Headphones', price: 299, rating: 4.8, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800', category: 'Audio', desc: 'Experience studio-quality sound with active noise cancellation and 30-hour battery life. Hand-crafted with premium materials for ultimate comfort.' },
-  { id: 2, name: 'Minimalist Smart Watch', price: 199, rating: 4.6, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800', category: 'Wearables', desc: 'Track your health and stay connected with elegant precision. Features an always-on retina display and titanium case.' },
-  { id: 3, name: 'Professional DSLR Camera', price: 899, rating: 4.9, image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=800', category: 'Photography', desc: 'Capture stunning 4K video and 45MP stills with our flagship full-frame mirrorless camera. Perfect for professionals.' },
-  { id: 4, name: 'Ergonomic Workspace Chair', price: 349, rating: 4.7, image: 'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?auto=format&fit=crop&q=80&w=800', category: 'Furniture', desc: 'Designed for 8+ hours of comfortable seating. Features dynamic lumbar support and breathable mesh back.' },
-  { id: 5, name: 'Studio Microphones Set', price: 150, rating: 4.5, image: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=800', category: 'Audio', desc: 'Broadcast-quality dynamic microphone ideal for podcasting, streaming, and vocal recording.' },
-  { id: 6, name: 'Mechanical Keyboard', price: 129, rating: 4.8, image: 'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=800', category: 'Workspace', desc: 'Tactile, clicky mechanical switches enclosed in a solid aluminum frame. Customizable RGB backlight.' },
-  { id: 7, name: 'Curved Ultrawide Monitor', price: 599, rating: 4.9, image: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&q=80&w=800', category: 'Workspace', desc: 'Immersive 34-inch curved display with 144Hz refresh rate and true 1ms response time.' },
-  { id: 8, name: 'Portable SSD 2TB', price: 219, rating: 4.7, image: 'https://images.unsplash.com/photo-1531492746076-161ca9bcad58?auto=format&fit=crop&q=80&w=800', category: 'Accessories', desc: 'Blazing fast NVMe portable drive with read speeds up to 1050 MB/s. Drop resistant and pocket sized.' }
+  { id: 1, name: 'Premium Wireless Headphones', price: 299, rating: 4.8, image: 'https://picsum.photos/id/163/800/800', category: 'Audio', desc: 'Experience studio-quality sound with active noise cancellation and 30-hour battery life. Hand-crafted with premium materials for ultimate comfort.' },
+  { id: 2, name: 'Minimalist Smart Watch', price: 199, rating: 4.6, image: 'https://picsum.photos/id/175/800/800', category: 'Wearables', desc: 'Track your health and stay connected with elegant precision. Features an always-on retina display and titanium case.' },
+  { id: 3, name: 'Professional DSLR Camera', price: 899, rating: 4.9, image: 'https://picsum.photos/id/225/800/800', category: 'Photography', desc: 'Capture stunning 4K video and 45MP stills with our flagship full-frame mirrorless camera. Perfect for professionals.' },
+  { id: 4, name: 'Ergonomic Workspace Chair', price: 349, rating: 4.7, image: 'https://picsum.photos/id/366/800/800', category: 'Furniture', desc: 'Designed for 8+ hours of comfortable seating. Features dynamic lumbar support and breathable mesh back.' },
+  { id: 5, name: 'Studio Microphones Set', price: 150, rating: 4.5, image: 'https://picsum.photos/id/425/800/800', category: 'Audio', desc: 'Broadcast-quality dynamic microphone ideal for podcasting, streaming, and vocal recording.' },
+  { id: 6, name: 'Mechanical Keyboard', price: 129, rating: 4.8, image: 'https://picsum.photos/id/473/800/800', category: 'Workspace', desc: 'Tactile, clicky mechanical switches enclosed in a solid aluminum frame. Customizable RGB backlight.' },
+  { id: 7, name: 'Curved Ultrawide Monitor', price: 599, rating: 4.9, image: 'https://picsum.photos/id/526/800/800', category: 'Workspace', desc: 'Immersive 34-inch curved display with 144Hz refresh rate and true 1ms response time.' },
+  { id: 8, name: 'Portable SSD 2TB', price: 219, rating: 4.7, image: 'https://picsum.photos/id/560/800/800', category: 'Accessories', desc: 'Blazing fast NVMe portable drive with read speeds up to 1050 MB/s. Drop resistant and pocket sized.' }
 ];
 
 export default function App() {
@@ -300,7 +300,7 @@ function Home({ products, addToCart, wishlist, toggleWishlist }) {
     <div className="animate-fade-in">
       <section className="relative px-6 py-20 md:py-32 overflow-hidden bg-black text-white">
         <div className="absolute inset-0 opacity-40">
-          <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=2000" alt="Hero" className="w-full h-full object-cover" />
+          <img src="https://picsum.photos/id/10/2000/1000" alt="Hero" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto">
@@ -523,7 +523,7 @@ function About() {
     <div className="max-w-4xl mx-auto px-6 py-20 text-center animate-fade-in">
       <h1 className="text-5xl font-extrabold tracking-tight mb-8">Crafting the Future</h1>
       <p className="text-xl text-gray-600 leading-relaxed mb-8">LUXE is a premier destination for modern lifestyle tech and design. We believe that everyday objects should inspire creativity and elevate your environment. Every product in our collection is strictly vetted for uncompromising quality, durability, and aesthetics.</p>
-      <img src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80&w=1200" className="rounded-3xl shadow-2xl w-full" />
+      <img src="https://picsum.photos/id/373/1200/800" className="rounded-3xl shadow-2xl w-full" />
     </div>
   );
 }`;
@@ -803,8 +803,8 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-do
 import { Home, Search, Compass, MessageCircle, User, Bell, Heart, Share2, MoreHorizontal, Plus, X, Settings as SettingsIcon, Bookmark, Grid, PlaySquare, ChevronLeft } from 'lucide-react';
 
 const initialPosts = [
-  { id: 1, user: 'Sarah Jenkins', avatar: 'https://i.pravatar.cc/150?img=47', image: 'https://images.unsplash.com/photo-1516483638261-f40af5aa339b?auto=format&fit=crop&q=80&w=600', likes: 1240, liked: false, caption: 'Exploring the hidden gems of Kyoto ✨ #travel #japan' },
-  { id: 2, user: 'David Chen', avatar: 'https://i.pravatar.cc/150?img=12', image: 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&q=80&w=600', likes: 842, liked: true, caption: 'Morning coffee aesthetics ☕' },
+  { id: 1, user: 'Sarah Jenkins', avatar: 'https://i.pravatar.cc/150?img=47', image: 'https://picsum.photos/id/349/600/800', likes: 1240, liked: false, caption: 'Exploring the hidden gems of Kyoto ✨ #travel #japan' },
+  { id: 2, user: 'David Chen', avatar: 'https://i.pravatar.cc/150?img=12', image: 'https://picsum.photos/id/425/600/800', likes: 842, liked: true, caption: 'Morning coffee aesthetics ☕' },
 ];
 
 function HomeFeed() {
@@ -900,7 +900,7 @@ function ExplorePage() {
       <div className="grid grid-cols-3 gap-1 px-1">
         {[...Array(15)].map((_, i) => (
           <div key={i} className={\`bg-gray-200 relative group cursor-pointer \${i === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-square'}\`}>
-            <img src={\`https://images.unsplash.com/photo-\${1500000000000 + i}?auto=format&fit=crop&w=\${i===0?600:300}&q=80\`} className="w-full h-full object-cover" alt="Explore" />
+            <img src={\`https://picsum.photos/id/\${i + 50}/\${i===0?600:300}/\${i===0?600:300}\`} className="w-full h-full object-cover" alt="Explore" />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <Heart className="w-6 h-6 text-white fill-white" />
             </div>
@@ -959,7 +959,7 @@ function ProfilePage() {
       <div className="grid grid-cols-3 gap-0.5">
         {[...Array(9)].map((_, i) => (
           <div key={i} className="aspect-square bg-gray-200 relative group cursor-pointer">
-            <img src={\`https://images.unsplash.com/photo-\${1400000000000 + i * 1000}?auto=format&fit=crop&w=300&q=80\`} className="w-full h-full object-cover" alt="Post" />
+            <img src={\`https://picsum.photos/id/\${i + 120}/300/300\`} className="w-full h-full object-cover" alt="Post" />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
               <Heart className="w-4 h-4 text-white fill-white" /> <span className="text-white text-xs font-bold">1.2K</span>
             </div>
