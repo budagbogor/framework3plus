@@ -724,18 +724,31 @@ function SettingsView() {
 `;
 
 // 3. MOBILE APP TEMPLATE
-const mobileApp = `import React, { useState } from 'react';
-import { Home, Search, Compass, MessageCircle, User, Bell, Heart, Share2, MoreHorizontal, Plus, X } from 'lucide-react';
+const mobileApp = `import React, { useState, useRef } from 'react';
+import { Home, Search, Compass, MessageCircle, User, Bell, Heart, Share2, MoreHorizontal, Plus, X, Bookmark, Grid, UserPlus } from 'lucide-react';
 
 const initialPosts = [
-  { id: 1, user: 'Sarah Jenkins', avatar: 'https://i.pravatar.cc/150?img=47', image: 'https://images.unsplash.com/photo-1516483638261-f40af5aa339b?auto=format&fit=crop&q=80&w=600', likes: 1240, liked: false, caption: 'Exploring the hidden gems of Kyoto 🌸✨ #travel #japan' },
-  { id: 2, user: 'David Chen', avatar: 'https://i.pravatar.cc/150?img=12', image: 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&q=80&w=600', likes: 842, liked: true, caption: 'Morning coffee aesthetics ☕️' },
+  { id: 1, user: 'Sarah Jenkins', avatar: 'https://i.pravatar.cc/150?img=47', image: 'https://images.unsplash.com/photo-1516483638261-f40af5aa339b?auto=format&fit=crop&q=80&w=600', likes: 1240, liked: false, saved: false, caption: 'Exploring the hidden gems of Kyoto 🌸✨ #travel #japan' },
+  { id: 2, user: 'David Chen', avatar: 'https://i.pravatar.cc/150?img=12', image: 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&q=80&w=600', likes: 842, liked: true, saved: true, caption: 'Morning coffee aesthetics ☕️' },
+];
+
+const exploreImages = [
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=300',
+  'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=300',
+  'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=300',
+  'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=300',
+  'https://images.unsplash.com/photo-1504150558240-0b4fd8946624?auto=format&fit=crop&w=300',
+  'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=300',
+  'https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=300',
+  'https://images.unsplash.com/photo-1542314831-c5a42a1f8b8c?auto=format&fit=crop&w=300',
+  'https://images.unsplash.com/photo-1506744626753-dba7d41543f4?auto=format&fit=crop&w=300'
 ];
 
 export default function MobileApp() {
   const [activeTab, setActiveTab] = useState('home');
   const [posts, setPosts] = useState(initialPosts);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newCaption, setNewCaption] = useState('');
 
   const toggleLike = (id) => {
     setPosts(posts.map(p => {
@@ -745,14 +758,32 @@ export default function MobileApp() {
       return p;
     }));
   };
+  
+  const toggleSave = (id) => {
+    setPosts(posts.map(p => p.id === id ? { ...p, saved: !p.saved } : p));
+  };
+
+  const handleShare = () => {
+    if(newCaption.trim()) {
+      setPosts([{
+        id: Date.now(),
+        user: 'Alex Doe',
+        avatar: 'https://i.pravatar.cc/150?img=33',
+        image: 'https://images.unsplash.com/photo-1682687220063-4742bd7fd538?auto=format&fit=crop&w=600',
+        likes: 0, liked: false, saved: false, caption: newCaption
+      }, ...posts]);
+    }
+    setNewCaption('');
+    setIsModalOpen(false);
+    setActiveTab('home');
+  };
 
   const renderContent = () => {
     if (activeTab === 'home') {
       return (
         <>
-          {/* Stories */}
           <div className="flex gap-4 px-4 py-4 overflow-x-auto hide-scrollbar bg-white border-b border-gray-100">
-            <div className="flex flex-col items-center gap-1 min-w-[72px] cursor-pointer">
+            <div className="flex flex-col items-center gap-1 min-w-[72px] cursor-pointer" onClick={() => setIsModalOpen(true)}>
               <div className="w-16 h-16 rounded-full p-[2px] bg-gray-200 relative">
                 <img src="https://i.pravatar.cc/150?img=33" className="w-full h-full rounded-full border-2 border-white object-cover" alt="Me" />
                 <div className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center border-2 border-white text-xs font-bold">+</div>
@@ -769,7 +800,6 @@ export default function MobileApp() {
             ))}
           </div>
 
-          {/* Feed */}
           <div className="space-y-2 bg-gray-50">
             {posts.map(post => (
               <article key={post.id} className="bg-white pb-4 animate-fade-in">
@@ -800,6 +830,9 @@ export default function MobileApp() {
                       <button className="hover:opacity-70"><MessageCircle className="w-7 h-7 text-gray-800" /></button>
                       <button className="hover:opacity-70"><Share2 className="w-6 h-6 text-gray-800" /></button>
                     </div>
+                    <button onClick={() => toggleSave(post.id)} className="hover:opacity-70 transition-transform active:scale-75">
+                       <Bookmark className={\`w-7 h-7 \${post.saved ? 'fill-gray-900 text-gray-900' : 'text-gray-800'}\`} />
+                    </button>
                   </div>
                   <p className="font-bold text-sm mb-1">{post.likes.toLocaleString()} likes</p>
                   <p className="text-sm"><span className="font-semibold mr-2 cursor-pointer hover:underline">{post.user}</span>{post.caption}</p>
@@ -812,34 +845,123 @@ export default function MobileApp() {
       );
     }
     
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-gray-400 animate-fade-in p-8 text-center">
-        <Compass className="w-16 h-16 mb-4 opacity-20" />
-        <h2 className="text-xl font-bold text-gray-800 mb-2 capitalize">{activeTab} Page</h2>
-        <p className="text-sm">This is a mock screen for the {activeTab} section. In a real app, this would route to a different component.</p>
-      </div>
-    );
+    if (activeTab === 'search') {
+      return (
+        <div className="animate-fade-in flex flex-col h-full bg-white">
+          <div className="p-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+            <div className="bg-gray-100 rounded-xl flex items-center p-2">
+              <Search className="w-5 h-5 text-gray-400 mx-2" />
+              <input type="text" placeholder="Search" className="bg-transparent border-none outline-none w-full text-sm" />
+            </div>
+          </div>
+          <div className="p-4">
+            <h3 className="font-semibold text-gray-800 mb-4">Recent Searches</h3>
+            <div className="space-y-4">
+              {['#photography', 'nature escapes', '#techgadgets', 'David Chen'].map(term => (
+                <div key={term} className="flex items-center justify-between cursor-pointer">
+                   <div className="flex items-center gap-3 text-gray-800">
+                     <Search className="w-4 h-4 text-gray-400" /> <span className="text-sm font-medium">{term}</span>
+                   </div>
+                   <X className="w-4 h-4 text-gray-300" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    if (activeTab === 'explore') {
+      return (
+        <div className="animate-fade-in">
+           <div className="grid grid-cols-3 gap-0.5 mt-1">
+             {exploreImages.map((img, i) => (
+                <div key={i} className="aspect-square bg-gray-200 cursor-pointer hover:opacity-80 transition-opacity">
+                  <img src={img} className="w-full h-full object-cover" />
+                </div>
+             ))}
+           </div>
+        </div>
+      );
+    }
+    
+    if (activeTab === 'profile') {
+      const myPostsCount = posts.filter(p => p.user === 'Alex Doe').length + 12;
+      return (
+        <div className="animate-fade-in bg-white h-full">
+           <div className="p-4 flex items-center justify-between">
+              <h2 className="font-bold text-xl flex items-center gap-2">alex_doe <ChevronDown className="w-4 h-4" /></h2>
+              <div className="flex gap-4">
+                <Plus className="w-6 h-6 cursor-pointer" onClick={() => setIsModalOpen(true)} />
+                <MoreHorizontal className="w-6 h-6 cursor-pointer" />
+              </div>
+           </div>
+           <div className="p-4 flex items-center gap-6">
+              <div className="relative">
+                <img src="https://i.pravatar.cc/150?img=33" className="w-20 h-20 rounded-full object-cover" />
+                <div className="absolute bottom-0 right-0 bg-blue-500 rounded-full p-1 border-2 border-white"><Plus className="w-3 h-3 text-white" /></div>
+              </div>
+              <div className="flex-1 flex justify-around text-center">
+                 <div><div className="font-bold text-lg">{myPostsCount}</div><div className="text-xs text-gray-500">Posts</div></div>
+                 <div><div className="font-bold text-lg">1.2K</div><div className="text-xs text-gray-500">Followers</div></div>
+                 <div><div className="font-bold text-lg">340</div><div className="text-xs text-gray-500">Following</div></div>
+              </div>
+           </div>
+           <div className="px-4 pb-4">
+             <div className="font-semibold text-sm">Alex Doe</div>
+             <div className="text-sm text-gray-600">Digital Creator ✨</div>
+             <div className="text-sm text-blue-600">linktr.ee/alexdoe</div>
+             <div className="flex gap-2 mt-4">
+               <button className="flex-1 bg-gray-100 text-black font-semibold text-sm py-1.5 rounded-lg">Edit Profile</button>
+               <button className="flex-1 bg-gray-100 text-black font-semibold text-sm py-1.5 rounded-lg">Share Profile</button>
+               <button className="bg-gray-100 p-1.5 rounded-lg"><UserPlus className="w-5 h-5" /></button>
+             </div>
+           </div>
+           
+           <div className="flex border-t border-gray-200 mt-2">
+             <div className="flex-1 border-b-2 border-black flex justify-center py-2"><Grid className="w-6 h-6 text-black" /></div>
+             <div className="flex-1 flex justify-center py-2"><Bookmark className="w-6 h-6 text-gray-400" /></div>
+             <div className="flex-1 flex justify-center py-2"><User className="w-6 h-6 text-gray-400" /></div>
+           </div>
+           
+           <div className="grid grid-cols-3 gap-0.5">
+             {[
+               'https://images.unsplash.com/photo-1682687220063-4742bd7fd538?auto=format&fit=crop&w=300',
+               'https://images.unsplash.com/photo-1682687982501-1e58f81014a9?auto=format&fit=crop&w=300',
+               'https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?auto=format&fit=crop&w=300'
+             ].map((img, i) => (
+                <div key={i} className="aspect-square bg-gray-200 cursor-pointer">
+                  <img src={img} className="w-full h-full object-cover" />
+                </div>
+             ))}
+           </div>
+        </div>
+      );
+    }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 font-sans select-none">
-      {/* Phone Frame Simulator */}
       <div className="w-full max-w-[400px] h-[800px] bg-white rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col border-[8px] border-gray-900">
         
-        {/* Notch */}
         <div className="absolute top-0 inset-x-0 h-7 bg-gray-900 rounded-b-3xl mx-auto w-40 z-50"></div>
 
-        {/* New Post Modal */}
         {isModalOpen && (
           <div className="absolute inset-0 z-50 bg-white animate-slide-up flex flex-col">
             <div className="flex items-center justify-between p-4 pt-12 border-b border-gray-100">
               <button onClick={() => setIsModalOpen(false)}><X className="w-6 h-6" /></button>
               <h2 className="font-bold text-lg">New Post</h2>
-              <button className="text-blue-500 font-semibold" onClick={() => setIsModalOpen(false)}>Share</button>
+              <button className="text-blue-500 font-semibold" onClick={handleShare}>Share</button>
             </div>
             <div className="p-4 flex gap-4">
               <img src="https://i.pravatar.cc/150?img=33" className="w-10 h-10 rounded-full" alt="Me" />
-              <textarea placeholder="Write a caption..." className="w-full resize-none outline-none mt-2" rows="4"></textarea>
+              <textarea 
+                placeholder="Write a caption..." 
+                className="w-full resize-none outline-none mt-2" 
+                rows="4"
+                value={newCaption}
+                onChange={(e) => setNewCaption(e.target.value)}
+              ></textarea>
             </div>
             <div className="px-4 py-8 mt-auto border-t border-gray-100 flex justify-center bg-gray-50">
                <div className="w-full aspect-square border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-100">
@@ -850,24 +972,25 @@ export default function MobileApp() {
           </div>
         )}
 
-        {/* App Header */}
-        <header className="px-6 pt-12 pb-3 flex items-center justify-between bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100">
-          <h1 className="text-2xl font-extrabold tracking-tight cursor-pointer" onClick={() => setActiveTab('home')}>VibeCheck</h1>
-          <div className="flex gap-5">
-            <button className="relative hover:scale-110 transition-transform">
-              <Bell className="w-6 h-6 text-gray-800" />
-              <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
-            <button className="hover:scale-110 transition-transform"><MessageCircle className="w-6 h-6 text-gray-800" /></button>
-          </div>
-        </header>
+        {activeTab === 'home' && (
+          <header className="px-6 pt-12 pb-3 flex items-center justify-between bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100">
+            <h1 className="text-2xl font-extrabold tracking-tight cursor-pointer" onClick={() => {}}>VibeCheck</h1>
+            <div className="flex gap-5">
+              <button className="relative hover:scale-110 transition-transform">
+                <Bell className="w-6 h-6 text-gray-800" />
+                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+              </button>
+              <button className="hover:scale-110 transition-transform"><MessageCircle className="w-6 h-6 text-gray-800" /></button>
+            </div>
+          </header>
+        )}
 
-        {/* Scrollable Main Area */}
+        {activeTab !== 'home' && <div className="h-10 shrink-0 bg-white sticky top-0 z-40"></div>}
+
         <main className="flex-1 overflow-y-auto bg-white pb-20 relative">
           {renderContent()}
         </main>
 
-        {/* Bottom Navigation */}
         <nav className="absolute bottom-0 inset-x-0 bg-white/90 backdrop-blur-md border-t border-gray-200 px-6 py-3 pb-8 flex justify-between items-center z-40">
           <button onClick={() => setActiveTab('home')} className={\`\${activeTab === 'home' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><Home className="w-6 h-6" fill={activeTab === 'home' ? 'currentColor' : 'none'} /></button>
           <button onClick={() => setActiveTab('search')} className={\`\${activeTab === 'search' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><Search className="w-6 h-6" strokeWidth={activeTab === 'search' ? 3 : 2} /></button>
@@ -883,7 +1006,6 @@ export default function MobileApp() {
           <button onClick={() => setActiveTab('profile')} className={\`\${activeTab === 'profile' ? 'text-black' : 'text-gray-400'} hover:scale-110 transition-all\`}><User className="w-6 h-6" fill={activeTab === 'profile' ? 'currentColor' : 'none'} /></button>
         </nav>
         
-        {/* Home Indicator (iOS Bar) */}
         <div className="absolute bottom-2 inset-x-0 w-32 h-1 bg-gray-900 rounded-full mx-auto z-50"></div>
       </div>
     </div>
@@ -892,11 +1014,14 @@ export default function MobileApp() {
 
 // 4. DESKTOP TOOL TEMPLATE
 const desktopApp = `import React, { useState } from 'react';
-import { Folder, FolderOpen, File, ChevronRight, ChevronDown, Terminal, Search, Settings, Cloud, Database, Play, CheckCircle2, AlertCircle, Loader2, X } from 'lucide-react';
+import { Folder, FolderOpen, File, ChevronRight, ChevronDown, Terminal, Search, Settings, Cloud, Database, Play, CheckCircle2, AlertCircle, Loader2, X, Code2, Copy, Trash2, Layout } from 'lucide-react';
 
 const mockFiles = {
   'init_schema.sql': {
     lang: 'SQL',
+    icon: Database,
+    color: 'text-emerald-400',
+    folder: 'migrations',
     code: \`CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email VARCHAR(255) UNIQUE NOT NULL,
@@ -909,6 +1034,9 @@ CREATE INDEX idx_users_email ON users(email);\`
   },
   'connection.js': {
     lang: 'JavaScript',
+    icon: File,
+    color: 'text-yellow-400',
+    folder: 'src',
     code: \`const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -922,18 +1050,60 @@ const pool = new Pool({
 module.exports = {
   query: (text, params) => pool.query(text, params),
 };\`,
+  },
+  'index.js': {
+    lang: 'JavaScript',
+    icon: File,
+    color: 'text-yellow-400',
+    folder: 'src',
+    code: \`const express = require('express');
+const app = express();
+const db = require('./connection');
+
+app.get('/users', async (req, res) => {
+  const { rows } = await db.query('SELECT id, email FROM users');
+  res.json(rows);
+});
+
+app.listen(3000, () => console.log('Server ready'));\`
+  },
+  '.env': {
+    lang: 'Env',
+    icon: Settings,
+    color: 'text-gray-400',
+    folder: '',
+    code: \`DB_HOST=localhost
+DB_USER=admin
+DB_PASSWORD=secret
+PORT=3000\`
+  },
+  'package.json': {
+    lang: 'JSON',
+    icon: Code2,
+    color: 'text-red-400',
+    folder: '',
+    code: \`{
+  "name": "myapp",
+  "version": "1.0.0",
+  "dependencies": {
+    "express": "^4.18.2",
+    "pg": "^8.11.3"
+  }
+}\`
   }
 };
 
 export default function DesktopTool() {
   const [activeTab, setActiveTab] = useState('init_schema.sql');
-  const [openFiles, setOpenFiles] = useState(['init_schema.sql', 'connection.js']);
+  const [openFiles, setOpenFiles] = useState(['init_schema.sql', 'connection.js', 'index.js']);
   const [foldersOpen, setFoldersOpen] = useState({ src: true, migrations: true });
   const [isRunning, setIsRunning] = useState(false);
   const [logs, setLogs] = useState([
-    { type: 'success', text: 'Connected to localhost:5432 (PostgreSQL 14.2)' }
+    { type: 'success', text: 'Connected to localhost:5432 (PostgreSQL 14.2)' },
+    { type: 'info', text: 'Server listening on port 3000' }
   ]);
   const [bottomPaneTab, setBottomPaneTab] = useState('output');
+  const [activeActivity, setActiveActivity] = useState('explorer');
 
   const toggleFolder = (folder) => setFoldersOpen(p => ({ ...p, [folder]: !p[folder] }));
   
@@ -950,23 +1120,109 @@ export default function DesktopTool() {
   };
 
   const runQuery = () => {
-    if(isRunning) return;
+    if(isRunning || !activeTab) return;
     setIsRunning(true);
     setBottomPaneTab('output');
     setLogs(p => [...p, { type: 'info', text: \`Executing \${activeTab}...\` }]);
     
     setTimeout(() => {
       setIsRunning(false);
-      setLogs(p => [...p, { type: 'success', text: \`Execution completed successfully (42ms)\` }]);
+      setLogs(p => [...p, { type: 'success', text: \`\${activeTab} executed successfully (42ms)\` }]);
       if(activeTab.endsWith('.sql')) {
         setLogs(p => [...p, { type: 'warning', text: 'Warning: No role specified for schema creation.' }]);
       }
-    }, 1500);
+    }, 1200);
+  };
+
+  const renderSidebarContent = () => {
+    if (activeActivity === 'explorer') {
+      const rootFiles = Object.keys(mockFiles).filter(f => !mockFiles[f].folder);
+      return (
+        <>
+          <div className="h-9 px-4 flex items-center text-xs font-bold tracking-wider text-gray-400 uppercase">Explorer</div>
+          <div className="flex-1 overflow-y-auto py-2 text-sm select-none">
+            <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#2a2d2e] cursor-pointer" onClick={() => toggleFolder('src')}>
+              {foldersOpen.src ? <ChevronDown className="w-4 h-4 opacity-70" /> : <ChevronRight className="w-4 h-4 opacity-70" />}
+              {foldersOpen.src ? <FolderOpen className="w-4 h-4 text-blue-400" /> : <Folder className="w-4 h-4 text-blue-400" />}
+              <span>src</span>
+            </div>
+            {foldersOpen.src && Object.keys(mockFiles).filter(f => mockFiles[f].folder === 'src').map(file => (
+              <div 
+                key={file}
+                className={\`flex items-center gap-1.5 px-2 py-1 ml-6 cursor-pointer \${activeTab === file ? 'bg-[#37373d] text-white' : 'text-gray-300 hover:bg-[#2a2d2e]'}\`}
+                onClick={() => openFile(file)}
+              >
+                {React.createElement(mockFiles[file].icon, { className: \`w-4 h-4 \${mockFiles[file].color}\` })} <span>{file}</span>
+              </div>
+            ))}
+
+            <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#2a2d2e] cursor-pointer mt-1" onClick={() => toggleFolder('migrations')}>
+              {foldersOpen.migrations ? <ChevronDown className="w-4 h-4 opacity-70" /> : <ChevronRight className="w-4 h-4 opacity-70" />}
+              {foldersOpen.migrations ? <FolderOpen className="w-4 h-4 text-emerald-500" /> : <Folder className="w-4 h-4 text-emerald-500" />}
+              <span>migrations</span>
+            </div>
+            {foldersOpen.migrations && Object.keys(mockFiles).filter(f => mockFiles[f].folder === 'migrations').map(file => (
+              <div 
+                key={file}
+                className={\`flex items-center gap-1.5 px-2 py-1 ml-6 cursor-pointer \${activeTab === file ? 'bg-[#37373d] text-white' : 'text-gray-300 hover:bg-[#2a2d2e]'}\`}
+                onClick={() => openFile(file)}
+              >
+                {React.createElement(mockFiles[file].icon, { className: \`w-4 h-4 \${mockFiles[file].color}\` })} <span>{file}</span>
+              </div>
+            ))}
+            
+            <div className="mt-2">
+              {rootFiles.map(file => (
+                <div 
+                  key={file}
+                  className={\`flex items-center gap-1.5 px-2 py-1 cursor-pointer \${activeTab === file ? 'bg-[#37373d] text-white' : 'text-gray-300 hover:bg-[#2a2d2e]'}\`}
+                  onClick={() => openFile(file)}
+                  style={{ paddingLeft: '1.25rem' }}
+                >
+                  {React.createElement(mockFiles[file].icon, { className: \`w-4 h-4 \${mockFiles[file].color}\` })} <span>{file}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      );
+    }
+    
+    if (activeActivity === 'search') {
+      return (
+        <div className="flex flex-col h-full">
+          <div className="h-9 px-4 flex items-center text-xs font-bold tracking-wider text-gray-400 uppercase">Search</div>
+          <div className="p-4 flex-1">
+            <input type="text" placeholder="Search" className="w-full bg-[#3c3c3c] border border-[#3c3c3c] text-sm text-white px-2 py-1 focus:outline-none focus:border-blue-500 rounded" />
+            <p className="text-gray-500 text-xs mt-4 px-1">Press Enter to search files.</p>
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="flex flex-col h-full items-center justify-center text-gray-500 p-4 text-center">
+        <Layout className="w-12 h-12 mb-4 opacity-20" />
+        <p className="text-sm">Panel <b>{activeActivity}</b> is empty in this mock.</p>
+      </div>
+    );
+  };
+
+  const getCodeMarkup = (code) => {
+     let highlighted = code
+       .replace(/const|let|var|require|module\.exports|async|await|return/g, '<span class="text-[#569cd6]">\$&</span>')
+       .replace(/function|=&gt;/g, '<span class="text-[#569cd6]">\$&</span>')
+       .replace(/'.*?'/g, '<span class="text-[#ce9178]">\$&</span>')
+       .replace(/CREATE TABLE|CREATE INDEX|PRIMARY KEY|DEFAULT|UNIQUE|NOT NULL|WITH TIME ZONE/g, '<span class="text-[#569cd6]">\$&</span>')
+       .replace(/VARCHAR|UUID|TIMESTAMP/g, '<span class="text-[#4ec9b0]">\$&</span>')
+       .replace(/uuid_generate_v4|CURRENT_TIMESTAMP/g, '<span class="text-[#dcdcaa]">\$&</span>')
+       .replace(/--.*/g, '<span class="text-[#6A9955]">\$&</span>');
+       
+     return { __html: highlighted };
   };
 
   return (
     <div className="h-screen bg-[#1e1e1e] text-[#cccccc] font-sans flex flex-col overflow-hidden select-none">
-      {/* Titlebar */}
       <div className="h-9 bg-[#323233] flex items-center justify-between px-4 border-b border-[#111111] shadow-sm">
         <div className="flex gap-2">
           <div className="w-3 h-3 rounded-full bg-[#ff5f56] hover:bg-[#ff4033] cursor-pointer"></div>
@@ -974,172 +1230,115 @@ export default function DesktopTool() {
           <div className="w-3 h-3 rounded-full bg-[#27c93f] hover:bg-[#1fa133] cursor-pointer"></div>
         </div>
         <div className="text-xs font-medium opacity-70 flex items-center gap-2 tracking-wide">
-          <Database className="w-3 h-3" /> DataGrip Studio Pro <span className="opacity-50">- {activeTab || 'Welcome'}</span>
+          <Code2 className="w-3 h-3" /> DevStudio Pro <span className="opacity-50">- {activeTab || 'Welcome'}</span>
         </div>
         <div className="w-12"></div>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Activity Bar */}
         <div className="w-12 bg-[#333333] flex flex-col items-center py-4 gap-6 border-r border-[#252526] z-10 shadow-xl">
-          <div className="p-2 bg-[#1e1e1e] rounded-lg text-blue-400 cursor-pointer border-l-2 border-blue-400"><Folder className="w-5 h-5" /></div>
-          <div className="p-2 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"><Search className="w-5 h-5" /></div>
-          <div className="p-2 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"><Database className="w-5 h-5" /></div>
-          <div className="p-2 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"><Cloud className="w-5 h-5" /></div>
-          <div className="mt-auto p-2 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"><Settings className="w-5 h-5" /></div>
+          <div onClick={() => setActiveActivity('explorer')} className={\`p-2 rounded-lg cursor-pointer transition-all \${activeActivity === 'explorer' ? 'bg-[#1e1e1e] text-blue-400 border-l-2 border-blue-400' : 'opacity-40 hover:opacity-100 text-white border-l-2 border-transparent'}\`}><Folder className="w-5 h-5" /></div>
+          <div onClick={() => setActiveActivity('search')} className={\`p-2 rounded-lg cursor-pointer transition-all \${activeActivity === 'search' ? 'bg-[#1e1e1e] text-blue-400 border-l-2 border-blue-400' : 'opacity-40 hover:opacity-100 text-white border-l-2 border-transparent'}\`}><Search className="w-5 h-5" /></div>
+          <div onClick={() => setActiveActivity('database')} className={\`p-2 rounded-lg cursor-pointer transition-all \${activeActivity === 'database' ? 'bg-[#1e1e1e] text-blue-400 border-l-2 border-blue-400' : 'opacity-40 hover:opacity-100 text-white border-l-2 border-transparent'}\`}><Database className="w-5 h-5" /></div>
+          <div onClick={() => setActiveActivity('cloud')} className={\`p-2 rounded-lg cursor-pointer transition-all \${activeActivity === 'cloud' ? 'bg-[#1e1e1e] text-blue-400 border-l-2 border-blue-400' : 'opacity-40 hover:opacity-100 text-white border-l-2 border-transparent'}\`}><Cloud className="w-5 h-5" /></div>
+          <div className="mt-auto p-2 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"><Settings className="w-5 h-5 text-white" /></div>
         </div>
 
-        {/* Sidebar */}
-        <div className="w-64 bg-[#252526] border-r border-[#1e1e1e] flex flex-col shadow-lg z-0">
-          <div className="h-9 px-4 flex items-center text-xs font-bold tracking-wider text-gray-400 uppercase">Explorer</div>
-          <div className="flex-1 overflow-y-auto py-2 text-sm">
-            {/* src Folder */}
-            <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#2a2d2e] cursor-pointer" onClick={() => toggleFolder('src')}>
-              {foldersOpen.src ? <ChevronDown className="w-4 h-4 opacity-70" /> : <ChevronRight className="w-4 h-4 opacity-70" />}
-              {foldersOpen.src ? <FolderOpen className="w-4 h-4 text-yellow-500" /> : <Folder className="w-4 h-4 text-yellow-500" />}
-              <span>src</span>
-            </div>
-            {foldersOpen.src && (
-              <div 
-                className={\`flex items-center gap-1.5 px-2 py-1 ml-6 cursor-pointer \${activeTab === 'connection.js' ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e]'}\`}
-                onClick={() => openFile('connection.js')}
-              >
-                <File className="w-4 h-4 text-blue-400" /> <span>connection.js</span>
-              </div>
-            )}
-
-            {/* migrations Folder */}
-            <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#2a2d2e] cursor-pointer mt-1" onClick={() => toggleFolder('migrations')}>
-              {foldersOpen.migrations ? <ChevronDown className="w-4 h-4 opacity-70" /> : <ChevronRight className="w-4 h-4 opacity-70" />}
-              {foldersOpen.migrations ? <FolderOpen className="w-4 h-4 text-emerald-500" /> : <Folder className="w-4 h-4 text-emerald-500" />}
-              <span>migrations</span>
-            </div>
-            {foldersOpen.migrations && (
-              <>
-                <div 
-                  className={\`flex items-center gap-1.5 px-2 py-1 ml-6 cursor-pointer \${activeTab === 'init_schema.sql' ? 'bg-[#37373d] text-white' : 'hover:bg-[#2a2d2e]'}\`}
-                  onClick={() => openFile('init_schema.sql')}
-                >
-                  <Database className="w-4 h-4 text-emerald-400" /> <span>init_schema.sql</span>
-                </div>
-              </>
-            )}
-          </div>
+        <div className="w-64 bg-[#252526] border-r border-[#1e1e1e] flex flex-col shadow-lg z-0 transition-all">
+          {renderSidebarContent()}
         </div>
 
-        {/* Main Editor Area */}
         <div className="flex-1 flex flex-col min-w-0 bg-[#1e1e1e]">
-          {/* Editor Tabs */}
           <div className="flex bg-[#2d2d2d] overflow-x-auto hide-scrollbar border-b border-[#1e1e1e]">
-            {openFiles.length === 0 && <div className="p-2 text-sm opacity-50 italic">No files open</div>}
+            {openFiles.length === 0 && <div className="p-2 text-sm opacity-50 italic px-4">No files open</div>}
             {openFiles.map(file => (
               <div 
                 key={file}
                 onClick={() => setActiveTab(file)}
-                className={\`group flex items-center gap-2 px-4 py-2 border-r border-[#1e1e1e] cursor-pointer text-sm \${activeTab === file ? 'bg-[#1e1e1e] text-white border-t-2 border-t-blue-500' : 'bg-[#2d2d2d] opacity-60 hover:bg-[#252526] hover:opacity-100 border-t-2 border-t-transparent'}\`}
+                className={\`group flex items-center gap-2 px-4 py-2 border-r border-[#1e1e1e] cursor-pointer text-sm min-w-max transition-colors \${activeTab === file ? 'bg-[#1e1e1e] text-white border-t-2 border-t-blue-500' : 'bg-[#2d2d2d] text-gray-400 hover:bg-[#252526] hover:text-gray-200 border-t-2 border-t-transparent'}\`}
               >
-                {file.endsWith('.sql') ? <Database className="w-4 h-4 text-emerald-400" /> : <File className="w-4 h-4 text-blue-400" />}
+                {React.createElement(mockFiles[file].icon, { className: \`w-4 h-4 \${mockFiles[file].color}\` })}
                 {file}
-                <button onClick={(e) => closeFile(e, file)} className="opacity-0 group-hover:opacity-100 hover:bg-[#444] rounded p-0.5 ml-1"><X className="w-3 h-3" /></button>
+                <button onClick={(e) => closeFile(e, file)} className="opacity-0 group-hover:opacity-100 hover:bg-[#444] rounded p-0.5 ml-1 transition-opacity"><X className="w-3 h-3" /></button>
               </div>
             ))}
           </div>
 
           {activeTab ? (
             <>
-              {/* Breadcrumbs & Toolbar */}
               <div className="px-4 py-2 flex items-center justify-between border-b border-[#2d2d2d] bg-[#1e1e1e] shadow-sm z-10">
                 <div className="text-xs opacity-60 flex items-center gap-1">
-                  project <ChevronRight className="w-3 h-3" /> {activeTab.endsWith('.sql') ? 'migrations' : 'src'} <ChevronRight className="w-3 h-3" /> {activeTab}
+                  myapp {mockFiles[activeTab].folder && <><ChevronRight className="w-3 h-3" /> {mockFiles[activeTab].folder}</>} <ChevronRight className="w-3 h-3" /> {activeTab}
                 </div>
                 <div className="flex gap-2 animate-fade-in">
                   <button 
                     onClick={runQuery}
                     disabled={isRunning}
-                    className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-semibold rounded transition-colors shadow-lg shadow-emerald-900/20"
+                    className="flex items-center gap-1.5 px-3 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-semibold rounded transition-colors shadow-lg shadow-emerald-900/20"
                   >
                     {isRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
-                    {activeTab.endsWith('.sql') ? 'Run Query' : 'Execute Script'}
+                    {activeTab.endsWith('.sql') ? 'Run Query' : 'Execute'}
                   </button>
                 </div>
               </div>
 
-              {/* Code Editor Mock */}
-              <div className="flex-1 p-4 font-mono text-sm leading-relaxed overflow-y-auto bg-[#1e1e1e]">
+              <div className="flex-1 p-4 font-mono text-sm leading-relaxed overflow-y-auto bg-[#1e1e1e] cursor-text">
                 <div className="flex animate-fade-in">
-                  <div className="w-8 text-right pr-4 opacity-30 select-none flex flex-col">
-                    {mockFiles[activeTab].code.split('\\n').map((_, i) => <span key={i}>{i+1}</span>)}
+                  <div className="w-10 text-right pr-4 opacity-30 select-none flex flex-col border-r border-[#333] mr-4">
+                    {mockFiles[activeTab].code.split('\n').map((_, i) => <span key={i}>{i+1}</span>)}
                   </div>
-                  <div className="flex-1 whitespace-pre">
-                    {activeTab.endsWith('.sql') ? (
-                      <>
-                        <span className="text-[#569cd6]">CREATE TABLE</span> <span className="text-[#dcdcaa]">users</span> (<br/>
-                        &nbsp;&nbsp;id <span className="text-[#569cd6]">UUID PRIMARY KEY DEFAULT</span> <span className="text-[#4ec9b0]">uuid_generate_v4()</span>,<br/>
-                        &nbsp;&nbsp;email <span className="text-[#569cd6]">VARCHAR</span>(255) <span className="text-[#569cd6]">UNIQUE NOT NULL</span>,<br/>
-                        &nbsp;&nbsp;password_hash <span className="text-[#569cd6]">VARCHAR</span>(255) <span className="text-[#569cd6]">NOT NULL</span>,<br/>
-                        &nbsp;&nbsp;created_at <span className="text-[#569cd6]">TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP</span><br/>
-                        );<br/>
-                        <br/>
-                        <span className="text-[#6A9955]">-- Create index on email for faster lookups</span><br/>
-                        <span className="text-[#569cd6]">CREATE INDEX</span> idx_users_email <span className="text-[#569cd6]">ON</span> users(email);
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-[#569cd6]">const</span> {'{'} Pool {'}'} = <span className="text-[#4ec9b0]">require</span>(<span className="text-[#ce9178]">'pg'</span>);<br/><br/>
-                        <span className="text-[#569cd6]">const</span> pool = <span className="text-[#569cd6]">new</span> <span className="text-[#4ec9b0]">Pool</span>({'{'}<br/>
-                        &nbsp;&nbsp;host: <span className="text-[#4fc1ff]">process</span>.env.DB_HOST || <span className="text-[#ce9178]">'localhost'</span>,<br/>
-                        &nbsp;&nbsp;user: <span className="text-[#4fc1ff]">process</span>.env.DB_USER || <span className="text-[#ce9178]">'admin'</span>,<br/>
-                        &nbsp;&nbsp;password: <span className="text-[#4fc1ff]">process</span>.env.DB_PASSWORD,<br/>
-                        &nbsp;&nbsp;database: <span className="text-[#ce9178]">'myapp_db'</span>,<br/>
-                        &nbsp;&nbsp;port: <span className="text-[#b5cea8]">5432</span>,<br/>
-                        {'}'});<br/><br/>
-                        <span className="text-[#4fc1ff]">module</span>.exports = {'{'}<br/>
-                        &nbsp;&nbsp;<span className="text-[#dcdcaa]">query</span>: (text, params) <span className="text-[#569cd6]">=&gt;</span> pool.<span className="text-[#dcdcaa]">query</span>(text, params),<br/>
-                        {'}'};
-                      </>
-                    )}
-                  </div>
+                  <div className="flex-1 whitespace-pre" dangerouslySetInnerHTML={getCodeMarkup(mockFiles[activeTab].code)} />
                 </div>
               </div>
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center opacity-30 select-none">
-              <Database className="w-24 h-24 mb-4" />
-              <h2 className="text-xl">DataGrip Studio Pro</h2>
-              <p>Select a file from the explorer to begin.</p>
+              <Code2 className="w-24 h-24 mb-6 text-gray-500" />
+              <h2 className="text-2xl font-semibold mb-2">DevStudio Pro</h2>
+              <p className="text-sm">Select a file from the explorer to begin editing.</p>
+              <div className="flex gap-4 mt-8">
+                <div className="flex items-center gap-2 text-xs border border-gray-600 rounded px-3 py-1 bg-gray-800"><Search className="w-3 h-3"/> Ctrl+P</div>
+                <div className="flex items-center gap-2 text-xs border border-gray-600 rounded px-3 py-1 bg-gray-800"><Terminal className="w-3 h-3"/> Ctrl+\`</div>
+              </div>
             </div>
           )}
 
-          {/* Bottom Panel (Terminal/Output) */}
-          <div className="h-48 border-t border-[#2d2d2d] flex flex-col bg-[#1e1e1e]">
+          <div className="h-56 border-t border-[#2d2d2d] flex flex-col bg-[#1e1e1e]">
             <div className="flex border-b border-[#2d2d2d] px-2 bg-[#252526]">
               <div 
                 onClick={() => setBottomPaneTab('output')}
-                className={\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer \${bottomPaneTab === 'output' ? 'border-b border-blue-500 text-white' : 'opacity-50 hover:opacity-100'}\`}
+                className={\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer font-medium \${bottomPaneTab === 'output' ? 'border-b-2 border-blue-500 text-white' : 'opacity-50 hover:opacity-100 text-gray-300'}\`}
               >
                 Output
               </div>
               <div 
                 onClick={() => setBottomPaneTab('terminal')}
-                className={\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer \${bottomPaneTab === 'terminal' ? 'border-b border-blue-500 text-white' : 'opacity-50 hover:opacity-100'}\`}
+                className={\`px-4 py-2 text-xs uppercase tracking-wider cursor-pointer font-medium \${bottomPaneTab === 'terminal' ? 'border-b-2 border-blue-500 text-white' : 'opacity-50 hover:opacity-100 text-gray-300'}\`}
               >
                 Terminal
+              </div>
+              <div className="ml-auto flex items-center pr-2 gap-2">
+                <button className="opacity-50 hover:opacity-100 transition-opacity" onClick={() => setLogs([])} title="Clear Output"><Trash2 className="w-4 h-4" /></button>
+                <button className="opacity-50 hover:opacity-100 transition-opacity" title="Maximize"><ChevronDown className="w-4 h-4" /></button>
               </div>
             </div>
             
             <div className="flex-1 p-3 font-mono text-xs overflow-y-auto space-y-2">
               {bottomPaneTab === 'output' ? (
-                logs.map((log, i) => (
-                  <div key={i} className={\`flex gap-2 animate-slide-up \${log.type === 'success' ? 'text-emerald-400' : log.type === 'warning' ? 'text-yellow-400' : log.type === 'error' ? 'text-rose-400' : 'text-gray-400'}\`}>
+                logs.length > 0 ? logs.map((log, i) => (
+                  <div key={i} className={\`flex gap-2 animate-slide-up \${log.type === 'success' ? 'text-emerald-400' : log.type === 'warning' ? 'text-yellow-400' : log.type === 'error' ? 'text-rose-400' : 'text-gray-300'}\`}>
                     {log.type === 'success' && <CheckCircle2 className="w-4 h-4 flex-shrink-0" />}
                     {log.type === 'warning' && <AlertCircle className="w-4 h-4 flex-shrink-0" />}
                     {log.type === 'info' && <Terminal className="w-4 h-4 flex-shrink-0" />}
                     <span>[{new Date().toLocaleTimeString()}] {log.text}</span>
                   </div>
-                ))
+                )) : (
+                  <div className="text-gray-500 italic">No output to display.</div>
+                )
               ) : (
-                <div className="text-gray-400">
-                  <span className="text-emerald-400">user@dev-machine</span>:<span className="text-blue-400">~/projects/myapp</span>$ <span className="animate-pulse">_</span>
+                <div className="text-gray-300">
+                  <div className="mb-2">DevStudio Terminal <span className="text-gray-500">v1.4.2</span></div>
+                  <span className="text-emerald-400 font-bold">user@dev-machine</span>:<span className="text-blue-400 font-bold">~/projects/myapp</span>\$ <span className="animate-pulse">_</span>
                 </div>
               )}
             </div>
@@ -1147,16 +1346,15 @@ export default function DesktopTool() {
         </div>
       </div>
       
-      {/* Status Bar */}
-      <div className="h-6 bg-[#007acc] text-white text-[11px] flex items-center justify-between px-3 font-mono">
+      <div className="h-6 bg-[#007acc] text-white text-[11px] flex items-center justify-between px-3 font-mono select-none">
         <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1 cursor-pointer hover:bg-white/20 px-1 rounded transition-colors"><Cloud className="w-3 h-3" /> main*</span>
-          <span className="flex items-center gap-1 cursor-pointer hover:bg-white/20 px-1 rounded transition-colors"><CheckCircle2 className="w-3 h-3" /> 0 ⚠ 1</span>
+          <span className="flex items-center gap-1 cursor-pointer hover:bg-white/20 px-1.5 py-0.5 rounded transition-colors"><Cloud className="w-3 h-3" /> main*</span>
+          <span className="flex items-center gap-1 cursor-pointer hover:bg-white/20 px-1.5 py-0.5 rounded transition-colors"><CheckCircle2 className="w-3 h-3" /> 0 ⚠ 1</span>
         </div>
         <div className="flex items-center gap-4">
-          {activeTab && <span>Ln 1, Col 1</span>}
-          <span>UTF-8</span>
-          {activeTab && <span>{mockFiles[activeTab]?.lang}</span>}
+          {activeTab && <span className="hover:bg-white/20 px-1.5 py-0.5 rounded cursor-pointer transition-colors">Ln 1, Col 1</span>}
+          <span className="hover:bg-white/20 px-1.5 py-0.5 rounded cursor-pointer transition-colors">UTF-8</span>
+          {activeTab && <span className="hover:bg-white/20 px-1.5 py-0.5 rounded cursor-pointer transition-colors font-semibold">{mockFiles[activeTab]?.lang}</span>}
         </div>
       </div>
     </div>
