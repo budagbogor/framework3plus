@@ -2387,7 +2387,7 @@ function renderOutput(){
       </div></div>
       <div class="code-block"><div class="code-header"><span class="code-lang-tag">Prompts</span>
         <button class="copy-btn" onclick="cpCode('sc5',this)">Salin</button></div>
-        <pre id="sc5">${esc(content.trim())}</pre></div>
+        <pre id="sc5">${esc((content || '').trim())}</pre></div>
     </div>`;
   }
 
