@@ -6098,8 +6098,8 @@ FILES TO CREATE:
 
 STRICT RULES:
 1. package.json MUST ALWAYS contain "type": "module" at the root level to prevent WebContainer ESM parse warnings.
-2. The package.json scripts must intelligently run the actual framework (e.g. "vite", "next dev", or "npx serve ." depending on stack).
-3. All files must be bulletproof and enterprise-ready.
+2. The package.json scripts MUST use "vite" as the dev server ("dev": "vite"). DO NOT use "next dev" or "astro dev" because this environment renders the root index.html via Vite!
+3. package.json MUST include "vite" in devDependencies.
 
 RESPOND ONLY with valid JSON:
 {
@@ -6108,7 +6108,7 @@ RESPOND ONLY with valid JSON:
     {"path": "vercel.json", "content": "{\\"version\\": 2, \\"routes\\": [{\\"src\\": \\"/(.*)\\"..}]}"},
     {"path": ".gitignore", "content": "node_modules/\\n.env\\n.DS_Store\\ndist/"},
     {"path": "README.md", "content": "# ${projectName}\\n\\n...COMPLETE README..."},
-    {"path": "package.json", "content": "{\\"name\\": \\"${safeName}\\", \\"type\\": \\"module\\", \\"scripts\\": {\\"dev\\": \\"vite\\"}}"}
+    {"path": "package.json", "content": "{\\"name\\": \\"${safeName}\\", \\"type\\": \\"module\\", \\"scripts\\": {\\"dev\\": \\"vite\\"}, \\"devDependencies\\": {\\"vite\\": \\"^5.0.0\\"}}"}
   ]
 }`;
 
