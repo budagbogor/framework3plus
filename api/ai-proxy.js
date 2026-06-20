@@ -1,27 +1,37 @@
 /**
- * DevForge Studio - AI Proxy Serverless Function
+ * DevForge Studio - AI Proxy Edge Function
  * Handles requests from frontend to AI providers (SumoPod/OpenRouter)
  * to bypass CORS and manage security.
+ * Now using Edge Runtime to stream responses and bypass the 60s timeout limit.
  */
 
-export const maxDuration = 60; // Izinkan eksekusi hingga 60 detik (hanya berlaku jika akun Vercel mendukung / Pro)
+export const config = {
+  runtime: 'edge'
+};
 
-export default async function handler(req, res) {
+export default async function handler(req) {
   // 1. Only allow POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), { 
+      status: 405, 
+      headers: { 'Content-Type': 'application/json' } 
+    });
   }
 
   try {
-    const { provider, apiUrl, apiKey, payload } = req.body;
+    const body = await req.json();
+    const { provider, apiUrl, apiKey, payload } = body;
 
     if (!apiUrl || !apiKey || !payload) {
-      return res.status(400).json({ error: 'Missing required fields: apiUrl, apiKey, or payload' });
+      return new Response(JSON.stringify({ error: 'Missing required fields: apiUrl, apiKey, or payload' }), { 
+        status: 400, 
+        headers: { 'Content-Type': 'application/json' } 
+      });
     }
 
-    console.log(`[Proxy] Forwarding request to ${provider}: ${apiUrl}`);
+    console.log(`[Proxy Edge] Forwarding request to ${provider}: ${apiUrl}`);
 
-    // 2. Perform the actual request to the AI Provider from the server
+    // 2. Perform the actual request to the AI Provider from the edge
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -37,25 +47,39 @@ export default async function handler(req, res) {
 
     // 3. Handle non-JSON responses (security/errors)
     const contentType = response.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) {
+    if (!response.ok && !contentType.includes('application/json')) {
       const text = await response.text();
-      console.warn(`[Proxy] Provider returned non-JSON (${response.status}):`, text.substring(0, 200));
-      return res.status(response.status).json({ 
+      console.warn(`[Proxy Edge] Provider returned non-JSON (${response.status}):`, text.substring(0, 200));
+      return new Response(JSON.stringify({ 
         error: `Provider AI (${provider}) mengembalikan respon non-JSON (Status: ${response.status}).`,
         message: text.substring(0, 200) || 'Respon kosong atau bukan JSON.'
+      }), { 
+        status: response.status, 
+        headers: { 'Content-Type': 'application/json' } 
       });
     }
 
-    const data = await response.json();
-
-    // 4. Return the response back to the frontend
-    return res.status(response.status).json(data);
+    // 4. Return the RAW ReadableStream back to the frontend!
+    // This allows Vercel Edge to stream the response as it arrives,
+    // COMPLETELY BYPASSING the 10s/60s Serverless Execution Timeout limit.
+    // The frontend's `await res.json()` will consume this stream smoothly.
+    return new Response(response.body, {
+      status: response.status,
+      headers: {
+        'Content-Type': contentType || 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-cache, no-transform'
+      }
+    });
 
   } catch (error) {
-    console.error('[Proxy Error]', error);
-    return res.status(500).json({ 
-      error: 'Terjadi kesalahan sistem pada Proxy Serverless.',
+    console.error('[Proxy Edge Error]', error);
+    return new Response(JSON.stringify({ 
+      error: 'Terjadi kesalahan sistem pada Proxy Edge.',
       message: error.message 
+    }), { 
+      status: 500, 
+      headers: { 'Content-Type': 'application/json' } 
     });
   }
 }
