@@ -6057,6 +6057,7 @@ ABSOLUTE STRICT RULES:
 4. If writing React, use proper hooks (useState, useEffect) and Lucide-react. If vanilla, write advanced DOM logic.
 5. NO HALF-FINISHED FILES. Write extensive, production-grade logic.
 6. CRITICAL: You MUST add crossorigin="anonymous" to ALL external <link>, <script>, and <img> tags (CDNs, Google Fonts, images) to prevent COEP CORS blocking! Do NOT use 'integrity' attributes.
+7. STRICTLY FORBIDDEN: Do NOT use picsum.photos or source.unsplash.com for image placeholders (they fail CORS redirects). Use ONLY https://placehold.co/WIDTHxHEIGHT (e.g. https://placehold.co/600x400) for ALL placeholder images!
 
 RESPOND ONLY with valid JSON:
 {
@@ -7299,6 +7300,11 @@ async function processBuildStep(system, user){
             const fullPath = S.isNative ? `${S.workspacePath}/${S.generated.name}/${f.path}` : f.path;
             let content = f.content;
             if (typeof content === 'string') {
+                // Replace problematic image providers that fail COEP/CORS redirects
+                content = content.replace(/https?:\/\/(?:www\.)?picsum\.photos\/(?:id\/\d+\/|seed\/[^\/]+\/)?(\d+)\/(\d+)/gi, 'https://placehold.co/$1x$2');
+                content = content.replace(/https?:\/\/(?:www\.)?picsum\.photos\/(\d+)/gi, 'https://placehold.co/$1x$1');
+                content = content.replace(/https?:\/\/source\.unsplash\.com\/random\/?(?:(\d+)x(\d+))?/gi, (m, w, h) => `https://placehold.co/${w||800}x${h||600}`);
+
                 content = content.replace(/<(img|script|link)([^>]+(src|href)=['"]https?:\/\/[^'"]+['"][^>]*)>/gi, (match, tag, rest) => {
                     if (!/crossorigin/i.test(match)) return `<${tag} crossorigin="anonymous"${rest}>`;
                     return match;
