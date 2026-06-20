@@ -7294,15 +7294,17 @@ async function processBuildStep(system, user){
         let data;
         const contentType = res.headers.get('content-type') || '';
         if (contentType.includes('event-stream')) {
-            // Read SSE stream
+            // Read SSE stream correctly with a buffer
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
             let fullText = '';
+            let buffer = '';
             while(true) {
                 const {done, value} = await reader.read();
                 if(done) break;
-                const chunk = decoder.decode(value, {stream: true});
-                const lines = chunk.split('\n');
+                buffer += decoder.decode(value, {stream: true});
+                const lines = buffer.split('\n');
+                buffer = lines.pop(); // Keep the last incomplete line in the buffer
                 for(let line of lines) {
                     line = line.trim();
                     if(line.startsWith('data: ') && line !== 'data: [DONE]') {
