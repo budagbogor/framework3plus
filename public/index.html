@@ -2101,38 +2101,39 @@ ${slug(name)}/
 
 ---
 
-## Spesifikasi Teknis Standar
-1. **Kecepatan Tinggi (Core Web Vitals):** LCP (Load Terbesar) wajib di bawah 2 detik. JavaScript seminimal mungkin (Zero-JS bila memungkinkan).
-2. **SEO (Search Engine Optimization):** Mengandung tag meta valid, heading H1-H6 tersusun wajar, canonical URL siap.
-3. **Animasi Terukur:** Menggunakan ${anim} hanya saat scroll masuk pandangan agar performa browser tidak tersendat.
-`;
+## Spesifikasi Teknis Standar (World-Class)
+1. **Performa Ultra Cepat (Lighthouse 100):** Wajib menembus skor 100 di Core Web Vitals. Load time < 1 detik. Zero-JS arsitektur diutamakan jika memungkinkan.
+2. **SEO & Meta Tag Elit:** Struktur HTML semantik 100% sempurna, Canonical URL, Open Graph Image untuk sosial media, dan Rich Snippets Schema.org terpasang rapi.
+3. **UI/UX & Animasi Premium:** Tampilan pixel-perfect, tipografi modern (Inter/Plus Jakarta Sans), desain estetis kelas Apple/Stripe. Gunakan ${anim} secara elegan (micro-interactions, scroll reveal yang halus).`;
 
   const prompts=`# Starter Prompts / Instruksi AI — Pembuatan Website
 
-## Prompt 1: Rangka Dasar Framework
+## Prompt 1: Rangka Dasar Framework & Desain Premium
 
 \`\`\`
-Saya mau mulai membuat proyek website: ${name}.
+Saya ingin membangun website WORLD-CLASS: ${name}.
 Tipe: ${typeMap[a.webType]||'Landing Page'}.
 
 Tumpukan stack web:
 - Web Builder: ${wb}
-- Styling: Tailwind CSS
+- Styling: Tailwind CSS (Pixel-perfect, Glassmorphism, Premium Color Palette)
 - Tool Manajemen Konten: ${cms}
 - Form: ${form}
 - Animasi: ${anim}
 
-Buatkan saya:
-1. Instruksi inisialisasi di root terminal package.json.
-2. Setup integrasi tailwind config dan styling base.
-3. Arsitektur folder komponen dasar (Header, Footer, Hero, Layout).
+Sebagai WORLD-CLASS FRONTEND ARCHITECT, buatkan saya:
+1. Instruksi setup project & package.json (strict typing).
+2. Setup Tailwind config dengan custom font (Inter) & utilitas desain elit.
+3. Arsitektur folder komponen dasar (Header, Footer, Hero, Layout) berstandar industri.
 \`\`\`
 
-## Prompt 2: Penentuan Integrasi
+## Prompt 2: Penentuan Integrasi & Animasi Halus
 
 \`\`\`
-Setelah komponen dasar jalan, saya perlu membuat logika untuk mengambil ${typeMap[a.webType]||'Postingan'} menggunakan sistem: ${cms}.
-Buatkan barisan \`fetch()\` untuk menyerap data tersebut dan masukkan ke dalam halaman list. Lengkapi juga script setup integrasi form pada ${form}.
+Setelah fondasi layout yang stunning berdiri, buatkan sistem untuk mengambil ${typeMap[a.webType]||'Postingan'} menggunakan ${cms}.
+Buatkan \`fetch()\` logic yang aman dan rendering list dengan Skeleton Loading.
+Selain itu, berikan saya kode implementasi ${anim} pada bagian Hero & Scroll Reveal untuk memberikan pengalaman sekelas Awwwards.
+Lengkapi integrasi form dari ${form} dengan validasi form modern (animasi saat error).
 \`\`\``;
 
   return {name,mode:'website',structure,stackRecs,phases,prd,prompts,fe:wb,db:cms,scale:'Proses Cepat'};
@@ -2314,11 +2315,11 @@ Deploy:   ${dep}
 
 ---
 
-## Non-Functional Requirements
-- **Performa:** Halaman core < 2 detik di koneksi 4G
-- **Keamanan:** HTTPS wajib, sanitasi input semua form, tidak simpan password plaintext
-- **Aksesibilitas:** Bisa dipakai dengan keyboard, alt-text untuk gambar
-- **Responsif:** Tampil baik di mobile (320px) sampai desktop (1440px)
+## Non-Functional Requirements (Enterprise-Grade)
+- **Performa & Skalabilitas:** Halaman core load < 1 detik. Mampu menahan lonjakan *traffic* (autoscaling), stateless API architecture.
+- **Keamanan (OWASP Top 10):** Wajib menerapkan JWT/session rotation, rate-limiting, sanitasi XSS/SQLi, dan HTTPS end-to-end.
+- **Aksesibilitas & UI/UX:** Standar WCAG 2.1 AA. Desain UI/UX elit, micro-interactions halus, dan state handling sempurna (Loading, Error, Empty).
+- **Responsif:** Fluid typography & layout dari 320px sampai 4K resolution.
 
 ---
 
@@ -2360,13 +2361,14 @@ Tech stack yang dipilih:
 - UI: ${ui}
 - Deploy: ${dep}
 
-Tolong buatkan:
-1. Struktur folder yang scalable (sesuai best practice 2025)
-2. package.json dengan semua dependencies yang dibutuhkan
-3. File .env.example dengan semua variable yang diperlukan
-4. Konfigurasi TypeScript (tsconfig.json)
-5. Setup ESLint + Prettier
+Tolong buatkan arsitektur untuk sistem skala Enterprise:
+1. Struktur folder kelas dunia yang sangat scalable (Feature-Driven Architecture / Clean Architecture).
+2. package.json dengan dependencies versi terbaru & strict typing.
+3. Setup CI/CD pipeline dasar, Dockerfile (opsional untuk kontainerisasi).
+4. Konfigurasi TypeScript yang sangat ketat (strict: true).
+5. Setup ESLint (Airbnb/Standard) + Prettier + Husky (Pre-commit hooks).
 
+Jangan berikan kode "Hello World" biasa. Tuliskan kode *production-ready* standar Big Tech!
 Prioritaskan kesederhanaan — ini project ${scaleMap[scale]}.
 \`\`\`
 
@@ -2985,15 +2987,15 @@ if __name__ == "__main__":
 
 ---
 
-## Arsitektur
+## Arsitektur (State-of-the-Art)
 
-### 5 Lapisan Sistem
+### 5 Lapisan Sistem Elit
 \`\`\`
-Layer 1 — Foundation  : ${llmModel} (otak utama)
-Layer 2 — Memory      : ${mem}
-Layer 3 — Tools       : ${tools}
-Layer 4 — Orchestration: ${orch}
-Layer 5 — Observability: Audit log + monitoring
+Layer 1 — Foundation   : ${llmModel} (Model Utama) + Fallback Mechanism
+Layer 2 — Memory       : ${mem} (Vector DB / Graph Memory)
+Layer 3 — Tools        : ${tools} + Auto-Retry & Error Recovery
+Layer 4 — Orchestration: ${orch} (Plan-and-Solve / ReAct Framework)
+Layer 5 — Observability: LangSmith / W&B Audit Log + Cost Guard
 \`\`\`
 
 ### Kontrol Manusia
@@ -3073,19 +3075,18 @@ Kamu adalah ${name}.
 
 ## Siapa Kamu
 [Jelaskan: nama, peran, siapa yang menggunakanmu]
-Contoh: "Kamu adalah asisten riset untuk tim marketing PT XYZ.
-Tugasmu adalah mencari data kompetitor, merangkum berita industri,
-dan membuat laporan mingguan."
+Contoh: "Kamu adalah Elite AI Researcher. Spesialisasimu adalah analisis data kompleks dan web-scraping tingkat lanjut."
 
 ## Kemampuan yang Kamu Miliki
-${(a.agentTools||['pencarian web']).map(t=>`- Bisa ${t}`).join('\n')}
+${(a.agentTools||['pencarian web']).map(t=>`- Kemampuan ELITE: ${t}`).join('\n')}
 
-## Cara Kamu Bekerja
-1. Baca task dengan teliti — pahami apa yang diminta
-2. Rencanakan langkah-langkah sebelum mulai
-3. Kerjakan satu langkah, periksa hasilnya
-4. Lanjut ke langkah berikutnya
-5. Buat summary hasil di akhir
+## Cara Kamu Bekerja (ReAct / Plan-and-Solve)
+1. BACA & PIKIRKAN (THOUGHT) task dengan mendalam. Pahami edge cases.
+2. BUAT RENCANA (PLAN) sebelum eksekusi. Pecah task kompleks menjadi sub-task.
+3. TINDAKAN (ACTION). Gunakan tools satu per satu secara metodis.
+4. OBSERVASI (OBSERVATION). Validasi apakah hasil dari tool sesuai dengan yang diharapkan.
+5. Jika gagal, LAKUKAN RETRY atau cari pendekatan alternatif (Self-Correction).
+6. Berikan JAWABAN AKHIR (FINAL ANSWER) yang terstruktur rapi.
 
 ## Yang Tidak Boleh Kamu Lakukan
 - Jangan berasumsi jika ada yang tidak jelas — tanya dulu
@@ -6005,9 +6006,9 @@ YOUR TASK:
 2. Write TECH_NOTES.md with: deployment guide for ${dep}, security considerations, performance budgets (Lighthouse 100).
 
 CRITICAL RULES:
-- Architecture MUST utilize the absolute latest tech paradigms (e.g. modular design, optimized rendering).
+- Architecture MUST utilize the absolute latest tech paradigms (e.g. Clean Architecture, Server-Side Rendering, Edge Computing).
 - MASTERPLAN.md must list EVERY file needed for a highly polished, production-ready app.
-- Never settle for "simple" apps. Design for elegance, speed, and massive scale.
+- Never settle for "simple" apps. Design for elegance, speed, and massive scale (1M+ DAU).
 
 RESPOND ONLY with valid JSON:
 {
@@ -6046,9 +6047,9 @@ PROJECT:
 ${masterplan.substring(0, 3000)}
 
 MANDATORY FILES:
-- index.html  (Semantic, beautiful meta, Inter/Outfit fonts linked via Google Fonts, Lucide Icons linked via CDN)
-- style.css   (World-class Tailwind/Vanilla CSS: glassmorphism, advanced animations 'pulse/fade/slide', hyper-responsive)
-- app.js      (FULLY FUNCTIONAL STATE MANAGEMENT. Real logic, DOM manipulation, interactive components)
+- index.html  (Semantic HTML5, perfect meta tags, Inter/Plus Jakarta Sans linked via Google Fonts, Lucide Icons)
+- style.css   (World-class Tailwind/Vanilla CSS: glassmorphism, advanced animations 'pulse/fade/slide', fluid typography, hyper-responsive)
+- app.js      (FULLY FUNCTIONAL STATE MANAGEMENT. Real logic, robust DOM manipulation, interactive components. Implement Elite patterns if applicable).
 
 ABSOLUTE STRICT RULES:
 1. BANNED: Placeholders, "// TODO", "dummy code", empty functions.
@@ -6142,7 +6143,8 @@ IMPLEMENT ADVANCED FEATURES (if missing):
 - Premium Dark/Light mode transitions with persistence
 - Advanced Form Validations with subtle error shake animations
 - Skeleton loading screens & Toast notifications
-- IntersectionObserver driven reveal animations
+- IntersectionObserver driven reveal animations (GSAP-like quality)
+- Perfect Error Handling & Edge Cases (Zero silent failures)
 
 RULES:
 1. ONLY OUTPUT COMPLETE, FLAWLESS CODE. Never use "..." or placeholders.
