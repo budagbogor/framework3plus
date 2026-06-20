@@ -7284,14 +7284,42 @@ async function processBuildStep(system, user){
             provider: S.aiConfig.provider,
             apiUrl: `${prov.baseUrl}/chat/completions`,
             apiKey: S.aiConfig.apiKey,
-            payload: body
+            payload: { ...body, stream: true } // FORCE STREAM to bypass Vercel 30s Edge timeout
         } : body;
 
         res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(fetchBody) });
     }
 
     if(res.ok){
-        const data = await res.json();
+        let data;
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('event-stream')) {
+            // Read SSE stream
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let fullText = '';
+            while(true) {
+                const {done, value} = await reader.read();
+                if(done) break;
+                const chunk = decoder.decode(value, {stream: true});
+                const lines = chunk.split('\n');
+                for(let line of lines) {
+                    line = line.trim();
+                    if(line.startsWith('data: ') && line !== 'data: [DONE]') {
+                        try {
+                            const parsed = JSON.parse(line.slice(6));
+                            if(parsed.choices && parsed.choices[0].delta && parsed.choices[0].delta.content) {
+                                fullText += parsed.choices[0].delta.content;
+                            }
+                        } catch(e) {}
+                    }
+                }
+            }
+            data = { choices: [{ message: { content: fullText } }] };
+        } else {
+            data = await res.json();
+        }
+
         let result = {};
         const rawContent = data.choices ? data.choices[0].message.content : (data.content || data);
         
