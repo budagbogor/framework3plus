@@ -7297,7 +7297,14 @@ async function processBuildStep(system, user){
         (result.logs || []).forEach(l => addBuildLog(l, "info"));
         (result.files || []).forEach(f => {
             const fullPath = S.isNative ? `${S.workspacePath}/${S.generated.name}/${f.path}` : f.path;
-            S.virtualWorkspace[f.path] = f.content;
+            let content = f.content;
+            if (typeof content === 'string') {
+                content = content.replace(/<(img|script|link)([^>]+(src|href)=['"]https?:\/\/[^'"]+['"][^>]*)>/gi, (match, tag, rest) => {
+                    if (!/crossorigin/i.test(match)) return `<${tag} crossorigin="anonymous"${rest}>`;
+                    return match;
+                });
+            }
+            S.virtualWorkspace[f.path] = content;
             
             if (S.isNative && invoke) {
                 invoke('save_file', { path: fullPath, content: f.content });
