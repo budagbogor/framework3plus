@@ -6061,6 +6061,7 @@ ABSOLUTE STRICT RULES:
 6. NO HALF-FINISHED FILES. Write extensive, production-grade logic.
 7. CRITICAL: Add crossorigin="anonymous" to ALL external <link>, <script>, and <img> tags (CDNs, Google Fonts, images) to prevent COEP CORS blocking! Do NOT use 'integrity'.
 8. STRICTLY FORBIDDEN: Do NOT use picsum.photos or source.unsplash.com for image placeholders (they fail CORS redirects). Use ONLY https://placehold.co/WIDTHxHEIGHT for ALL placeholder images!
+9. TAURI/DESKTOP APPS: If building for Desktop, DO NOT import from '@tauri-apps/api'. It will crash the Web Preview! Use global mocks instead: \`const invoke = window.__TAURI__?.invoke || (async () => console.log('Tauri mocked'));\`
 
 RESPOND ONLY with valid JSON:
 {
@@ -6269,7 +6270,7 @@ ${wsSnap4}
 
 HARDEN THE APP TO MILITARY-GRADE:
 1. Obliterate any XSS vectors (DOM clobbering, prototype pollution).
-2. Setup strict Content-Security-Policy headers in HTML/Vercel JSON.
+2. CRITICAL: Do NOT use strict Content-Security-Policy that blocks CDNs, WebContainer APIs, or local ports! Use a HIGHLY PERMISSIVE CSP (or no CSP at all) so that the Live Preview and CDNs (unpkg.com, staticblitz) do not crash.
 3. Validate and sanitize ALL inputs.
 4. Prevent prototype pollution via deep cloning fixes.
 5. IMPORTANT: Do NOT add integrity= attributes to <link>/<script> tags (breaks blob preview).
