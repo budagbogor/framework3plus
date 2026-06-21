@@ -6124,7 +6124,8 @@ RESPOND ONLY with valid JSON:
         render();
     };
 
-    await Promise.all([runCoder(), runDevops()]);
+    await runCoder();
+    await runDevops();
     await sleep(1200);
 
     // ── FASE 3: FEATURE & CONTENT (PARALEL) ──
@@ -6211,7 +6212,8 @@ RESPOND ONLY with valid JSON:
         render();
     };
 
-    await Promise.all([runFeature(), runContent()]);
+    await runFeature();
+    await runContent();
     await sleep(1200);
 
     // ── FASE 4: QA, SECURITY, POLISHER, TESTER (PARALEL) ──
@@ -6364,7 +6366,10 @@ RESPOND ONLY with valid JSON:
         render();
     };
 
-    await Promise.all([runQa(), runSecurity(), runPolisher(), runTester()]);
+    await runQa();
+    await runSecurity();
+    await runPolisher();
+    await runTester();
     await sleep(1200);
 
     S.activeAgent = null;
@@ -7175,7 +7180,8 @@ console.log("Application initialized successfully.");`;
         render();
     };
 
-    await Promise.all([runFeatureSim(), runContentSim()]);
+    await runFeatureSim();
+    await runContentSim();
     await sleep(2000);
 
     // 🛡️ 🔐 ✨ 🧪 FASE 4: QA, SECURITY, POLISHER, TESTER (PARALEL)
@@ -7249,7 +7255,11 @@ console.log("Application initialized successfully.");`;
         render();
     };
 
-    await Promise.all([runQaSim(), runSecuritySim(), runPolisherSim(), runTesterSim(), runDevopsSim()]);
+    await runQaSim();
+    await runSecuritySim();
+    await runPolisherSim();
+    await runTesterSim();
+    await runDevopsSim();
     await sleep(2000);
 
     // SELESAI
